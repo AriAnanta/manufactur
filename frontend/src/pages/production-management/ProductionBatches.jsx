@@ -155,13 +155,29 @@ const ProductionBatches = () => {
         await axios.delete(`http://localhost:5001/api/batches/${id}`);
         fetchBatches();
       } catch (err) {
-        console.error("Error deleting batch:", err);
         if (err.response && err.response.status === 400) {
+          const { message, steps, materialAllocations } = err.response.data;
+          let content = message;
+
+          if (steps && steps.length > 0) {
+            content += "\n\nAssociated Steps:";
+            steps.forEach((step) => {
+              content += `\n- Step ID: ${step.id}, Name: ${step.stepName}, Status: ${step.status} (Order: ${step.stepOrder})`;
+            });
+          }
+
+          if (materialAllocations && materialAllocations.length > 0) {
+            content += "\n\nAssociated Material Allocations:";
+            materialAllocations.forEach((ma) => {
+              content += `\n- Material ID: ${ma.materialId}, Required: ${ma.quantityRequired}, Status: ${ma.status}`; // Adjusted to match backend response
+            });
+          }
+
           setAlertTitle("Cannot Delete Batch");
-          setAlertContent(err.response.data.message);
+          setAlertContent(content);
           setOpenAlertDialog(true);
-          // No need to set global error state here if using a dedicated dialog
         } else {
+          console.error("Error deleting batch:", err);
           setError("Gagal menghapus batch produksi.");
         }
       } finally {

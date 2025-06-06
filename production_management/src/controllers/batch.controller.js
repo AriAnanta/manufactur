@@ -479,6 +479,18 @@ exports.deleteBatch = async (req, res) => {
       return res.status(400).json({
         message:
           "Cannot delete batch with associated steps or material allocations. Consider cancelling or completing it instead.",
+        steps: steps.map((s) => ({
+          id: s.id,
+          stepName: s.stepName,
+          status: s.status,
+          stepOrder: s.stepOrder,
+        })),
+        materialAllocations: materialAllocations.map((ma) => ({
+          id: ma.id,
+          materialId: ma.materialId,
+          quantityRequired: ma.quantityRequired,
+          status: ma.status,
+        })),
       });
     }
 
