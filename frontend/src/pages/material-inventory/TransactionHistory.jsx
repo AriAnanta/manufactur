@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 
 function TransactionHistory() {
   const [transactions, setTransactions] = useState([]);
@@ -9,17 +9,7 @@ function TransactionHistory() {
     // Fungsi untuk mengambil data riwayat transaksi dari API
     const fetchTransactions = async () => {
       try {
-        // Simulasi pengambilan data
-        const response = await new Promise(resolve => setTimeout(() => {
-          resolve({
-            ok: true,
-            json: () => Promise.resolve([
-              { id: 1, material: 'Besi', type: 'Masuk', quantity: 10, date: '2023-01-05' },
-              { id: 2, material: 'Kayu', type: 'Keluar', quantity: 5, date: '2023-01-10' },
-              { id: 3, material: 'Plastik', type: 'Masuk', quantity: 20, date: '2023-01-15' },
-            ])
-          });
-        }, 1000));
+        const response = await fetch("http://localhost:5004/api/transactions");
 
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
@@ -59,16 +49,24 @@ function TransactionHistory() {
               <th>Tipe</th>
               <th>Jumlah</th>
               <th>Tanggal</th>
+              <th>Referensi</th>
             </tr>
           </thead>
           <tbody>
-            {transactions.map(transaction => (
+            {transactions.map((transaction) => (
               <tr key={transaction.id}>
                 <td>{transaction.id}</td>
-                <td>{transaction.material}</td>
+                <td>
+                  {transaction.material ? transaction.material.name : "N/A"}
+                </td>
                 <td>{transaction.type}</td>
-                <td>{transaction.quantity}</td>
-                <td>{transaction.date}</td>
+                <td>
+                  {transaction.quantity} {transaction.unit}
+                </td>
+                <td>
+                  {new Date(transaction.transactionDate).toLocaleDateString()}
+                </td>
+                <td>{transaction.referenceNumber || "-"}</td>
               </tr>
             ))}
           </tbody>

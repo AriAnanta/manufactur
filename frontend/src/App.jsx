@@ -33,6 +33,8 @@ import MaterialDetail from "./pages/material-inventory/MaterialDetail";
 import SupplierList from "./pages/material-inventory/SupplierList";
 import SupplierDetail from "./pages/material-inventory/SupplierDetail";
 import TransactionHistory from "./pages/material-inventory/TransactionHistory";
+import CreateMaterial from "./pages/material-inventory/CreateMaterial";
+import EditMaterial from "./pages/material-inventory/EditMaterial";
 
 // Production Planning Pages
 import ProductionPlans from "./pages/planning/ProductionPlans";
@@ -111,7 +113,9 @@ function App() {
 
             {/* Material Inventory Routes */}
             <Route path="/materials" element={<MaterialList />} />
+            <Route path="/materials/new" element={<CreateMaterial />} />
             <Route path="/materials/:id" element={<MaterialDetail />} />
+            <Route path="/materials/:id/edit" element={<EditMaterial />} />
             <Route path="/suppliers" element={<SupplierList />} />
             <Route path="/suppliers/:id" element={<SupplierDetail />} />
             <Route path="/transactions" element={<TransactionHistory />} />

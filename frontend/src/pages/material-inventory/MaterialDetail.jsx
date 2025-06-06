@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import React, { useState, useEffect } from "react";
+import { useParams } from "react-router-dom";
 
 function MaterialDetail() {
   const { id } = useParams();
@@ -11,19 +11,9 @@ function MaterialDetail() {
     // Fungsi untuk mengambil detail material dari API berdasarkan ID
     const fetchMaterialDetail = async () => {
       try {
-        // Simulasi pengambilan data
-        const response = await new Promise(resolve => setTimeout(() => {
-          const materials = [
-            { id: 1, name: 'Besi', quantity: 100, unit: 'kg', description: 'Besi baja kualitas tinggi.' },
-            { id: 2, name: 'Kayu', quantity: 50, unit: 'm3', description: 'Kayu jati solid.' },
-            { id: 3, name: 'Plastik', quantity: 200, unit: 'unit', description: 'Plastik daur ulang.' },
-          ];
-          const foundMaterial = materials.find(m => m.id === parseInt(id));
-          resolve({
-            ok: !!foundMaterial,
-            json: () => Promise.resolve(foundMaterial)
-          });
-        }, 1000));
+        const response = await fetch(
+          `http://localhost:5004/api/materials/${id}`
+        );
 
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
@@ -56,11 +46,46 @@ function MaterialDetail() {
   return (
     <div className="material-detail-container">
       <h1>Detail Material</h1>
-      <p><strong>ID:</strong> {material.id}</p>
-      <p><strong>Nama Material:</strong> {material.name}</p>
-      <p><strong>Jumlah:</strong> {material.quantity} {material.unit}</p>
-      <p><strong>Deskripsi:</strong> {material.description}</p>
-      {/* Tambahkan tombol kembali atau navigasi lainnya jika diperlukan */}
+      <p>
+        <strong>ID:</strong> {material.id}
+      </p>
+      <p>
+        <strong>Nama Material:</strong> {material.name}
+      </p>
+      <p>
+        <strong>Jumlah Stok:</strong> {material.stockQuantity} {material.unit}
+      </p>
+      <p>
+        <strong>Deskripsi:</strong>{" "}
+        {material.description || "Tidak ada deskripsi."}
+      </p>
+      <p>
+        <strong>Kategori:</strong> {material.category}
+      </p>
+      <p>
+        <strong>Tipe:</strong> {material.type}
+      </p>
+      <p>
+        <strong>Tingkat Reorder:</strong> {material.reorderLevel}
+      </p>
+      <p>
+        <strong>Harga:</strong> {material.price}
+      </p>
+      <p>
+        <strong>Waktu Tunggu (hari):</strong> {material.leadTime}
+      </p>
+      <p>
+        <strong>Lokasi:</strong> {material.location}
+      </p>
+      <p>
+        <strong>Supplier ID:</strong> {material.supplierId}
+      </p>
+      <p>
+        <strong>Status:</strong> {material.status}
+      </p>
+      <p>
+        <strong>Catatan:</strong> {material.notes || "-"}
+      </p>
     </div>
   );
 }

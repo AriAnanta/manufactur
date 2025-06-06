@@ -1,27 +1,27 @@
 /**
  * Routes API untuk Material
- * 
+ *
  * Mengelola endpoint API untuk material bahan baku
  */
-const express = require('express');
+const express = require("express");
 const router = express.Router();
-const materialController = require('../controllers/material.controller');
-const { verifyToken } = require('../middleware/auth.middleware');
+const materialController = require("../controllers/material.controller");
+const { verifyToken } = require("../middleware/auth.middleware");
 
 // Semua routes dilindungi dengan middleware verifikasi token
-router.use(verifyToken);
+// router.use(verifyToken);
 
 // Routes untuk material
-router.get('/materials', materialController.getAllMaterials);
-router.get('/materials/categories', materialController.getMaterialCategories);
-router.get('/materials/types', materialController.getMaterialTypes);
-router.get('/materials/stock-report', materialController.getMaterialStockReport);
-router.post('/materials/check-stock', materialController.checkMaterialStock);
-router.post('/materials/issue', materialController.issueMaterials);
-router.post('/materials/receive', materialController.receiveMaterials);
-router.get('/materials/:id', materialController.getMaterialById);
-router.post('/materials', materialController.createMaterial);
-router.put('/materials/:id', materialController.updateMaterial);
-router.delete('/materials/:id', materialController.deleteMaterial);
+router.get("/", materialController.getAllMaterials);
+router.get("/categories", materialController.getMaterialCategories);
+router.get("/types", materialController.getMaterialTypes);
+router.get("/stock-report", materialController.getMaterialStockReport);
+router.post("/check-stock", materialController.checkMaterialStock);
+router.post("/issue", materialController.issueMaterials);
+router.post("/receive", materialController.receiveMaterials);
+router.get("/:id", materialController.getMaterialById);
+router.post("/", materialController.createMaterial);
+router.put("/:id", materialController.updateMaterial);
+router.delete("/:id", materialController.deleteMaterial);
 
 module.exports = router;

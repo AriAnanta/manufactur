@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 
 function SupplierList() {
   const [suppliers, setSuppliers] = useState([]);
@@ -9,17 +9,7 @@ function SupplierList() {
     // Fungsi untuk mengambil data supplier dari API
     const fetchSuppliers = async () => {
       try {
-        // Simulasi pengambilan data
-        const response = await new Promise(resolve => setTimeout(() => {
-          resolve({
-            ok: true,
-            json: () => Promise.resolve([
-              { id: 1, name: 'PT. Baja Perkasa', contact: '021-123456', email: 'info@bajaperkasa.com' },
-              { id: 2, name: 'CV. Kayu Indah', contact: '021-654321', email: 'sales@kayuindah.co.id' },
-              { id: 3, name: 'Global Plastik', contact: '021-987654', email: 'admin@globalplastik.net' },
-            ])
-          });
-        }, 1000));
+        const response = await fetch("http://localhost:5004/api/suppliers");
 
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
@@ -58,15 +48,20 @@ function SupplierList() {
               <th>Nama Supplier</th>
               <th>Kontak</th>
               <th>Email</th>
+              <th>Aksi</th>
             </tr>
           </thead>
           <tbody>
-            {suppliers.map(supplier => (
+            {suppliers.map((supplier) => (
               <tr key={supplier.id}>
                 <td>{supplier.id}</td>
                 <td>{supplier.name}</td>
-                <td>{supplier.contact}</td>
+                <td>{supplier.contactPerson}</td>
                 <td>{supplier.email}</td>
+                <td>
+                  <button>Edit</button>
+                  <button>Hapus</button>
+                </td>
               </tr>
             ))}
           </tbody>
