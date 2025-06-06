@@ -31,7 +31,7 @@ const errorLink = onError(({ graphQLErrors, networkError }) => {
 const endpoints = {
   userService: "http://localhost:5006/graphql",
   productionManagement: "http://localhost:5001/graphql",
-  productionPlanning: "http://localhost:5002/graphql",
+  productionPlanning: "http://localhost:5300/graphql",
   machineQueue: "http://localhost:5003/graphql",
   materialInventory: "http://localhost:5004/graphql",
   productionFeedback: "http://localhost:5005/graphql",
@@ -138,7 +138,26 @@ const serviceLink = split(
           "GraphQL Operation Name (ProductionPlanning check):",
           operationName
         );
-        if (operationName.startsWith("ProductionPlanning")) {
+        const isProductionPlanningOperation = [
+          "GetPlans",
+          "GetPlan",
+          "GetCapacityPlans",
+          "GetMaterialPlans",
+          "GetCapacityPlan",
+          "GetMaterialPlan",
+          "GetPlansSummary",
+          "CreatePlan",
+          "UpdatePlan",
+          "DeletePlan",
+          "ApprovePlan",
+          "AddCapacityPlan",
+          "AddMaterialPlan",
+          "UpdateCapacityPlan",
+          "DeleteCapacityPlan",
+          "UpdateMaterialPlan",
+        ].includes(operationName);
+
+        if (isProductionPlanningOperation) {
           console.log("Routing to Production Planning Link");
           return true;
         }

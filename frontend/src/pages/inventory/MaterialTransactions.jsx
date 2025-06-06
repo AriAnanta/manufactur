@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { useQuery, useMutation } from '@apollo/client';
+import { useState } from "react";
+import { useQuery, useMutation } from "@apollo/client";
 import {
   Box,
   Paper,
@@ -30,10 +30,10 @@ import {
   CircularProgress,
   Alert,
   Autocomplete,
-} from '@mui/material';
-import { DatePicker } from '@mui/x-date-pickers/DatePicker';
-import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
-import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+} from "@mui/material";
+import { DatePicker } from "@mui/x-date-pickers/DatePicker";
+import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFnsV3";
+import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import {
   Add as AddIcon,
   Edit as EditIcon,
@@ -47,9 +47,9 @@ import {
   Inventory as InventoryIcon,
   Person as PersonIcon,
   Description as DescriptionIcon,
-} from '@mui/icons-material';
-import { toast } from 'react-toastify';
-import { format } from 'date-fns';
+} from "@mui/icons-material";
+import { toast } from "react-toastify";
+import { format } from "date-fns";
 import {
   GET_MATERIALS,
   GET_MATERIAL_TRANSACTIONS,
@@ -57,24 +57,24 @@ import {
   CREATE_MATERIAL_TRANSACTION,
   UPDATE_MATERIAL_TRANSACTION,
   DELETE_MATERIAL_TRANSACTION,
-} from '../../graphql/materialInventory';
+} from "../../graphql/materialInventory";
 
 // Transaction type chip component
 const TransactionTypeChip = ({ type }) => {
-  let color = 'default';
+  let color = "default";
   let icon = null;
 
   switch (type) {
-    case 'INCOMING':
-      color = 'success';
+    case "INCOMING":
+      color = "success";
       icon = <ArrowDownwardIcon fontSize="small" />;
       break;
-    case 'OUTGOING':
-      color = 'error';
+    case "OUTGOING":
+      color = "error";
       icon = <ArrowUpwardIcon fontSize="small" />;
       break;
     default:
-      color = 'default';
+      color = "default";
   }
 
   return <Chip label={type} color={color} size="small" icon={icon} />;
@@ -83,31 +83,31 @@ const TransactionTypeChip = ({ type }) => {
 const MaterialTransactions = () => {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [filterType, setFilterType] = useState('ALL');
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filterType, setFilterType] = useState("ALL");
   const [filterDateRange, setFilterDateRange] = useState({
     startDate: null,
     endDate: null,
   });
-  
+
   // Dialog states
   const [openCreateDialog, setOpenCreateDialog] = useState(false);
   const [openEditDialog, setOpenEditDialog] = useState(false);
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
   const [openViewDialog, setOpenViewDialog] = useState(false);
   const [selectedTransaction, setSelectedTransaction] = useState(null);
-  
+
   // Form state
   const [formData, setFormData] = useState({
-    materialId: '',
-    type: 'INCOMING',
-    quantity: '',
-    unit: '',
+    materialId: "",
+    type: "INCOMING",
+    quantity: "",
+    unit: "",
     date: new Date(),
-    batchNumber: '',
-    referenceNumber: '',
-    notes: '',
-    handledBy: '',
+    batchNumber: "",
+    referenceNumber: "",
+    notes: "",
+    handledBy: "",
   });
 
   // Query for materials
@@ -116,7 +116,7 @@ const MaterialTransactions = () => {
     error: materialsError,
     data: materialsData,
   } = useQuery(GET_MATERIALS, {
-    fetchPolicy: 'cache-and-network',
+    fetchPolicy: "cache-and-network",
   });
 
   // Query for transactions
@@ -126,47 +126,56 @@ const MaterialTransactions = () => {
     data: transactionsData,
     refetch: refetchTransactions,
   } = useQuery(GET_MATERIAL_TRANSACTIONS, {
-    fetchPolicy: 'cache-and-network',
+    fetchPolicy: "cache-and-network",
   });
 
   // Mutation for creating a transaction
-  const [createTransaction, { loading: createLoading }] = useMutation(CREATE_MATERIAL_TRANSACTION, {
-    onCompleted: () => {
-      toast.success('Transaction created successfully');
-      setOpenCreateDialog(false);
-      resetForm();
-      refetchTransactions();
-    },
-    onError: (error) => {
-      toast.error(`Failed to create transaction: ${error.message}`);
-    },
-  });
+  const [createTransaction, { loading: createLoading }] = useMutation(
+    CREATE_MATERIAL_TRANSACTION,
+    {
+      onCompleted: () => {
+        toast.success("Transaction created successfully");
+        setOpenCreateDialog(false);
+        resetForm();
+        refetchTransactions();
+      },
+      onError: (error) => {
+        toast.error(`Failed to create transaction: ${error.message}`);
+      },
+    }
+  );
 
   // Mutation for updating a transaction
-  const [updateTransaction, { loading: updateLoading }] = useMutation(UPDATE_MATERIAL_TRANSACTION, {
-    onCompleted: () => {
-      toast.success('Transaction updated successfully');
-      setOpenEditDialog(false);
-      resetForm();
-      refetchTransactions();
-    },
-    onError: (error) => {
-      toast.error(`Failed to update transaction: ${error.message}`);
-    },
-  });
+  const [updateTransaction, { loading: updateLoading }] = useMutation(
+    UPDATE_MATERIAL_TRANSACTION,
+    {
+      onCompleted: () => {
+        toast.success("Transaction updated successfully");
+        setOpenEditDialog(false);
+        resetForm();
+        refetchTransactions();
+      },
+      onError: (error) => {
+        toast.error(`Failed to update transaction: ${error.message}`);
+      },
+    }
+  );
 
   // Mutation for deleting a transaction
-  const [deleteTransaction, { loading: deleteLoading }] = useMutation(DELETE_MATERIAL_TRANSACTION, {
-    onCompleted: () => {
-      toast.success('Transaction deleted successfully');
-      setOpenDeleteDialog(false);
-      setSelectedTransaction(null);
-      refetchTransactions();
-    },
-    onError: (error) => {
-      toast.error(`Failed to delete transaction: ${error.message}`);
-    },
-  });
+  const [deleteTransaction, { loading: deleteLoading }] = useMutation(
+    DELETE_MATERIAL_TRANSACTION,
+    {
+      onCompleted: () => {
+        toast.success("Transaction deleted successfully");
+        setOpenDeleteDialog(false);
+        setSelectedTransaction(null);
+        refetchTransactions();
+      },
+      onError: (error) => {
+        toast.error(`Failed to delete transaction: ${error.message}`);
+      },
+    }
+  );
 
   // Handle page change
   const handleChangePage = (event, newPage) => {
@@ -202,8 +211,8 @@ const MaterialTransactions = () => {
 
   // Reset filters
   const resetFilters = () => {
-    setSearchTerm('');
-    setFilterType('ALL');
+    setSearchTerm("");
+    setFilterType("ALL");
     setFilterDateRange({
       startDate: null,
       endDate: null,
@@ -214,15 +223,15 @@ const MaterialTransactions = () => {
   // Reset form
   const resetForm = () => {
     setFormData({
-      materialId: '',
-      type: 'INCOMING',
-      quantity: '',
-      unit: '',
+      materialId: "",
+      type: "INCOMING",
+      quantity: "",
+      unit: "",
       date: new Date(),
-      batchNumber: '',
-      referenceNumber: '',
-      notes: '',
-      handledBy: '',
+      batchNumber: "",
+      referenceNumber: "",
+      notes: "",
+      handledBy: "",
     });
   };
 
@@ -239,8 +248,8 @@ const MaterialTransactions = () => {
   const handleMaterialChange = (event, newValue) => {
     setFormData({
       ...formData,
-      materialId: newValue ? newValue.id : '',
-      unit: newValue ? newValue.unit : '',
+      materialId: newValue ? newValue.id : "",
+      unit: newValue ? newValue.unit : "",
     });
   };
 
@@ -267,18 +276,20 @@ const MaterialTransactions = () => {
   // Open edit dialog
   const handleOpenEditDialog = (transaction) => {
     setSelectedTransaction(transaction);
-    const material = materialsData?.materials.find(m => m.id === transaction.material.id);
-    
+    const material = materialsData?.materials.find(
+      (m) => m.id === transaction.material.id
+    );
+
     setFormData({
       materialId: transaction.material.id,
       type: transaction.type,
       quantity: transaction.quantity.toString(),
       unit: transaction.unit,
       date: new Date(transaction.date),
-      batchNumber: transaction.batchNumber || '',
-      referenceNumber: transaction.referenceNumber || '',
-      notes: transaction.notes || '',
-      handledBy: transaction.handledBy || '',
+      batchNumber: transaction.batchNumber || "",
+      referenceNumber: transaction.referenceNumber || "",
+      notes: transaction.notes || "",
+      handledBy: transaction.handledBy || "",
     });
     setOpenEditDialog(true);
   };
@@ -367,18 +378,34 @@ const MaterialTransactions = () => {
     ? transactionsData.materialTransactions.filter((transaction) => {
         // Filter by search term
         const searchMatch =
-          transaction.material.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          (transaction.batchNumber && transaction.batchNumber.toLowerCase().includes(searchTerm.toLowerCase())) ||
-          (transaction.referenceNumber && transaction.referenceNumber.toLowerCase().includes(searchTerm.toLowerCase())) ||
-          (transaction.handledBy && transaction.handledBy.toLowerCase().includes(searchTerm.toLowerCase()));
+          transaction.material.name
+            .toLowerCase()
+            .includes(searchTerm.toLowerCase()) ||
+          (transaction.batchNumber &&
+            transaction.batchNumber
+              .toLowerCase()
+              .includes(searchTerm.toLowerCase())) ||
+          (transaction.referenceNumber &&
+            transaction.referenceNumber
+              .toLowerCase()
+              .includes(searchTerm.toLowerCase())) ||
+          (transaction.handledBy &&
+            transaction.handledBy
+              .toLowerCase()
+              .includes(searchTerm.toLowerCase()));
 
         // Filter by transaction type
-        const typeMatch = filterType === 'ALL' || transaction.type === filterType;
+        const typeMatch =
+          filterType === "ALL" || transaction.type === filterType;
 
         // Filter by date range
         const transactionDate = new Date(transaction.date);
-        const startDateMatch = !filterDateRange.startDate || transactionDate >= filterDateRange.startDate;
-        const endDateMatch = !filterDateRange.endDate || transactionDate <= filterDateRange.endDate;
+        const startDateMatch =
+          !filterDateRange.startDate ||
+          transactionDate >= filterDateRange.startDate;
+        const endDateMatch =
+          !filterDateRange.endDate ||
+          transactionDate <= filterDateRange.endDate;
 
         return searchMatch && typeMatch && startDateMatch && endDateMatch;
       })
@@ -402,7 +429,14 @@ const MaterialTransactions = () => {
   return (
     <Box>
       <Paper sx={{ p: 3, mb: 3 }}>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            mb: 3,
+          }}
+        >
           <Typography variant="h5">Material Transactions</Typography>
           <Button
             variant="contained"
@@ -429,7 +463,7 @@ const MaterialTransactions = () => {
                 ),
                 endAdornment: searchTerm && (
                   <InputAdornment position="end">
-                    <IconButton size="small" onClick={() => setSearchTerm('')}>
+                    <IconButton size="small" onClick={() => setSearchTerm("")}>
                       <ClearIcon />
                     </IconButton>
                   </InputAdornment>
@@ -457,7 +491,9 @@ const MaterialTransactions = () => {
               <DatePicker
                 label="From Date"
                 value={filterDateRange.startDate}
-                onChange={(newValue) => handleDateRangeChange('startDate', newValue)}
+                onChange={(newValue) =>
+                  handleDateRangeChange("startDate", newValue)
+                }
                 slotProps={{
                   textField: {
                     fullWidth: true,
@@ -476,7 +512,9 @@ const MaterialTransactions = () => {
               <DatePicker
                 label="To Date"
                 value={filterDateRange.endDate}
-                onChange={(newValue) => handleDateRangeChange('endDate', newValue)}
+                onChange={(newValue) =>
+                  handleDateRangeChange("endDate", newValue)
+                }
                 slotProps={{
                   textField: {
                     fullWidth: true,
@@ -497,7 +535,7 @@ const MaterialTransactions = () => {
               fullWidth
               variant="outlined"
               onClick={resetFilters}
-              sx={{ height: '100%' }}
+              sx={{ height: "100%" }}
             >
               Reset Filters
             </Button>
@@ -513,7 +551,7 @@ const MaterialTransactions = () => {
 
         {/* Loading indicator */}
         {transactionsLoading && !transactionsData && (
-          <Box sx={{ display: 'flex', justifyContent: 'center', my: 4 }}>
+          <Box sx={{ display: "flex", justifyContent: "center", my: 4 }}>
             <CircularProgress />
           </Box>
         )}
@@ -521,7 +559,13 @@ const MaterialTransactions = () => {
         {/* Table */}
         {!transactionsLoading && filteredTransactions.length === 0 ? (
           <Alert severity="info">
-            No transactions found. {searchTerm || filterType !== 'ALL' || filterDateRange.startDate || filterDateRange.endDate ? 'Try different filter settings.' : 'Add a transaction to get started.'}
+            No transactions found.{" "}
+            {searchTerm ||
+            filterType !== "ALL" ||
+            filterDateRange.startDate ||
+            filterDateRange.endDate
+              ? "Try different filter settings."
+              : "Add a transaction to get started."}
           </Alert>
         ) : (
           <>
@@ -543,10 +587,16 @@ const MaterialTransactions = () => {
                   {paginatedTransactions.map((transaction) => (
                     <TableRow key={transaction.id}>
                       <TableCell>
-                        {format(new Date(transaction.date), 'dd MMM yyyy, HH:mm')}
+                        {format(
+                          new Date(transaction.date),
+                          "dd MMM yyyy, HH:mm"
+                        )}
                       </TableCell>
                       <TableCell>
-                        <Typography variant="body2" sx={{ fontWeight: 'medium' }}>
+                        <Typography
+                          variant="body2"
+                          sx={{ fontWeight: "medium" }}
+                        >
                           {transaction.material.name}
                         </Typography>
                         <Typography variant="caption" color="text.secondary">
@@ -561,15 +611,11 @@ const MaterialTransactions = () => {
                           {transaction.quantity} {transaction.unit}
                         </Typography>
                       </TableCell>
+                      <TableCell>{transaction.batchNumber || "-"}</TableCell>
                       <TableCell>
-                        {transaction.batchNumber || '-'}
+                        {transaction.referenceNumber || "-"}
                       </TableCell>
-                      <TableCell>
-                        {transaction.referenceNumber || '-'}
-                      </TableCell>
-                      <TableCell>
-                        {transaction.handledBy || '-'}
-                      </TableCell>
+                      <TableCell>{transaction.handledBy || "-"}</TableCell>
                       <TableCell>
                         <Tooltip title="View Details">
                           <IconButton
@@ -617,7 +663,12 @@ const MaterialTransactions = () => {
       </Paper>
 
       {/* Create Transaction Dialog */}
-      <Dialog open={openCreateDialog} onClose={handleCloseCreateDialog} maxWidth="md" fullWidth>
+      <Dialog
+        open={openCreateDialog}
+        onClose={handleCloseCreateDialog}
+        maxWidth="md"
+        fullWidth
+      >
         <DialogTitle>Add Material Transaction</DialogTitle>
         <DialogContent>
           <Grid container spacing={2} sx={{ mt: 1 }}>
@@ -625,7 +676,11 @@ const MaterialTransactions = () => {
               <Autocomplete
                 options={materialsData?.materials || []}
                 getOptionLabel={(option) => `${option.name} (${option.code})`}
-                value={formData.materialId ? findMaterialById(formData.materialId) : null}
+                value={
+                  formData.materialId
+                    ? findMaterialById(formData.materialId)
+                    : null
+                }
                 onChange={handleMaterialChange}
                 loading={materialsLoading}
                 renderInput={(params) => (
@@ -634,7 +689,9 @@ const MaterialTransactions = () => {
                     label="Material"
                     required
                     error={!formData.materialId}
-                    helperText={!formData.materialId ? 'Material is required' : ''}
+                    helperText={
+                      !formData.materialId ? "Material is required" : ""
+                    }
                     InputProps={{
                       ...params.InputProps,
                       startAdornment: (
@@ -763,7 +820,9 @@ const MaterialTransactions = () => {
           <Button
             onClick={handleCreateTransaction}
             color="primary"
-            disabled={createLoading || !formData.materialId || !formData.quantity}
+            disabled={
+              createLoading || !formData.materialId || !formData.quantity
+            }
             startIcon={createLoading && <CircularProgress size={20} />}
           >
             Add
@@ -772,7 +831,12 @@ const MaterialTransactions = () => {
       </Dialog>
 
       {/* Edit Transaction Dialog */}
-      <Dialog open={openEditDialog} onClose={handleCloseEditDialog} maxWidth="md" fullWidth>
+      <Dialog
+        open={openEditDialog}
+        onClose={handleCloseEditDialog}
+        maxWidth="md"
+        fullWidth
+      >
         <DialogTitle>Edit Material Transaction</DialogTitle>
         <DialogContent>
           <Grid container spacing={2} sx={{ mt: 1 }}>
@@ -780,7 +844,11 @@ const MaterialTransactions = () => {
               <Autocomplete
                 options={materialsData?.materials || []}
                 getOptionLabel={(option) => `${option.name} (${option.code})`}
-                value={formData.materialId ? findMaterialById(formData.materialId) : null}
+                value={
+                  formData.materialId
+                    ? findMaterialById(formData.materialId)
+                    : null
+                }
                 onChange={handleMaterialChange}
                 loading={materialsLoading}
                 renderInput={(params) => (
@@ -789,7 +857,9 @@ const MaterialTransactions = () => {
                     label="Material"
                     required
                     error={!formData.materialId}
-                    helperText={!formData.materialId ? 'Material is required' : ''}
+                    helperText={
+                      !formData.materialId ? "Material is required" : ""
+                    }
                     InputProps={{
                       ...params.InputProps,
                       startAdornment: (
@@ -918,7 +988,9 @@ const MaterialTransactions = () => {
           <Button
             onClick={handleUpdateTransaction}
             color="primary"
-            disabled={updateLoading || !formData.materialId || !formData.quantity}
+            disabled={
+              updateLoading || !formData.materialId || !formData.quantity
+            }
             startIcon={updateLoading && <CircularProgress size={20} />}
           >
             Update
@@ -931,10 +1003,13 @@ const MaterialTransactions = () => {
         <DialogTitle>Delete Transaction</DialogTitle>
         <DialogContent>
           <DialogContentText>
-            Are you sure you want to delete this transaction? This action cannot be undone and may affect inventory levels.
+            Are you sure you want to delete this transaction? This action cannot
+            be undone and may affect inventory levels.
           </DialogContentText>
           {selectedTransaction && (
-            <Box sx={{ mt: 2, p: 2, bgcolor: 'background.paper', borderRadius: 1 }}>
+            <Box
+              sx={{ mt: 2, p: 2, bgcolor: "background.paper", borderRadius: 1 }}
+            >
               <Typography variant="subtitle2" gutterBottom>
                 Transaction Details:
               </Typography>
@@ -945,10 +1020,15 @@ const MaterialTransactions = () => {
                 <strong>Type:</strong> {selectedTransaction.type}
               </Typography>
               <Typography variant="body2">
-                <strong>Quantity:</strong> {selectedTransaction.quantity} {selectedTransaction.unit}
+                <strong>Quantity:</strong> {selectedTransaction.quantity}{" "}
+                {selectedTransaction.unit}
               </Typography>
               <Typography variant="body2">
-                <strong>Date:</strong> {format(new Date(selectedTransaction.date), 'dd MMM yyyy, HH:mm')}
+                <strong>Date:</strong>{" "}
+                {format(
+                  new Date(selectedTransaction.date),
+                  "dd MMM yyyy, HH:mm"
+                )}
               </Typography>
             </Box>
           )}
@@ -967,9 +1047,20 @@ const MaterialTransactions = () => {
       </Dialog>
 
       {/* View Transaction Dialog */}
-      <Dialog open={openViewDialog} onClose={handleCloseViewDialog} maxWidth="md" fullWidth>
+      <Dialog
+        open={openViewDialog}
+        onClose={handleCloseViewDialog}
+        maxWidth="md"
+        fullWidth
+      >
         <DialogTitle>
-          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+            }}
+          >
             <Typography variant="h6">Transaction Details</Typography>
             {selectedTransaction && (
               <TransactionTypeChip type={selectedTransaction.type} />
@@ -1004,7 +1095,7 @@ const MaterialTransactions = () => {
                     <Typography variant="body2" color="text.secondary">
                       Quantity
                     </Typography>
-                    <Typography variant="body1" sx={{ fontWeight: 'medium' }}>
+                    <Typography variant="body1" sx={{ fontWeight: "medium" }}>
                       {selectedTransaction.quantity} {selectedTransaction.unit}
                     </Typography>
                   </Box>
@@ -1020,7 +1111,10 @@ const MaterialTransactions = () => {
                       Date & Time
                     </Typography>
                     <Typography variant="body1">
-                      {format(new Date(selectedTransaction.date), 'dd MMMM yyyy, HH:mm:ss')}
+                      {format(
+                        new Date(selectedTransaction.date),
+                        "dd MMMM yyyy, HH:mm:ss"
+                      )}
                     </Typography>
                   </Box>
                   <Box sx={{ mb: 1 }}>
@@ -1028,7 +1122,7 @@ const MaterialTransactions = () => {
                       Batch Number
                     </Typography>
                     <Typography variant="body1">
-                      {selectedTransaction.batchNumber || 'Not specified'}
+                      {selectedTransaction.batchNumber || "Not specified"}
                     </Typography>
                   </Box>
                   <Box>
@@ -1036,7 +1130,7 @@ const MaterialTransactions = () => {
                       Reference Number
                     </Typography>
                     <Typography variant="body1">
-                      {selectedTransaction.referenceNumber || 'Not specified'}
+                      {selectedTransaction.referenceNumber || "Not specified"}
                     </Typography>
                   </Box>
                 </Paper>
@@ -1048,7 +1142,7 @@ const MaterialTransactions = () => {
                       Handled By
                     </Typography>
                     <Typography variant="body1">
-                      {selectedTransaction.handledBy || 'Not specified'}
+                      {selectedTransaction.handledBy || "Not specified"}
                     </Typography>
                   </Box>
                   <Box>
@@ -1056,7 +1150,7 @@ const MaterialTransactions = () => {
                       Notes
                     </Typography>
                     <Typography variant="body1">
-                      {selectedTransaction.notes || 'No notes available'}
+                      {selectedTransaction.notes || "No notes available"}
                     </Typography>
                   </Box>
                 </Paper>

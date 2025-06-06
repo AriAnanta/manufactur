@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { useQuery, useMutation } from '@apollo/client';
+import { useState, useEffect } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import { useQuery, useMutation } from "@apollo/client";
 import {
   Box,
   Paper,
@@ -17,22 +17,22 @@ import {
   IconButton,
   Divider,
   InputAdornment,
-} from '@mui/material';
-import { DatePicker } from '@mui/x-date-pickers/DatePicker';
-import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
-import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+} from "@mui/material";
+import { DatePicker } from "@mui/x-date-pickers/DatePicker";
+import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFnsV3";
+import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import {
   ArrowBack as ArrowBackIcon,
   Save as SaveIcon,
-} from '@mui/icons-material';
-import { toast } from 'react-toastify';
+} from "@mui/icons-material";
+import { toast } from "react-toastify";
 import {
   GET_PLAN,
   GET_MATERIAL_PLAN,
   ADD_MATERIAL_PLAN,
   UPDATE_MATERIAL_PLAN,
-} from '../../graphql/productionPlanning';
-import { GET_MATERIALS } from '../../graphql/materialInventory';
+} from "../../graphql/productionPlanning";
+import { GET_MATERIALS } from "../../graphql/materialInventory";
 
 const MaterialPlanForm = () => {
   const { id, materialId } = useParams();
@@ -41,12 +41,12 @@ const MaterialPlanForm = () => {
 
   // Form state
   const [formData, setFormData] = useState({
-    materialId: '',
-    materialName: '',
+    materialId: "",
+    materialName: "",
     quantity: 1,
-    unit: '',
+    unit: "",
     requiredDate: new Date(new Date().setDate(new Date().getDate() + 7)), // Default to 7 days from now
-    notes: '',
+    notes: "",
   });
 
   const [errors, setErrors] = useState({});
@@ -59,7 +59,7 @@ const MaterialPlanForm = () => {
     data: planData,
   } = useQuery(GET_PLAN, {
     variables: { id },
-    fetchPolicy: 'cache-and-network',
+    fetchPolicy: "cache-and-network",
   });
 
   // Query for getting material plan details in edit mode
@@ -70,7 +70,7 @@ const MaterialPlanForm = () => {
   } = useQuery(GET_MATERIAL_PLAN, {
     variables: { id: materialId },
     skip: !isEditMode,
-    fetchPolicy: 'cache-and-network',
+    fetchPolicy: "cache-and-network",
   });
 
   // Query for getting materials
@@ -79,32 +79,38 @@ const MaterialPlanForm = () => {
     error: materialsError,
     data: materialsData,
   } = useQuery(GET_MATERIALS, {
-    fetchPolicy: 'cache-and-network',
+    fetchPolicy: "cache-and-network",
   });
 
   // Mutation for adding a new material plan
-  const [addMaterialPlan, { loading: addLoading }] = useMutation(ADD_MATERIAL_PLAN, {
-    onCompleted: () => {
-      toast.success('Material plan added successfully');
-      navigate(`/production-plans/${id}`);
-    },
-    onError: (error) => {
-      toast.error(`Failed to add material plan: ${error.message}`);
-      setSubmitting(false);
-    },
-  });
+  const [addMaterialPlan, { loading: addLoading }] = useMutation(
+    ADD_MATERIAL_PLAN,
+    {
+      onCompleted: () => {
+        toast.success("Material plan added successfully");
+        navigate(`/production-plans/${id}`);
+      },
+      onError: (error) => {
+        toast.error(`Failed to add material plan: ${error.message}`);
+        setSubmitting(false);
+      },
+    }
+  );
 
   // Mutation for updating an existing material plan
-  const [updateMaterialPlan, { loading: updateLoading }] = useMutation(UPDATE_MATERIAL_PLAN, {
-    onCompleted: () => {
-      toast.success('Material plan updated successfully');
-      navigate(`/production-plans/${id}`);
-    },
-    onError: (error) => {
-      toast.error(`Failed to update material plan: ${error.message}`);
-      setSubmitting(false);
-    },
-  });
+  const [updateMaterialPlan, { loading: updateLoading }] = useMutation(
+    UPDATE_MATERIAL_PLAN,
+    {
+      onCompleted: () => {
+        toast.success("Material plan updated successfully");
+        navigate(`/production-plans/${id}`);
+      },
+      onError: (error) => {
+        toast.error(`Failed to update material plan: ${error.message}`);
+        setSubmitting(false);
+      },
+    }
+  );
 
   // Load material plan data in edit mode
   useEffect(() => {
@@ -116,7 +122,7 @@ const MaterialPlanForm = () => {
         quantity: materialPlan.quantity,
         unit: materialPlan.unit,
         requiredDate: new Date(materialPlan.requiredDate),
-        notes: materialPlan.notes || '',
+        notes: materialPlan.notes || "",
       });
     }
   }, [isEditMode, materialPlanData]);
@@ -126,14 +132,14 @@ const MaterialPlanForm = () => {
     const { name, value } = e.target;
     setFormData({
       ...formData,
-      [name]: name === 'quantity' ? Number(value) : value,
+      [name]: name === "quantity" ? Number(value) : value,
     });
 
     // Clear error for this field
     if (errors[name]) {
       setErrors({
         ...errors,
-        [name]: '',
+        [name]: "",
       });
     }
   };
@@ -141,8 +147,10 @@ const MaterialPlanForm = () => {
   // Handle material selection
   const handleMaterialChange = (e) => {
     const materialId = e.target.value;
-    const selectedMaterial = materialsData?.materials.find(m => m.id === materialId);
-    
+    const selectedMaterial = materialsData?.materials.find(
+      (m) => m.id === materialId
+    );
+
     if (selectedMaterial) {
       setFormData({
         ...formData,
@@ -156,7 +164,7 @@ const MaterialPlanForm = () => {
     if (errors.materialId) {
       setErrors({
         ...errors,
-        materialId: '',
+        materialId: "",
       });
     }
   };
@@ -172,7 +180,7 @@ const MaterialPlanForm = () => {
     if (errors.requiredDate) {
       setErrors({
         ...errors,
-        requiredDate: '',
+        requiredDate: "",
       });
     }
   };
@@ -182,19 +190,19 @@ const MaterialPlanForm = () => {
     const newErrors = {};
 
     if (!formData.materialId) {
-      newErrors.materialId = 'Material is required';
+      newErrors.materialId = "Material is required";
     }
 
     if (formData.quantity <= 0) {
-      newErrors.quantity = 'Quantity must be greater than 0';
+      newErrors.quantity = "Quantity must be greater than 0";
     }
 
     if (!formData.unit) {
-      newErrors.unit = 'Unit is required';
+      newErrors.unit = "Unit is required";
     }
 
     if (!formData.requiredDate) {
-      newErrors.requiredDate = 'Required date is required';
+      newErrors.requiredDate = "Required date is required";
     }
 
     // Check if date is within plan dates
@@ -203,11 +211,12 @@ const MaterialPlanForm = () => {
       const planEndDate = new Date(planData.plan.endDate);
 
       if (formData.requiredDate < planStartDate) {
-        newErrors.requiredDate = 'Required date cannot be before plan start date';
+        newErrors.requiredDate =
+          "Required date cannot be before plan start date";
       }
 
       if (formData.requiredDate > planEndDate) {
-        newErrors.requiredDate = 'Required date cannot be after plan end date';
+        newErrors.requiredDate = "Required date cannot be after plan end date";
       }
     }
 
@@ -259,9 +268,12 @@ const MaterialPlanForm = () => {
   };
 
   // Show loading state while fetching data
-  if ((planLoading && !planData) || (isEditMode && materialPlanLoading && !materialPlanData)) {
+  if (
+    (planLoading && !planData) ||
+    (isEditMode && materialPlanLoading && !materialPlanData)
+  ) {
     return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', my: 4 }}>
+      <Box sx={{ display: "flex", justifyContent: "center", my: 4 }}>
         <CircularProgress />
       </Box>
     );
@@ -295,7 +307,7 @@ const MaterialPlanForm = () => {
   }
 
   // Check if plan is in draft status
-  if (planData.plan.status !== 'DRAFT') {
+  if (planData.plan.status !== "DRAFT") {
     return (
       <Alert severity="warning" sx={{ mt: 2 }}>
         Material plans can only be added or edited for plans in draft status
@@ -307,13 +319,20 @@ const MaterialPlanForm = () => {
     <LocalizationProvider dateAdapter={AdapterDateFns}>
       <Box component="form" onSubmit={handleSubmit}>
         <Paper sx={{ p: 3, mb: 3 }}>
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-            <Box sx={{ display: 'flex', alignItems: 'center' }}>
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              mb: 3,
+            }}
+          >
+            <Box sx={{ display: "flex", alignItems: "center" }}>
               <IconButton onClick={handleCancel} sx={{ mr: 1 }}>
                 <ArrowBackIcon />
               </IconButton>
               <Typography variant="h5">
-                {isEditMode ? 'Edit Material Plan' : 'Add Material Plan'}
+                {isEditMode ? "Edit Material Plan" : "Add Material Plan"}
               </Typography>
             </Box>
             <Button
@@ -323,10 +342,10 @@ const MaterialPlanForm = () => {
               type="submit"
               disabled={submitting || addLoading || updateLoading}
             >
-              {(submitting || addLoading || updateLoading) ? (
+              {submitting || addLoading || updateLoading ? (
                 <CircularProgress size={24} color="inherit" />
               ) : (
-                'Save'
+                "Save"
               )}
             </Button>
           </Box>
@@ -334,10 +353,17 @@ const MaterialPlanForm = () => {
           <Divider sx={{ mb: 3 }} />
 
           <Typography variant="subtitle1" gutterBottom>
-            Production Plan: {planData.plan.name}
+            Production Plan: {planData.plan.productName}
           </Typography>
           <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-            Plan Period: {new Date(planData.plan.startDate).toLocaleDateString()} - {new Date(planData.plan.endDate).toLocaleDateString()}
+            Plan Period:{" "}
+            {planData.plan.plannedStartDate
+              ? new Date(planData.plan.plannedStartDate).toLocaleDateString()
+              : "N/A"}{" "}
+            -{" "}
+            {planData.plan.plannedEndDate
+              ? new Date(planData.plan.plannedEndDate).toLocaleDateString()
+              : "N/A"}
           </Typography>
 
           <Grid container spacing={3}>
@@ -378,16 +404,18 @@ const MaterialPlanForm = () => {
               <TextField
                 fullWidth
                 label="Quantity"
-                name="quantity"
+                name="quantityRequired"
                 type="number"
-                value={formData.quantity}
+                value={formData.quantityRequired}
                 onChange={handleInputChange}
-                error={Boolean(errors.quantity)}
-                helperText={errors.quantity}
+                error={Boolean(errors.quantityRequired)}
+                helperText={errors.quantityRequired}
                 InputProps={{
                   inputProps: { min: 1 },
-                  endAdornment: formData.unit ? (
-                    <InputAdornment position="end">{formData.unit}</InputAdornment>
+                  endAdornment: formData.unitOfMeasure ? (
+                    <InputAdornment position="end">
+                      {formData.unitOfMeasure}
+                    </InputAdornment>
                   ) : null,
                 }}
                 required
@@ -396,16 +424,24 @@ const MaterialPlanForm = () => {
 
             <Grid item xs={12} sm={6}>
               <DatePicker
-                label="Required Date"
-                value={formData.requiredDate}
-                onChange={handleDateChange}
-                minDate={new Date(planData.plan.startDate)}
-                maxDate={new Date(planData.plan.endDate)}
+                label="Availability Date"
+                value={formData.availabilityDate}
+                onChange={(date) => handleDateChange("availabilityDate", date)}
+                minDate={
+                  planData.plan.plannedStartDate
+                    ? new Date(planData.plan.plannedStartDate)
+                    : null
+                }
+                maxDate={
+                  planData.plan.plannedEndDate
+                    ? new Date(planData.plan.plannedEndDate)
+                    : null
+                }
                 slotProps={{
                   textField: {
                     fullWidth: true,
-                    error: Boolean(errors.requiredDate),
-                    helperText: errors.requiredDate,
+                    error: Boolean(errors.availabilityDate),
+                    helperText: errors.availabilityDate,
                     required: true,
                   },
                 }}

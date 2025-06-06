@@ -1,16 +1,23 @@
-import { gql } from '@apollo/client';
+import { gql } from "@apollo/client";
 
 // Fragments
 const PRODUCTION_PLAN_FIELDS = gql`
   fragment ProductionPlanFields on ProductionPlan {
     id
-    name
-    description
-    startDate
-    endDate
+    planId
+    requestId
+    productionRequestId
+    productName
+    plannedStartDate
+    plannedEndDate
+    priority
     status
-    createdBy
     approvedBy
+    approvalDate
+    plannedBatches
+    planningNotes
+    totalCapacityRequired
+    totalMaterialCost
     createdAt
     updatedAt
   }
@@ -21,11 +28,14 @@ const CAPACITY_PLAN_FIELDS = gql`
     id
     planId
     machineType
-    dailyCapacity
-    totalCapacity
+    hoursRequired
     startDate
     endDate
     notes
+    status
+    plannedMachineId
+    createdAt
+    updatedAt
   }
 `;
 
@@ -36,9 +46,15 @@ const MATERIAL_PLAN_FIELDS = gql`
     materialId
     materialName
     quantityRequired
-    estimatedCost
-    deliveryDate
+    unitOfMeasure
+    unitCost
+    totalCost
+    status
+    availabilityChecked
+    availabilityDate
     notes
+    createdAt
+    updatedAt
   }
 `;
 
@@ -81,6 +97,24 @@ export const GET_CAPACITY_PLANS = gql`
 export const GET_MATERIAL_PLANS = gql`
   query GetMaterialPlans($planId: ID!) {
     materialPlans(planId: $planId) {
+      ...MaterialPlanFields
+    }
+  }
+  ${MATERIAL_PLAN_FIELDS}
+`;
+
+export const GET_CAPACITY_PLAN = gql`
+  query GetCapacityPlan($id: ID!) {
+    capacityPlan(id: $id) {
+      ...CapacityPlanFields
+    }
+  }
+  ${CAPACITY_PLAN_FIELDS}
+`;
+
+export const GET_MATERIAL_PLAN = gql`
+  query GetMaterialPlan($id: ID!) {
+    materialPlan(id: $id) {
       ...MaterialPlanFields
     }
   }
@@ -158,4 +192,40 @@ export const ADD_MATERIAL_PLAN = gql`
     }
   }
   ${MATERIAL_PLAN_FIELDS}
+`;
+
+export const UPDATE_CAPACITY_PLAN = gql`
+  mutation UpdateCapacityPlan($id: ID!, $input: CapacityPlanUpdateInput!) {
+    updateCapacityPlan(id: $id, input: $input) {
+      ...CapacityPlanFields
+    }
+  }
+  ${CAPACITY_PLAN_FIELDS}
+`;
+
+export const DELETE_CAPACITY_PLAN = gql`
+  mutation DeleteCapacityPlan($id: ID!) {
+    deleteCapacityPlan(id: $id) {
+      success
+      message
+    }
+  }
+`;
+
+export const UPDATE_MATERIAL_PLAN = gql`
+  mutation UpdateMaterialPlan($id: ID!, $input: MaterialPlanUpdateInput!) {
+    updateMaterialPlan(id: $id, input: $input) {
+      ...MaterialPlanFields
+    }
+  }
+  ${MATERIAL_PLAN_FIELDS}
+`;
+
+export const DELETE_MATERIAL_PLAN = gql`
+  mutation DeleteMaterialPlan($id: ID!) {
+    deleteMaterialPlan(id: $id) {
+      success
+      message
+    }
+  }
 `;

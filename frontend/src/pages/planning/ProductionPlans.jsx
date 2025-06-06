@@ -1,6 +1,6 @@
-import { useState } from 'react';
-import { useQuery, useMutation } from '@apollo/client';
-import { useNavigate } from 'react-router-dom';
+import { useState } from "react";
+import { useQuery, useMutation } from "@apollo/client";
+import { useNavigate } from "react-router-dom";
 import {
   Box,
   Paper,
@@ -27,7 +27,7 @@ import {
   Tooltip,
   CircularProgress,
   Alert,
-} from '@mui/material';
+} from "@mui/material";
 import {
   Add as AddIcon,
   Edit as EditIcon,
@@ -37,71 +37,66 @@ import {
   FilterList as FilterListIcon,
   Clear as ClearIcon,
   CheckCircle as CheckCircleIcon,
-} from '@mui/icons-material';
-import { toast } from 'react-toastify';
-import { format } from 'date-fns';
+} from "@mui/icons-material";
+import { toast } from "react-toastify";
+import { format } from "date-fns";
 import {
   GET_PLANS,
   DELETE_PLAN,
   APPROVE_PLAN,
-} from '../../graphql/productionPlanning';
+} from "../../graphql/productionPlanning";
 
 // Status chip component
 const StatusChip = ({ status }) => {
-  let color = 'default';
+  let color = "default";
   switch (status) {
-    case 'DRAFT':
-      color = 'default';
+    case "DRAFT":
+      color = "default";
       break;
-    case 'PENDING_APPROVAL':
-      color = 'warning';
+    case "PENDING_APPROVAL":
+      color = "warning";
       break;
-    case 'APPROVED':
-      color = 'success';
+    case "APPROVED":
+      color = "success";
       break;
-    case 'REJECTED':
-      color = 'error';
+    case "REJECTED":
+      color = "error";
       break;
-    case 'IN_PROGRESS':
-      color = 'primary';
+    case "IN_PROGRESS":
+      color = "primary";
       break;
-    case 'COMPLETED':
-      color = 'info';
+    case "COMPLETED":
+      color = "info";
       break;
     default:
-      color = 'default';
+      color = "default";
   }
 
-  return <Chip label={status.replace('_', ' ')} color={color} size="small" />;
+  return <Chip label={status.replace("_", " ")} color={color} size="small" />;
 };
 
 const ProductionPlans = () => {
   const navigate = useNavigate();
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
-  const [filterStatus, setFilterStatus] = useState('');
-  const [searchTerm, setSearchTerm] = useState('');
+  const [filterStatus, setFilterStatus] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
   const [openApproveDialog, setOpenApproveDialog] = useState(false);
   const [selectedPlanId, setSelectedPlanId] = useState(null);
-  const [deleteReason, setDeleteReason] = useState('');
+  const [deleteReason, setDeleteReason] = useState("");
 
   // Query for production plans
-  const {
-    loading,
-    error,
-    data,
-    refetch,
-  } = useQuery(GET_PLANS, {
-    fetchPolicy: 'cache-and-network',
+  const { loading, error, data, refetch } = useQuery(GET_PLANS, {
+    fetchPolicy: "cache-and-network",
   });
 
   // Mutation for deleting a plan
   const [deletePlan, { loading: deleteLoading }] = useMutation(DELETE_PLAN, {
     onCompleted: () => {
-      toast.success('Production plan deleted successfully');
+      toast.success("Production plan deleted successfully");
       setOpenDeleteDialog(false);
-      setDeleteReason('');
+      setDeleteReason("");
       refetch();
     },
     onError: (error) => {
@@ -112,7 +107,7 @@ const ProductionPlans = () => {
   // Mutation for approving a plan
   const [approvePlan, { loading: approveLoading }] = useMutation(APPROVE_PLAN, {
     onCompleted: () => {
-      toast.success('Production plan approved successfully');
+      toast.success("Production plan approved successfully");
       setOpenApproveDialog(false);
       refetch();
     },
@@ -146,8 +141,8 @@ const ProductionPlans = () => {
 
   // Clear filters
   const handleClearFilters = () => {
-    setFilterStatus('');
-    setSearchTerm('');
+    setFilterStatus("");
+    setSearchTerm("");
     setPage(0);
   };
 
@@ -161,7 +156,7 @@ const ProductionPlans = () => {
   const handleCloseDeleteDialog = () => {
     setOpenDeleteDialog(false);
     setSelectedPlanId(null);
-    setDeleteReason('');
+    setDeleteReason("");
   };
 
   // Open approve dialog
@@ -196,7 +191,7 @@ const ProductionPlans = () => {
 
   // Navigate to create plan page
   const handleCreatePlan = () => {
-    navigate('/production-plans/create');
+    navigate("/production-plans/create");
   };
 
   // Navigate to view plan page
@@ -210,13 +205,19 @@ const ProductionPlans = () => {
   };
 
   // Filter and paginate production plans
-  const filteredPlans = data
-    ? data.plans.filter((plan) =>
-        (plan.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-         plan.description.toLowerCase().includes(searchTerm.toLowerCase())) &&
-        (filterStatus ? plan.status === filterStatus : true)
-      )
-    : [];
+  const filteredPlans =
+    data && data.plans
+      ? data.plans.filter(
+          (plan) =>
+            (plan.productName
+              .toLowerCase()
+              .includes(searchTerm.toLowerCase()) ||
+              plan.planningNotes
+                .toLowerCase()
+                .includes(searchTerm.toLowerCase())) &&
+            (filterStatus ? plan.status === filterStatus : true)
+        )
+      : [];
 
   const paginatedPlans = filteredPlans.slice(
     page * rowsPerPage,
@@ -226,7 +227,14 @@ const ProductionPlans = () => {
   return (
     <Box>
       <Paper sx={{ p: 3, mb: 3 }}>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            mb: 3,
+          }}
+        >
           <Typography variant="h5">Production Plans</Typography>
           <Button
             variant="contained"
@@ -253,7 +261,7 @@ const ProductionPlans = () => {
                 ),
                 endAdornment: searchTerm && (
                   <InputAdornment position="end">
-                    <IconButton size="small" onClick={() => setSearchTerm('')}>
+                    <IconButton size="small" onClick={() => setSearchTerm("")}>
                       <ClearIcon />
                     </IconButton>
                   </InputAdornment>
@@ -293,7 +301,7 @@ const ProductionPlans = () => {
               startIcon={<ClearIcon />}
               onClick={handleClearFilters}
               disabled={!filterStatus && !searchTerm}
-              sx={{ height: '40px' }}
+              sx={{ height: "40px" }}
             >
               Clear Filters
             </Button>
@@ -309,7 +317,7 @@ const ProductionPlans = () => {
 
         {/* Loading indicator */}
         {loading && !data && (
-          <Box sx={{ display: 'flex', justifyContent: 'center', my: 4 }}>
+          <Box sx={{ display: "flex", justifyContent: "center", my: 4 }}>
             <CircularProgress />
           </Box>
         )}
@@ -317,7 +325,8 @@ const ProductionPlans = () => {
         {/* Table */}
         {!loading && filteredPlans.length === 0 ? (
           <Alert severity="info">
-            No production plans found. {searchTerm || filterStatus ? 'Try clearing filters.' : ''}
+            No production plans found.{" "}
+            {searchTerm || filterStatus ? "Try clearing filters." : ""}
           </Alert>
         ) : (
           <>
@@ -325,81 +334,87 @@ const ProductionPlans = () => {
               <Table sx={{ minWidth: 650 }}>
                 <TableHead>
                   <TableRow>
-                    <TableCell>Name</TableCell>
-                    <TableCell>Description</TableCell>
-                    <TableCell>Start Date</TableCell>
-                    <TableCell>End Date</TableCell>
+                    <TableCell>Product Name</TableCell>
+                    <TableCell>Notes</TableCell>
+                    <TableCell>Planned Start Date</TableCell>
+                    <TableCell>Planned End Date</TableCell>
+                    <TableCell>Priority</TableCell>
                     <TableCell>Status</TableCell>
-                    <TableCell>Created By</TableCell>
                     <TableCell>Created At</TableCell>
                     <TableCell align="right">Actions</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {paginatedPlans.map((plan) => (
-                    <TableRow key={plan.id}>
-                      <TableCell>{plan.name}</TableCell>
-                      <TableCell>
-                        {plan.description.length > 50
-                          ? `${plan.description.substring(0, 50)}...`
-                          : plan.description}
-                      </TableCell>
-                      <TableCell>
-                        {format(new Date(plan.startDate), 'dd MMM yyyy')}
-                      </TableCell>
-                      <TableCell>
-                        {format(new Date(plan.endDate), 'dd MMM yyyy')}
-                      </TableCell>
-                      <TableCell>
-                        <StatusChip status={plan.status} />
-                      </TableCell>
-                      <TableCell>{plan.createdBy}</TableCell>
-                      <TableCell>
-                        {format(new Date(plan.createdAt), 'dd MMM yyyy')}
-                      </TableCell>
-                      <TableCell align="right">
-                        <Tooltip title="View">
-                          <IconButton
-                            size="small"
-                            onClick={() => handleViewPlan(plan.id)}
-                          >
-                            <VisibilityIcon fontSize="small" />
-                          </IconButton>
-                        </Tooltip>
-                        {plan.status === 'DRAFT' && (
-                          <>
-                            <Tooltip title="Edit">
-                              <IconButton
-                                size="small"
-                                onClick={() => handleEditPlan(plan.id)}
-                              >
-                                <EditIcon fontSize="small" />
-                              </IconButton>
-                            </Tooltip>
-                            <Tooltip title="Delete">
-                              <IconButton
-                                size="small"
-                                onClick={() => handleOpenDeleteDialog(plan.id)}
-                              >
-                                <DeleteIcon fontSize="small" />
-                              </IconButton>
-                            </Tooltip>
-                          </>
-                        )}
-                        {plan.status === 'PENDING_APPROVAL' && (
-                          <Tooltip title="Approve">
+                  {paginatedPlans &&
+                    paginatedPlans.map((plan) => (
+                      <TableRow key={plan.id}>
+                        <TableCell>{plan.productName}</TableCell>
+                        <TableCell>
+                          {plan.planningNotes.length > 50
+                            ? `${plan.planningNotes.substring(0, 50)}...`
+                            : plan.planningNotes}
+                        </TableCell>
+                        <TableCell>
+                          {format(
+                            new Date(plan.plannedStartDate),
+                            "dd MMM yyyy"
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          {format(new Date(plan.plannedEndDate), "dd MMM yyyy")}
+                        </TableCell>
+                        <TableCell>{plan.priority}</TableCell>
+                        <TableCell>
+                          <StatusChip status={plan.status} />
+                        </TableCell>
+                        <TableCell>
+                          {format(new Date(plan.createdAt), "dd MMM yyyy")}
+                        </TableCell>
+                        <TableCell align="right">
+                          <Tooltip title="View">
                             <IconButton
                               size="small"
-                              color="success"
-                              onClick={() => handleOpenApproveDialog(plan.id)}
+                              onClick={() => handleViewPlan(plan.id)}
                             >
-                              <CheckCircleIcon fontSize="small" />
+                              <VisibilityIcon fontSize="small" />
                             </IconButton>
                           </Tooltip>
-                        )}
-                      </TableCell>
-                    </TableRow>
-                  ))}
+                          {plan.status === "DRAFT" && (
+                            <>
+                              <Tooltip title="Edit">
+                                <IconButton
+                                  size="small"
+                                  onClick={() => handleEditPlan(plan.id)}
+                                >
+                                  <EditIcon fontSize="small" />
+                                </IconButton>
+                              </Tooltip>
+                              <Tooltip title="Delete">
+                                <IconButton
+                                  size="small"
+                                  onClick={() =>
+                                    handleOpenDeleteDialog(plan.id)
+                                  }
+                                >
+                                  <DeleteIcon fontSize="small" />
+                                </IconButton>
+                              </Tooltip>
+                            </>
+                          )}
+                          {plan.status === "PENDING_APPROVAL" && (
+                            <Tooltip title="Approve">
+                              <IconButton
+                                size="small"
+                                color="success"
+                                onClick={() => handleOpenApproveDialog(plan.id)}
+                              >
+                                <CheckCircleIcon fontSize="small" />
+                              </IconButton>
+                            </Tooltip>
+                          )}
+                        </TableCell>
+                      </TableRow>
+                    ))}
                 </TableBody>
               </Table>
             </TableContainer>
@@ -421,7 +436,8 @@ const ProductionPlans = () => {
         <DialogTitle>Delete Production Plan</DialogTitle>
         <DialogContent>
           <DialogContentText>
-            Are you sure you want to delete this production plan? This action cannot be undone.
+            Are you sure you want to delete this production plan? This action
+            cannot be undone.
           </DialogContentText>
           <TextField
             autoFocus
@@ -453,7 +469,8 @@ const ProductionPlans = () => {
         <DialogTitle>Approve Production Plan</DialogTitle>
         <DialogContent>
           <DialogContentText>
-            Are you sure you want to approve this production plan? This will make the plan available for execution.
+            Are you sure you want to approve this production plan? This will
+            make the plan available for execution.
           </DialogContentText>
         </DialogContent>
         <DialogActions>

@@ -1,6 +1,6 @@
-import { useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { useQuery, useMutation } from '@apollo/client';
+import { useState } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import { useQuery, useMutation } from "@apollo/client";
 import {
   Box,
   Paper,
@@ -29,7 +29,7 @@ import {
   CardHeader,
   Tabs,
   Tab,
-} from '@mui/material';
+} from "@mui/material";
 import {
   Edit as EditIcon,
   Delete as DeleteIcon,
@@ -37,44 +37,44 @@ import {
   Add as AddIcon,
   CheckCircle as CheckCircleIcon,
   Cancel as CancelIcon,
-} from '@mui/icons-material';
-import { toast } from 'react-toastify';
-import { format } from 'date-fns';
+} from "@mui/icons-material";
+import { toast } from "react-toastify";
+import { format } from "date-fns";
 import {
   GET_PLAN,
   DELETE_PLAN,
   APPROVE_PLAN,
   DELETE_CAPACITY_PLAN,
   DELETE_MATERIAL_PLAN,
-} from '../../graphql/productionPlanning';
+} from "../../graphql/productionPlanning";
 
 // Status chip component
 const StatusChip = ({ status }) => {
-  let color = 'default';
+  let color = "default";
   switch (status) {
-    case 'DRAFT':
-      color = 'default';
+    case "DRAFT":
+      color = "default";
       break;
-    case 'PENDING_APPROVAL':
-      color = 'warning';
+    case "PENDING_APPROVAL":
+      color = "warning";
       break;
-    case 'APPROVED':
-      color = 'success';
+    case "APPROVED":
+      color = "success";
       break;
-    case 'REJECTED':
-      color = 'error';
+    case "REJECTED":
+      color = "error";
       break;
-    case 'IN_PROGRESS':
-      color = 'primary';
+    case "IN_PROGRESS":
+      color = "primary";
       break;
-    case 'COMPLETED':
-      color = 'info';
+    case "COMPLETED":
+      color = "info";
       break;
     default:
-      color = 'default';
+      color = "default";
   }
 
-  return <Chip label={status.replace('_', ' ')} color={color} size="small" />;
+  return <Chip label={status.replace("_", " ")} color={color} size="small" />;
 };
 
 const ProductionPlanDetail = () => {
@@ -83,27 +83,24 @@ const ProductionPlanDetail = () => {
   const [tabValue, setTabValue] = useState(0);
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
   const [openApproveDialog, setOpenApproveDialog] = useState(false);
-  const [openDeleteCapacityDialog, setOpenDeleteCapacityDialog] = useState(false);
-  const [openDeleteMaterialDialog, setOpenDeleteMaterialDialog] = useState(false);
+  const [openDeleteCapacityDialog, setOpenDeleteCapacityDialog] =
+    useState(false);
+  const [openDeleteMaterialDialog, setOpenDeleteMaterialDialog] =
+    useState(false);
   const [selectedCapacityId, setSelectedCapacityId] = useState(null);
   const [selectedMaterialId, setSelectedMaterialId] = useState(null);
 
   // Query for production plan details
-  const {
-    loading,
-    error,
-    data,
-    refetch,
-  } = useQuery(GET_PLAN, {
+  const { loading, error, data, refetch } = useQuery(GET_PLAN, {
     variables: { id },
-    fetchPolicy: 'cache-and-network',
+    fetchPolicy: "cache-and-network",
   });
 
   // Mutation for deleting a plan
   const [deletePlan, { loading: deleteLoading }] = useMutation(DELETE_PLAN, {
     onCompleted: () => {
-      toast.success('Production plan deleted successfully');
-      navigate('/production-plans');
+      toast.success("Production plan deleted successfully");
+      navigate("/production-plans");
     },
     onError: (error) => {
       toast.error(`Failed to delete production plan: ${error.message}`);
@@ -113,7 +110,7 @@ const ProductionPlanDetail = () => {
   // Mutation for approving a plan
   const [approvePlan, { loading: approveLoading }] = useMutation(APPROVE_PLAN, {
     onCompleted: () => {
-      toast.success('Production plan approved successfully');
+      toast.success("Production plan approved successfully");
       setOpenApproveDialog(false);
       refetch();
     },
@@ -123,30 +120,36 @@ const ProductionPlanDetail = () => {
   });
 
   // Mutation for deleting a capacity plan
-  const [deleteCapacityPlan, { loading: deleteCapacityLoading }] = useMutation(DELETE_CAPACITY_PLAN, {
-    onCompleted: () => {
-      toast.success('Capacity plan deleted successfully');
-      setOpenDeleteCapacityDialog(false);
-      setSelectedCapacityId(null);
-      refetch();
-    },
-    onError: (error) => {
-      toast.error(`Failed to delete capacity plan: ${error.message}`);
-    },
-  });
+  const [deleteCapacityPlan, { loading: deleteCapacityLoading }] = useMutation(
+    DELETE_CAPACITY_PLAN,
+    {
+      onCompleted: () => {
+        toast.success("Capacity plan deleted successfully");
+        setOpenDeleteCapacityDialog(false);
+        setSelectedCapacityId(null);
+        refetch();
+      },
+      onError: (error) => {
+        toast.error(`Failed to delete capacity plan: ${error.message}`);
+      },
+    }
+  );
 
   // Mutation for deleting a material plan
-  const [deleteMaterialPlan, { loading: deleteMaterialLoading }] = useMutation(DELETE_MATERIAL_PLAN, {
-    onCompleted: () => {
-      toast.success('Material plan deleted successfully');
-      setOpenDeleteMaterialDialog(false);
-      setSelectedMaterialId(null);
-      refetch();
-    },
-    onError: (error) => {
-      toast.error(`Failed to delete material plan: ${error.message}`);
-    },
-  });
+  const [deleteMaterialPlan, { loading: deleteMaterialLoading }] = useMutation(
+    DELETE_MATERIAL_PLAN,
+    {
+      onCompleted: () => {
+        toast.success("Material plan deleted successfully");
+        setOpenDeleteMaterialDialog(false);
+        setSelectedMaterialId(null);
+        refetch();
+      },
+      onError: (error) => {
+        toast.error(`Failed to delete material plan: ${error.message}`);
+      },
+    }
+  );
 
   // Handle tab change
   const handleTabChange = (event, newValue) => {
@@ -240,7 +243,7 @@ const ProductionPlanDetail = () => {
 
   // Navigate back to plans list
   const handleBack = () => {
-    navigate('/production-plans');
+    navigate("/production-plans");
   };
 
   // Navigate to add capacity plan page
@@ -265,7 +268,7 @@ const ProductionPlanDetail = () => {
 
   if (loading && !data) {
     return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', my: 4 }}>
+      <Box sx={{ display: "flex", justifyContent: "center", my: 4 }}>
         <CircularProgress />
       </Box>
     );
@@ -288,15 +291,22 @@ const ProductionPlanDetail = () => {
   }
 
   const { plan } = data;
-  const isDraft = plan.status === 'DRAFT';
-  const isPendingApproval = plan.status === 'PENDING_APPROVAL';
+  const isDraft = plan.status === "DRAFT";
+  const isPendingApproval = plan.status === "PENDING_APPROVAL";
 
   return (
     <Box>
       {/* Header */}
       <Paper sx={{ p: 3, mb: 3 }}>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-          <Box sx={{ display: 'flex', alignItems: 'center' }}>
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            mb: 2,
+          }}
+        >
+          <Box sx={{ display: "flex", alignItems: "center" }}>
             <IconButton onClick={handleBack} sx={{ mr: 1 }}>
               <ArrowBackIcon />
             </IconButton>
@@ -341,96 +351,182 @@ const ProductionPlanDetail = () => {
         {/* Plan Details */}
         <Grid container spacing={3}>
           <Grid item xs={12} md={6}>
-            <Typography variant="subtitle1" gutterBottom>Plan Information</Typography>
+            <Typography variant="subtitle1" gutterBottom>
+              Plan Information
+            </Typography>
             <Grid container spacing={2}>
               <Grid item xs={4}>
-                <Typography variant="body2" color="text.secondary">Name</Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Product Name
+                </Typography>
               </Grid>
               <Grid item xs={8}>
-                <Typography variant="body2">{plan.name}</Typography>
+                <Typography variant="body2">{plan.productName}</Typography>
               </Grid>
 
               <Grid item xs={4}>
-                <Typography variant="body2" color="text.secondary">Description</Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Notes
+                </Typography>
               </Grid>
               <Grid item xs={8}>
-                <Typography variant="body2">{plan.description}</Typography>
+                <Typography variant="body2">{plan.planningNotes}</Typography>
               </Grid>
 
               <Grid item xs={4}>
-                <Typography variant="body2" color="text.secondary">Status</Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Status
+                </Typography>
               </Grid>
               <Grid item xs={8}>
                 <StatusChip status={plan.status} />
               </Grid>
 
               <Grid item xs={4}>
-                <Typography variant="body2" color="text.secondary">Start Date</Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Planned Start Date
+                </Typography>
               </Grid>
               <Grid item xs={8}>
                 <Typography variant="body2">
-                  {format(new Date(plan.startDate), 'dd MMM yyyy')}
+                  {format(new Date(plan.plannedStartDate), "dd MMM yyyy")}
                 </Typography>
               </Grid>
 
               <Grid item xs={4}>
-                <Typography variant="body2" color="text.secondary">End Date</Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Planned End Date
+                </Typography>
               </Grid>
               <Grid item xs={8}>
                 <Typography variant="body2">
-                  {format(new Date(plan.endDate), 'dd MMM yyyy')}
+                  {format(new Date(plan.plannedEndDate), "dd MMM yyyy")}
                 </Typography>
               </Grid>
             </Grid>
           </Grid>
 
           <Grid item xs={12} md={6}>
-            <Typography variant="subtitle1" gutterBottom>Additional Information</Typography>
+            <Typography variant="subtitle1" gutterBottom>
+              Additional Information
+            </Typography>
             <Grid container spacing={2}>
               <Grid item xs={4}>
-                <Typography variant="body2" color="text.secondary">Created By</Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Plan ID
+                </Typography>
               </Grid>
               <Grid item xs={8}>
-                <Typography variant="body2">{plan.createdBy}</Typography>
+                <Typography variant="body2">{plan.planId}</Typography>
               </Grid>
 
               <Grid item xs={4}>
-                <Typography variant="body2" color="text.secondary">Created At</Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Request ID
+                </Typography>
+              </Grid>
+              <Grid item xs={8}>
+                <Typography variant="body2">{plan.requestId}</Typography>
+              </Grid>
+
+              <Grid item xs={4}>
+                <Typography variant="body2" color="text.secondary">
+                  Production Request ID
+                </Typography>
               </Grid>
               <Grid item xs={8}>
                 <Typography variant="body2">
-                  {format(new Date(plan.createdAt), 'dd MMM yyyy HH:mm')}
+                  {plan.productionRequestId}
                 </Typography>
               </Grid>
 
               <Grid item xs={4}>
-                <Typography variant="body2" color="text.secondary">Updated At</Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Priority
+                </Typography>
+              </Grid>
+              <Grid item xs={8}>
+                <Typography variant="body2">{plan.priority}</Typography>
+              </Grid>
+
+              <Grid item xs={4}>
+                <Typography variant="body2" color="text.secondary">
+                  Total Capacity Required
+                </Typography>
               </Grid>
               <Grid item xs={8}>
                 <Typography variant="body2">
-                  {format(new Date(plan.updatedAt), 'dd MMM yyyy HH:mm')}
+                  {plan.totalCapacityRequired || "N/A"} hours
+                </Typography>
+              </Grid>
+
+              <Grid item xs={4}>
+                <Typography variant="body2" color="text.secondary">
+                  Total Material Cost
+                </Typography>
+              </Grid>
+              <Grid item xs={8}>
+                <Typography variant="body2">
+                  ${(plan.totalMaterialCost || 0).toLocaleString()}
+                </Typography>
+              </Grid>
+
+              <Grid item xs={4}>
+                <Typography variant="body2" color="text.secondary">
+                  Planned Batches
+                </Typography>
+              </Grid>
+              <Grid item xs={8}>
+                <Typography variant="body2">
+                  {plan.plannedBatches || "N/A"}
                 </Typography>
               </Grid>
 
               {plan.approvedBy && (
                 <>
                   <Grid item xs={4}>
-                    <Typography variant="body2" color="text.secondary">Approved By</Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      Approved By
+                    </Typography>
                   </Grid>
                   <Grid item xs={8}>
                     <Typography variant="body2">{plan.approvedBy}</Typography>
                   </Grid>
 
                   <Grid item xs={4}>
-                    <Typography variant="body2" color="text.secondary">Approved At</Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      Approved At
+                    </Typography>
                   </Grid>
                   <Grid item xs={8}>
                     <Typography variant="body2">
-                      {format(new Date(plan.approvedAt), 'dd MMM yyyy HH:mm')}
+                      {format(new Date(plan.approvalDate), "dd MMM yyyy HH:mm")}
                     </Typography>
                   </Grid>
                 </>
               )}
+
+              <Grid item xs={4}>
+                <Typography variant="body2" color="text.secondary">
+                  Created At
+                </Typography>
+              </Grid>
+              <Grid item xs={8}>
+                <Typography variant="body2">
+                  {format(new Date(plan.createdAt), "dd MMM yyyy HH:mm")}
+                </Typography>
+              </Grid>
+
+              <Grid item xs={4}>
+                <Typography variant="body2" color="text.secondary">
+                  Updated At
+                </Typography>
+              </Grid>
+              <Grid item xs={8}>
+                <Typography variant="body2">
+                  {format(new Date(plan.updatedAt), "dd MMM yyyy HH:mm")}
+                </Typography>
+              </Grid>
             </Grid>
           </Grid>
         </Grid>
@@ -438,7 +534,7 @@ const ProductionPlanDetail = () => {
 
       {/* Tabs for Capacity and Material Plans */}
       <Paper sx={{ p: 3 }}>
-        <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 2 }}>
+        <Box sx={{ borderBottom: 1, borderColor: "divider", mb: 2 }}>
           <Tabs value={tabValue} onChange={handleTabChange}>
             <Tab label="Capacity Plans" />
             <Tab label="Material Plans" />
@@ -448,7 +544,14 @@ const ProductionPlanDetail = () => {
         {/* Capacity Plans Tab */}
         {tabValue === 0 && (
           <Box>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                mb: 2,
+              }}
+            >
               <Typography variant="h6">Capacity Plans</Typography>
               {isDraft && (
                 <Button
@@ -468,8 +571,7 @@ const ProductionPlanDetail = () => {
                   <TableHead>
                     <TableRow>
                       <TableCell>Machine Type</TableCell>
-                      <TableCell>Quantity</TableCell>
-                      <TableCell>Hours Per Day</TableCell>
+                      <TableCell>Hours Required</TableCell>
                       <TableCell>Start Date</TableCell>
                       <TableCell>End Date</TableCell>
                       <TableCell align="right">Actions</TableCell>
@@ -479,35 +581,42 @@ const ProductionPlanDetail = () => {
                     {plan.capacityPlans.map((capacityPlan) => (
                       <TableRow key={capacityPlan.id}>
                         <TableCell>{capacityPlan.machineType}</TableCell>
-                        <TableCell>{capacityPlan.quantity}</TableCell>
-                        <TableCell>{capacityPlan.hoursPerDay}</TableCell>
+                        <TableCell>{capacityPlan.hoursRequired}</TableCell>
                         <TableCell>
-                          {format(new Date(capacityPlan.startDate), 'dd MMM yyyy')}
+                          {format(
+                            new Date(capacityPlan.startDate),
+                            "dd MMM yyyy"
+                          )}
                         </TableCell>
                         <TableCell>
-                          {format(new Date(capacityPlan.endDate), 'dd MMM yyyy')}
+                          {format(
+                            new Date(capacityPlan.endDate),
+                            "dd MMM yyyy"
+                          )}
                         </TableCell>
                         <TableCell align="right">
                           {isDraft && (
-                            <>
-                              <Tooltip title="Edit">
-                                <IconButton
-                                  size="small"
-                                  onClick={() => handleEditCapacityPlan(capacityPlan.id)}
-                                >
-                                  <EditIcon fontSize="small" />
-                                </IconButton>
-                              </Tooltip>
-                              <Tooltip title="Delete">
-                                <IconButton
-                                  size="small"
-                                  color="error"
-                                  onClick={() => handleOpenDeleteCapacityDialog(capacityPlan.id)}
-                                >
-                                  <DeleteIcon fontSize="small" />
-                                </IconButton>
-                              </Tooltip>
-                            </>
+                            <Box sx={{ display: "flex", gap: 1 }}>
+                              <IconButton
+                                size="small"
+                                onClick={() =>
+                                  handleEditCapacityPlan(capacityPlan.id)
+                                }
+                              >
+                                <EditIcon fontSize="small" />
+                              </IconButton>
+                              <IconButton
+                                size="small"
+                                color="error"
+                                onClick={() =>
+                                  handleOpenDeleteCapacityDialog(
+                                    capacityPlan.id
+                                  )
+                                }
+                              >
+                                <DeleteIcon fontSize="small" />
+                              </IconButton>
+                            </Box>
                           )}
                         </TableCell>
                       </TableRow>
@@ -516,9 +625,7 @@ const ProductionPlanDetail = () => {
                 </Table>
               </TableContainer>
             ) : (
-              <Alert severity="info">
-                No capacity plans found for this production plan.
-              </Alert>
+              <Alert severity="info">No capacity plans added yet.</Alert>
             )}
           </Box>
         )}
@@ -526,29 +633,34 @@ const ProductionPlanDetail = () => {
         {/* Material Plans Tab */}
         {tabValue === 1 && (
           <Box>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                mb: 2,
+              }}
+            >
               <Typography variant="h6">Material Plans</Typography>
               {isDraft && (
                 <Button
                   variant="contained"
                   startIcon={<AddIcon />}
                   onClick={handleAddMaterialPlan}
-                  size="small"
                 >
                   Add Material Plan
                 </Button>
               )}
             </Box>
-
             {plan.materialPlans && plan.materialPlans.length > 0 ? (
               <TableContainer>
                 <Table>
                   <TableHead>
                     <TableRow>
-                      <TableCell>Material</TableCell>
-                      <TableCell>Quantity</TableCell>
-                      <TableCell>Unit</TableCell>
-                      <TableCell>Required Date</TableCell>
+                      <TableCell>Material Name</TableCell>
+                      <TableCell>Quantity Required</TableCell>
+                      <TableCell>Unit of Measure</TableCell>
+                      <TableCell>Availability Date</TableCell>
                       <TableCell>Notes</TableCell>
                       <TableCell align="right">Actions</TableCell>
                     </TableRow>
@@ -557,35 +669,38 @@ const ProductionPlanDetail = () => {
                     {plan.materialPlans.map((materialPlan) => (
                       <TableRow key={materialPlan.id}>
                         <TableCell>{materialPlan.materialName}</TableCell>
-                        <TableCell>{materialPlan.quantity}</TableCell>
-                        <TableCell>{materialPlan.unit}</TableCell>
+                        <TableCell>{materialPlan.quantityRequired}</TableCell>
+                        <TableCell>{materialPlan.unitOfMeasure}</TableCell>
                         <TableCell>
-                          {format(new Date(materialPlan.requiredDate), 'dd MMM yyyy')}
+                          {format(
+                            new Date(materialPlan.availabilityDate),
+                            "dd MMM yyyy"
+                          )}
                         </TableCell>
-                        <TableCell>
-                          {materialPlan.notes || '-'}
-                        </TableCell>
+                        <TableCell>{materialPlan.notes || "-"}</TableCell>
                         <TableCell align="right">
                           {isDraft && (
-                            <>
-                              <Tooltip title="Edit">
-                                <IconButton
-                                  size="small"
-                                  onClick={() => handleEditMaterialPlan(materialPlan.id)}
-                                >
-                                  <EditIcon fontSize="small" />
-                                </IconButton>
-                              </Tooltip>
-                              <Tooltip title="Delete">
-                                <IconButton
-                                  size="small"
-                                  color="error"
-                                  onClick={() => handleOpenDeleteMaterialDialog(materialPlan.id)}
-                                >
-                                  <DeleteIcon fontSize="small" />
-                                </IconButton>
-                              </Tooltip>
-                            </>
+                            <Box sx={{ display: "flex", gap: 1 }}>
+                              <IconButton
+                                size="small"
+                                onClick={() =>
+                                  handleEditMaterialPlan(materialPlan.id)
+                                }
+                              >
+                                <EditIcon fontSize="small" />
+                              </IconButton>
+                              <IconButton
+                                size="small"
+                                color="error"
+                                onClick={() =>
+                                  handleOpenDeleteMaterialDialog(
+                                    materialPlan.id
+                                  )
+                                }
+                              >
+                                <DeleteIcon fontSize="small" />
+                              </IconButton>
+                            </Box>
                           )}
                         </TableCell>
                       </TableRow>
@@ -594,9 +709,7 @@ const ProductionPlanDetail = () => {
                 </Table>
               </TableContainer>
             ) : (
-              <Alert severity="info">
-                No material plans found for this production plan.
-              </Alert>
+              <Alert severity="info">No material plans added yet.</Alert>
             )}
           </Box>
         )}
@@ -607,7 +720,8 @@ const ProductionPlanDetail = () => {
         <DialogTitle>Delete Production Plan</DialogTitle>
         <DialogContent>
           <DialogContentText>
-            Are you sure you want to delete this production plan? This action cannot be undone.
+            Are you sure you want to delete this production plan? This action
+            cannot be undone.
           </DialogContentText>
         </DialogContent>
         <DialogActions>
@@ -628,7 +742,8 @@ const ProductionPlanDetail = () => {
         <DialogTitle>Approve Production Plan</DialogTitle>
         <DialogContent>
           <DialogContentText>
-            Are you sure you want to approve this production plan? This will make the plan available for execution.
+            Are you sure you want to approve this production plan? This will
+            make the plan available for execution.
           </DialogContentText>
         </DialogContent>
         <DialogActions>
@@ -645,11 +760,15 @@ const ProductionPlanDetail = () => {
       </Dialog>
 
       {/* Delete Capacity Plan Dialog */}
-      <Dialog open={openDeleteCapacityDialog} onClose={handleCloseDeleteCapacityDialog}>
+      <Dialog
+        open={openDeleteCapacityDialog}
+        onClose={handleCloseDeleteCapacityDialog}
+      >
         <DialogTitle>Delete Capacity Plan</DialogTitle>
         <DialogContent>
           <DialogContentText>
-            Are you sure you want to delete this capacity plan? This action cannot be undone.
+            Are you sure you want to delete this capacity plan? This action
+            cannot be undone.
           </DialogContentText>
         </DialogContent>
         <DialogActions>
@@ -666,11 +785,15 @@ const ProductionPlanDetail = () => {
       </Dialog>
 
       {/* Delete Material Plan Dialog */}
-      <Dialog open={openDeleteMaterialDialog} onClose={handleCloseDeleteMaterialDialog}>
+      <Dialog
+        open={openDeleteMaterialDialog}
+        onClose={handleCloseDeleteMaterialDialog}
+      >
         <DialogTitle>Delete Material Plan</DialogTitle>
         <DialogContent>
           <DialogContentText>
-            Are you sure you want to delete this material plan? This action cannot be undone.
+            Are you sure you want to delete this material plan? This action
+            cannot be undone.
           </DialogContentText>
         </DialogContent>
         <DialogActions>

@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { useQuery, useMutation } from '@apollo/client';
+import { useState, useEffect } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import { useQuery, useMutation } from "@apollo/client";
 import {
   Box,
   Paper,
@@ -17,22 +17,22 @@ import {
   IconButton,
   Divider,
   InputAdornment,
-} from '@mui/material';
-import { DatePicker } from '@mui/x-date-pickers/DatePicker';
-import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
-import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+} from "@mui/material";
+import { DatePicker } from "@mui/x-date-pickers/DatePicker";
+import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFnsV3";
+import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import {
   ArrowBack as ArrowBackIcon,
   Save as SaveIcon,
-} from '@mui/icons-material';
-import { toast } from 'react-toastify';
+} from "@mui/icons-material";
+import { toast } from "react-toastify";
 import {
   GET_PLAN,
   GET_CAPACITY_PLAN,
   ADD_CAPACITY_PLAN,
   UPDATE_CAPACITY_PLAN,
-} from '../../graphql/productionPlanning';
-import { GET_MACHINE_TYPES } from '../../graphql/machineQueue';
+} from "../../graphql/productionPlanning";
+import { GET_MACHINE_TYPES } from "../../graphql/machineQueue";
 
 const CapacityPlanForm = () => {
   const { id, capacityId } = useParams();
@@ -41,11 +41,11 @@ const CapacityPlanForm = () => {
 
   // Form state
   const [formData, setFormData] = useState({
-    machineType: '',
-    quantity: 1,
-    hoursPerDay: 8,
+    machineType: "",
+    hoursRequired: 8,
     startDate: new Date(),
     endDate: new Date(new Date().setDate(new Date().getDate() + 7)), // Default to 7 days from now
+    notes: "",
   });
 
   const [errors, setErrors] = useState({});
@@ -58,7 +58,7 @@ const CapacityPlanForm = () => {
     data: planData,
   } = useQuery(GET_PLAN, {
     variables: { id },
-    fetchPolicy: 'cache-and-network',
+    fetchPolicy: "cache-and-network",
   });
 
   // Query for getting capacity plan details in edit mode
@@ -69,7 +69,7 @@ const CapacityPlanForm = () => {
   } = useQuery(GET_CAPACITY_PLAN, {
     variables: { id: capacityId },
     skip: !isEditMode,
-    fetchPolicy: 'cache-and-network',
+    fetchPolicy: "cache-and-network",
   });
 
   // Query for getting machine types
@@ -78,43 +78,53 @@ const CapacityPlanForm = () => {
     error: machineTypesError,
     data: machineTypesData,
   } = useQuery(GET_MACHINE_TYPES, {
-    fetchPolicy: 'cache-and-network',
+    fetchPolicy: "cache-and-network",
   });
 
   // Mutation for adding a new capacity plan
-  const [addCapacityPlan, { loading: addLoading }] = useMutation(ADD_CAPACITY_PLAN, {
-    onCompleted: () => {
-      toast.success('Capacity plan added successfully');
-      navigate(`/production-plans/${id}`);
-    },
-    onError: (error) => {
-      toast.error(`Failed to add capacity plan: ${error.message}`);
-      setSubmitting(false);
-    },
-  });
+  const [addCapacityPlan, { loading: addLoading }] = useMutation(
+    ADD_CAPACITY_PLAN,
+    {
+      onCompleted: () => {
+        toast.success("Capacity plan added successfully");
+        navigate(`/production-plans/${id}`);
+      },
+      onError: (error) => {
+        toast.error(`Failed to add capacity plan: ${error.message}`);
+        setSubmitting(false);
+      },
+    }
+  );
 
   // Mutation for updating an existing capacity plan
-  const [updateCapacityPlan, { loading: updateLoading }] = useMutation(UPDATE_CAPACITY_PLAN, {
-    onCompleted: () => {
-      toast.success('Capacity plan updated successfully');
-      navigate(`/production-plans/${id}`);
-    },
-    onError: (error) => {
-      toast.error(`Failed to update capacity plan: ${error.message}`);
-      setSubmitting(false);
-    },
-  });
+  const [updateCapacityPlan, { loading: updateLoading }] = useMutation(
+    UPDATE_CAPACITY_PLAN,
+    {
+      onCompleted: () => {
+        toast.success("Capacity plan updated successfully");
+        navigate(`/production-plans/${id}`);
+      },
+      onError: (error) => {
+        toast.error(`Failed to update capacity plan: ${error.message}`);
+        setSubmitting(false);
+      },
+    }
+  );
 
   // Load capacity plan data in edit mode
   useEffect(() => {
     if (isEditMode && capacityPlanData && capacityPlanData.capacityPlan) {
       const { capacityPlan } = capacityPlanData;
       setFormData({
-        machineType: capacityPlan.machineType,
-        quantity: capacityPlan.quantity,
-        hoursPerDay: capacityPlan.hoursPerDay,
-        startDate: new Date(capacityPlan.startDate),
-        endDate: new Date(capacityPlan.endDate),
+        machineType: capacityPlan.machineType || "",
+        hoursRequired: capacityPlan.hoursRequired || 0,
+        startDate: capacityPlan.startDate
+          ? new Date(capacityPlan.startDate)
+          : new Date(),
+        endDate: capacityPlan.endDate
+          ? new Date(capacityPlan.endDate)
+          : new Date(new Date().setDate(new Date().getDate() + 7)),
+        notes: capacityPlan.notes || "",
       });
     }
   }, [isEditMode, capacityPlanData]);
@@ -124,14 +134,14 @@ const CapacityPlanForm = () => {
     const { name, value } = e.target;
     setFormData({
       ...formData,
-      [name]: name === 'quantity' || name === 'hoursPerDay' ? Number(value) : value,
+      [name]: name === "hoursRequired" ? Number(value) : value,
     });
 
     // Clear error for this field
     if (errors[name]) {
       setErrors({
         ...errors,
-        [name]: '',
+        [name]: "",
       });
     }
   };
@@ -147,7 +157,7 @@ const CapacityPlanForm = () => {
     if (errors[name]) {
       setErrors({
         ...errors,
-        [name]: '',
+        [name]: "",
       });
     }
   };
@@ -157,40 +167,44 @@ const CapacityPlanForm = () => {
     const newErrors = {};
 
     if (!formData.machineType) {
-      newErrors.machineType = 'Machine type is required';
+      newErrors.machineType = "Machine type is required";
     }
 
-    if (formData.quantity <= 0) {
-      newErrors.quantity = 'Quantity must be greater than 0';
-    }
-
-    if (formData.hoursPerDay <= 0 || formData.hoursPerDay > 24) {
-      newErrors.hoursPerDay = 'Hours per day must be between 1 and 24';
+    if (formData.hoursRequired <= 0) {
+      newErrors.hoursRequired = "Hours required must be greater than 0";
     }
 
     if (!formData.startDate) {
-      newErrors.startDate = 'Start date is required';
+      newErrors.startDate = "Start date is required";
     }
 
     if (!formData.endDate) {
-      newErrors.endDate = 'End date is required';
+      newErrors.endDate = "End date is required";
     }
 
-    if (formData.startDate && formData.endDate && formData.startDate > formData.endDate) {
-      newErrors.endDate = 'End date must be after start date';
+    if (
+      formData.startDate &&
+      formData.endDate &&
+      formData.startDate > formData.endDate
+    ) {
+      newErrors.endDate = "End date must be after start date";
     }
 
     // Check if dates are within plan dates
     if (planData && planData.plan) {
-      const planStartDate = new Date(planData.plan.startDate);
-      const planEndDate = new Date(planData.plan.endDate);
+      const planPlannedStartDate = planData.plan.plannedStartDate
+        ? new Date(planData.plan.plannedStartDate)
+        : null;
+      const planPlannedEndDate = planData.plan.plannedEndDate
+        ? new Date(planData.plan.plannedEndDate)
+        : null;
 
-      if (formData.startDate < planStartDate) {
-        newErrors.startDate = 'Start date cannot be before plan start date';
+      if (planPlannedStartDate && formData.startDate < planPlannedStartDate) {
+        newErrors.startDate = `Start date cannot be before plan start date (${planPlannedStartDate.toLocaleDateString()})`;
       }
 
-      if (formData.endDate > planEndDate) {
-        newErrors.endDate = 'End date cannot be after plan end date';
+      if (planPlannedEndDate && formData.endDate > planPlannedEndDate) {
+        newErrors.endDate = `End date cannot be after plan end date (${planPlannedEndDate.toLocaleDateString()})`;
       }
     }
 
@@ -199,7 +213,7 @@ const CapacityPlanForm = () => {
   };
 
   // Handle form submission
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (!validateForm()) {
@@ -208,30 +222,32 @@ const CapacityPlanForm = () => {
 
     setSubmitting(true);
 
-    const variables = {
-      input: {
-        machineType: formData.machineType,
-        quantity: formData.quantity,
-        hoursPerDay: formData.hoursPerDay,
-        startDate: formData.startDate.toISOString(),
-        endDate: formData.endDate.toISOString(),
-      },
+    const input = {
+      machineType: formData.machineType,
+      hoursRequired: formData.hoursRequired,
+      startDate: formData.startDate ? formData.startDate.toISOString() : null,
+      endDate: formData.endDate ? formData.endDate.toISOString() : null,
+      notes: formData.notes,
     };
 
-    if (isEditMode) {
-      updateCapacityPlan({
-        variables: {
-          id: capacityId,
-          ...variables,
-        },
-      });
-    } else {
-      addCapacityPlan({
-        variables: {
-          planId: id,
-          ...variables,
-        },
-      });
+    try {
+      if (isEditMode) {
+        await updateCapacityPlan({
+          variables: {
+            id: capacityId,
+            input,
+          },
+        });
+      } else {
+        await addCapacityPlan({
+          variables: {
+            planId: id,
+            input,
+          },
+        });
+      }
+    } catch (err) {
+      // Error is already handled by onError in useMutation
     }
   };
 
@@ -241,19 +257,26 @@ const CapacityPlanForm = () => {
   };
 
   // Show loading state while fetching data
-  if ((planLoading && !planData) || (isEditMode && capacityPlanLoading && !capacityPlanData)) {
+  if (
+    (planLoading && !planData) ||
+    (isEditMode && capacityPlanLoading && !capacityPlanData) ||
+    machineTypesLoading
+  ) {
     return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', my: 4 }}>
+      <Box sx={{ display: "flex", justifyContent: "center", my: 4 }}>
         <CircularProgress />
       </Box>
     );
   }
 
   // Show error if data fetch fails
-  if (planError || (isEditMode && capacityPlanError)) {
+  if (planError || (isEditMode && capacityPlanError) || machineTypesError) {
     return (
       <Alert severity="error" sx={{ mt: 2 }}>
-        Error loading data: {planError?.message || capacityPlanError?.message}
+        Error loading data:{" "}
+        {planError?.message ||
+          capacityPlanError?.message ||
+          machineTypesError?.message}
       </Alert>
     );
   }
@@ -277,7 +300,7 @@ const CapacityPlanForm = () => {
   }
 
   // Check if plan is in draft status
-  if (planData.plan.status !== 'DRAFT') {
+  if (planData.plan.status !== "DRAFT") {
     return (
       <Alert severity="warning" sx={{ mt: 2 }}>
         Capacity plans can only be added or edited for plans in draft status
@@ -289,13 +312,20 @@ const CapacityPlanForm = () => {
     <LocalizationProvider dateAdapter={AdapterDateFns}>
       <Box component="form" onSubmit={handleSubmit}>
         <Paper sx={{ p: 3, mb: 3 }}>
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-            <Box sx={{ display: 'flex', alignItems: 'center' }}>
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              mb: 3,
+            }}
+          >
+            <Box sx={{ display: "flex", alignItems: "center" }}>
               <IconButton onClick={handleCancel} sx={{ mr: 1 }}>
                 <ArrowBackIcon />
               </IconButton>
               <Typography variant="h5">
-                {isEditMode ? 'Edit Capacity Plan' : 'Add Capacity Plan'}
+                {isEditMode ? "Edit Capacity Plan" : "Add Capacity Plan"}
               </Typography>
             </Box>
             <Button
@@ -305,10 +335,10 @@ const CapacityPlanForm = () => {
               type="submit"
               disabled={submitting || addLoading || updateLoading}
             >
-              {(submitting || addLoading || updateLoading) ? (
+              {submitting || addLoading || updateLoading ? (
                 <CircularProgress size={24} color="inherit" />
               ) : (
-                'Save'
+                "Save"
               )}
             </Button>
           </Box>
@@ -316,10 +346,17 @@ const CapacityPlanForm = () => {
           <Divider sx={{ mb: 3 }} />
 
           <Typography variant="subtitle1" gutterBottom>
-            Production Plan: {planData.plan.name}
+            Production Plan: {planData.plan.productName}
           </Typography>
           <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-            Plan Period: {new Date(planData.plan.startDate).toLocaleDateString()} - {new Date(planData.plan.endDate).toLocaleDateString()}
+            Plan Period:{" "}
+            {planData.plan.plannedStartDate
+              ? new Date(planData.plan.plannedStartDate).toLocaleDateString()
+              : "N/A"}{" "}
+            -{" "}
+            {planData.plan.plannedEndDate
+              ? new Date(planData.plan.plannedEndDate).toLocaleDateString()
+              : "N/A"}
           </Typography>
 
           <Grid container spacing={3}>
@@ -332,6 +369,7 @@ const CapacityPlanForm = () => {
                   onChange={handleInputChange}
                   label="Machine Type"
                   required
+                  disabled={isEditMode}
                 >
                   {machineTypesLoading ? (
                     <MenuItem disabled>Loading machine types...</MenuItem>
@@ -358,33 +396,18 @@ const CapacityPlanForm = () => {
             <Grid item xs={12} sm={6}>
               <TextField
                 fullWidth
-                label="Quantity"
-                name="quantity"
+                label="Hours Required"
+                name="hoursRequired"
                 type="number"
-                value={formData.quantity}
+                value={formData.hoursRequired}
                 onChange={handleInputChange}
-                error={Boolean(errors.quantity)}
-                helperText={errors.quantity}
+                error={Boolean(errors.hoursRequired)}
+                helperText={errors.hoursRequired}
                 InputProps={{
-                  inputProps: { min: 1 },
-                }}
-                required
-              />
-            </Grid>
-
-            <Grid item xs={12} sm={6}>
-              <TextField
-                fullWidth
-                label="Hours Per Day"
-                name="hoursPerDay"
-                type="number"
-                value={formData.hoursPerDay}
-                onChange={handleInputChange}
-                error={Boolean(errors.hoursPerDay)}
-                helperText={errors.hoursPerDay}
-                InputProps={{
-                  inputProps: { min: 1, max: 24 },
-                  endAdornment: <InputAdornment position="end">hours</InputAdornment>,
+                  inputProps: { min: 0.1, step: 0.1 },
+                  endAdornment: (
+                    <InputAdornment position="end">hours</InputAdornment>
+                  ),
                 }}
                 required
               />
@@ -394,9 +417,17 @@ const CapacityPlanForm = () => {
               <DatePicker
                 label="Start Date"
                 value={formData.startDate}
-                onChange={(date) => handleDateChange('startDate', date)}
-                minDate={new Date(planData.plan.startDate)}
-                maxDate={new Date(planData.plan.endDate)}
+                onChange={(date) => handleDateChange("startDate", date)}
+                minDate={
+                  planData.plan.plannedStartDate
+                    ? new Date(planData.plan.plannedStartDate)
+                    : null
+                }
+                maxDate={
+                  planData.plan.plannedEndDate
+                    ? new Date(planData.plan.plannedEndDate)
+                    : null
+                }
                 slotProps={{
                   textField: {
                     fullWidth: true,
@@ -412,9 +443,17 @@ const CapacityPlanForm = () => {
               <DatePicker
                 label="End Date"
                 value={formData.endDate}
-                onChange={(date) => handleDateChange('endDate', date)}
-                minDate={formData.startDate}
-                maxDate={new Date(planData.plan.endDate)}
+                onChange={(date) => handleDateChange("endDate", date)}
+                minDate={
+                  planData.plan.plannedStartDate
+                    ? new Date(planData.plan.plannedStartDate)
+                    : null
+                }
+                maxDate={
+                  planData.plan.plannedEndDate
+                    ? new Date(planData.plan.plannedEndDate)
+                    : null
+                }
                 slotProps={{
                   textField: {
                     fullWidth: true,
@@ -423,6 +462,20 @@ const CapacityPlanForm = () => {
                     required: true,
                   },
                 }}
+              />
+            </Grid>
+
+            <Grid item xs={12}>
+              <TextField
+                fullWidth
+                label="Notes"
+                name="notes"
+                value={formData.notes}
+                onChange={handleInputChange}
+                multiline
+                rows={3}
+                error={Boolean(errors.notes)}
+                helperText={errors.notes}
               />
             </Grid>
           </Grid>

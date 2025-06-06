@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { useQuery, useMutation } from '@apollo/client';
+import { useState, useEffect } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import { useQuery, useMutation } from "@apollo/client";
 import {
   Box,
   Paper,
@@ -16,20 +16,20 @@ import {
   Alert,
   IconButton,
   Divider,
-} from '@mui/material';
-import { DatePicker } from '@mui/x-date-pickers/DatePicker';
-import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
-import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+} from "@mui/material";
+import { DatePicker } from "@mui/x-date-pickers/DatePicker";
+import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFnsV3";
+import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import {
   ArrowBack as ArrowBackIcon,
   Save as SaveIcon,
-} from '@mui/icons-material';
-import { toast } from 'react-toastify';
+} from "@mui/icons-material";
+import { toast } from "react-toastify";
 import {
   GET_PLAN,
   CREATE_PLAN,
   UPDATE_PLAN,
-} from '../../graphql/productionPlanning';
+} from "../../graphql/productionPlanning";
 
 const ProductionPlanForm = () => {
   const { id } = useParams();
@@ -38,11 +38,12 @@ const ProductionPlanForm = () => {
 
   // Form state
   const [formData, setFormData] = useState({
-    name: '',
-    description: '',
-    startDate: new Date(),
-    endDate: new Date(new Date().setDate(new Date().getDate() + 30)), // Default to 30 days from now
-    status: 'DRAFT',
+    productName: "",
+    planningNotes: "",
+    plannedStartDate: new Date(),
+    plannedEndDate: new Date(new Date().setDate(new Date().getDate() + 30)), // Default to 30 days from now
+    priority: "MEDIUM",
+    requestId: "",
   });
 
   const [errors, setErrors] = useState({});
@@ -56,13 +57,13 @@ const ProductionPlanForm = () => {
   } = useQuery(GET_PLAN, {
     variables: { id },
     skip: !isEditMode,
-    fetchPolicy: 'cache-and-network',
+    fetchPolicy: "cache-and-network",
   });
 
   // Mutation for creating a new plan
   const [createPlan, { loading: createLoading }] = useMutation(CREATE_PLAN, {
     onCompleted: (data) => {
-      toast.success('Production plan created successfully');
+      toast.success("Production plan created successfully");
       navigate(`/production-plans/${data.createPlan.id}`);
     },
     onError: (error) => {
@@ -74,7 +75,7 @@ const ProductionPlanForm = () => {
   // Mutation for updating an existing plan
   const [updatePlan, { loading: updateLoading }] = useMutation(UPDATE_PLAN, {
     onCompleted: () => {
-      toast.success('Production plan updated successfully');
+      toast.success("Production plan updated successfully");
       navigate(`/production-plans/${id}`);
     },
     onError: (error) => {
@@ -88,11 +89,16 @@ const ProductionPlanForm = () => {
     if (isEditMode && planData && planData.plan) {
       const { plan } = planData;
       setFormData({
-        name: plan.name,
-        description: plan.description,
-        startDate: new Date(plan.startDate),
-        endDate: new Date(plan.endDate),
-        status: plan.status,
+        productName: plan.productName || "",
+        planningNotes: plan.planningNotes || "",
+        plannedStartDate: plan.plannedStartDate
+          ? new Date(plan.plannedStartDate)
+          : new Date(),
+        plannedEndDate: plan.plannedEndDate
+          ? new Date(plan.plannedEndDate)
+          : new Date(new Date().setDate(new Date().getDate() + 30)),
+        priority: plan.priority || "MEDIUM",
+        requestId: plan.requestId || "",
       });
     }
   }, [isEditMode, planData]);
@@ -109,7 +115,7 @@ const ProductionPlanForm = () => {
     if (errors[name]) {
       setErrors({
         ...errors,
-        [name]: '',
+        [name]: "",
       });
     }
   };
@@ -125,7 +131,7 @@ const ProductionPlanForm = () => {
     if (errors[name]) {
       setErrors({
         ...errors,
-        [name]: '',
+        [name]: "",
       });
     }
   };
@@ -134,24 +140,33 @@ const ProductionPlanForm = () => {
   const validateForm = () => {
     const newErrors = {};
 
-    if (!formData.name.trim()) {
-      newErrors.name = 'Name is required';
+    if (!formData.productName.trim()) {
+      newErrors.productName = "Product Name is required";
     }
 
-    if (!formData.description.trim()) {
-      newErrors.description = 'Description is required';
+    if (!formData.planningNotes.trim()) {
+      newErrors.planningNotes = "Planning Notes is required";
     }
 
-    if (!formData.startDate) {
-      newErrors.startDate = 'Start date is required';
+    if (!formData.plannedStartDate) {
+      newErrors.plannedStartDate = "Planned start date is required";
     }
 
-    if (!formData.endDate) {
-      newErrors.endDate = 'End date is required';
+    if (!formData.plannedEndDate) {
+      newErrors.plannedEndDate = "Planned end date is required";
     }
 
-    if (formData.startDate && formData.endDate && formData.startDate > formData.endDate) {
-      newErrors.endDate = 'End date must be after start date';
+    if (
+      formData.plannedStartDate &&
+      formData.plannedEndDate &&
+      formData.plannedStartDate > formData.plannedEndDate
+    ) {
+      newErrors.plannedEndDate =
+        "Planned end date must be after planned start date";
+    }
+
+    if (!formData.requestId) {
+      newErrors.requestId = "Request ID is required";
     }
 
     setErrors(newErrors);
@@ -159,7 +174,7 @@ const ProductionPlanForm = () => {
   };
 
   // Handle form submission
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (!validateForm()) {
@@ -168,26 +183,66 @@ const ProductionPlanForm = () => {
 
     setSubmitting(true);
 
-    const variables = {
-      input: {
-        name: formData.name,
-        description: formData.description,
-        startDate: formData.startDate.toISOString(),
-        endDate: formData.endDate.toISOString(),
-      },
+    // Check if the plan data has changed before updating
+    let hasChanges = false;
+    if (isEditMode && planData && planData.plan) {
+      const originalPlan = planData.plan;
+      // Compare only the fields that are part of the form
+      if (
+        formData.productName !== originalPlan.productName ||
+        formData.planningNotes !== originalPlan.planningNotes ||
+        (formData.plannedStartDate &&
+          originalPlan.plannedStartDate &&
+          formData.plannedStartDate.toISOString() !==
+            originalPlan.plannedStartDate) ||
+        (formData.plannedEndDate &&
+          originalPlan.plannedEndDate &&
+          formData.plannedEndDate.toISOString() !==
+            originalPlan.plannedEndDate) ||
+        formData.priority !== originalPlan.priority ||
+        formData.requestId !== originalPlan.requestId
+      ) {
+        hasChanges = true;
+      }
+    }
+
+    if (isEditMode && !hasChanges) {
+      toast.info("No changes detected.");
+      setSubmitting(false);
+      navigate(`/production-plans/${id}`);
+      return;
+    }
+
+    const input = {
+      productName: formData.productName,
+      planningNotes: formData.planningNotes,
+      plannedStartDate: formData.plannedStartDate
+        ? formData.plannedStartDate.toISOString()
+        : null,
+      plannedEndDate: formData.plannedEndDate
+        ? formData.plannedEndDate.toISOString()
+        : null,
+      priority: formData.priority,
+      requestId: Number(formData.requestId),
     };
 
-    if (isEditMode) {
-      updatePlan({
-        variables: {
-          id,
-          ...variables,
-        },
-      });
-    } else {
-      createPlan({
-        variables,
-      });
+    try {
+      if (isEditMode) {
+        await updatePlan({
+          variables: {
+            id,
+            input,
+          },
+        });
+      } else {
+        await createPlan({
+          variables: {
+            input,
+          },
+        });
+      }
+    } catch (err) {
+      // Error is already handled by onError in useMutation
     }
   };
 
@@ -196,21 +251,19 @@ const ProductionPlanForm = () => {
     if (isEditMode) {
       navigate(`/production-plans/${id}`);
     } else {
-      navigate('/production-plans');
+      navigate("/production-plans");
     }
   };
 
-  // Show loading state while fetching plan data in edit mode
-  if (isEditMode && planLoading && !planData) {
+  if (planLoading) {
     return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', my: 4 }}>
+      <Box sx={{ display: "flex", justifyContent: "center", my: 4 }}>
         <CircularProgress />
       </Box>
     );
   }
 
-  // Show error if plan data fetch fails in edit mode
-  if (isEditMode && planError) {
+  if (planError) {
     return (
       <Alert severity="error" sx={{ mt: 2 }}>
         Error loading production plan: {planError.message}
@@ -218,7 +271,6 @@ const ProductionPlanForm = () => {
     );
   }
 
-  // Show error if plan not found in edit mode
   if (isEditMode && planData && !planData.plan) {
     return (
       <Alert severity="warning" sx={{ mt: 2 }}>
@@ -231,13 +283,20 @@ const ProductionPlanForm = () => {
     <LocalizationProvider dateAdapter={AdapterDateFns}>
       <Box component="form" onSubmit={handleSubmit}>
         <Paper sx={{ p: 3, mb: 3 }}>
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-            <Box sx={{ display: 'flex', alignItems: 'center' }}>
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              mb: 3,
+            }}
+          >
+            <Box sx={{ display: "flex", alignItems: "center" }}>
               <IconButton onClick={handleCancel} sx={{ mr: 1 }}>
                 <ArrowBackIcon />
               </IconButton>
               <Typography variant="h5">
-                {isEditMode ? 'Edit Production Plan' : 'Create Production Plan'}
+                {isEditMode ? "Edit Production Plan" : "Create Production Plan"}
               </Typography>
             </Box>
             <Button
@@ -247,10 +306,10 @@ const ProductionPlanForm = () => {
               type="submit"
               disabled={submitting || createLoading || updateLoading}
             >
-              {(submitting || createLoading || updateLoading) ? (
+              {submitting || createLoading || updateLoading ? (
                 <CircularProgress size={24} color="inherit" />
               ) : (
-                'Save'
+                "Save"
               )}
             </Button>
           </Box>
@@ -258,101 +317,94 @@ const ProductionPlanForm = () => {
           <Divider sx={{ mb: 3 }} />
 
           <Grid container spacing={3}>
-            <Grid item xs={12}>
+            <Grid item xs={12} sm={6}>
               <TextField
                 fullWidth
-                label="Plan Name"
-                name="name"
-                value={formData.name}
+                label="Product Name"
+                name="productName"
+                value={formData.productName}
                 onChange={handleInputChange}
-                error={Boolean(errors.name)}
-                helperText={errors.name}
+                error={Boolean(errors.productName)}
+                helperText={errors.productName}
                 required
               />
             </Grid>
-
-            <Grid item xs={12}>
+            <Grid item xs={12} sm={6}>
               <TextField
                 fullWidth
-                label="Description"
-                name="description"
-                value={formData.description}
+                label="Planning Notes"
+                name="planningNotes"
+                value={formData.planningNotes}
                 onChange={handleInputChange}
+                error={Boolean(errors.planningNotes)}
+                helperText={errors.planningNotes}
                 multiline
                 rows={4}
-                error={Boolean(errors.description)}
-                helperText={errors.description}
                 required
               />
             </Grid>
-
             <Grid item xs={12} sm={6}>
               <DatePicker
-                label="Start Date"
-                value={formData.startDate}
-                onChange={(date) => handleDateChange('startDate', date)}
-                renderInput={(params) => (
-                  <TextField
-                    {...params}
-                    fullWidth
-                    error={Boolean(errors.startDate)}
-                    helperText={errors.startDate}
-                    required
-                  />
-                )}
+                label="Planned Start Date"
+                value={formData.plannedStartDate}
+                onChange={(date) => handleDateChange("plannedStartDate", date)}
                 slotProps={{
                   textField: {
                     fullWidth: true,
-                    error: Boolean(errors.startDate),
-                    helperText: errors.startDate,
+                    error: Boolean(errors.plannedStartDate),
+                    helperText: errors.plannedStartDate,
                     required: true,
                   },
                 }}
               />
             </Grid>
-
             <Grid item xs={12} sm={6}>
               <DatePicker
-                label="End Date"
-                value={formData.endDate}
-                onChange={(date) => handleDateChange('endDate', date)}
-                renderInput={(params) => (
-                  <TextField
-                    {...params}
-                    fullWidth
-                    error={Boolean(errors.endDate)}
-                    helperText={errors.endDate}
-                    required
-                  />
-                )}
+                label="Planned End Date"
+                value={formData.plannedEndDate}
+                onChange={(date) => handleDateChange("plannedEndDate", date)}
                 slotProps={{
                   textField: {
                     fullWidth: true,
-                    error: Boolean(errors.endDate),
-                    helperText: errors.endDate,
+                    error: Boolean(errors.plannedEndDate),
+                    helperText: errors.plannedEndDate,
                     required: true,
                   },
                 }}
               />
             </Grid>
-
-            {isEditMode && (
-              <Grid item xs={12} sm={6}>
-                <FormControl fullWidth>
-                  <InputLabel>Status</InputLabel>
-                  <Select
-                    name="status"
-                    value={formData.status}
-                    onChange={handleInputChange}
-                    label="Status"
-                    disabled={formData.status !== 'DRAFT'}
-                  >
-                    <MenuItem value="DRAFT">Draft</MenuItem>
-                    <MenuItem value="PENDING_APPROVAL">Pending Approval</MenuItem>
-                  </Select>
-                </FormControl>
-              </Grid>
-            )}
+            <Grid item xs={12} sm={6}>
+              <FormControl fullWidth required error={Boolean(errors.priority)}>
+                <InputLabel>Priority</InputLabel>
+                <Select
+                  name="priority"
+                  value={formData.priority}
+                  label="Priority"
+                  onChange={handleInputChange}
+                >
+                  <MenuItem value="LOW">Low</MenuItem>
+                  <MenuItem value="MEDIUM">Medium</MenuItem>
+                  <MenuItem value="HIGH">High</MenuItem>
+                </Select>
+                {errors.priority && (
+                  <Typography color="error" variant="caption">
+                    {errors.priority}
+                  </Typography>
+                )}
+              </FormControl>
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                fullWidth
+                label="Request ID"
+                name="requestId"
+                value={formData.requestId}
+                onChange={handleInputChange}
+                error={Boolean(errors.requestId)}
+                helperText={errors.requestId}
+                required
+              />
+            </Grid>
           </Grid>
         </Paper>
       </Box>
