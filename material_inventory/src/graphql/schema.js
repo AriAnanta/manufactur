@@ -1,9 +1,9 @@
 /**
  * Schema GraphQL untuk Material Inventory Service
- * 
+ *
  * Mendefinisikan tipe, query, dan mutation untuk layanan inventory material
  */
-const { gql } = require('apollo-server-express');
+const { gql } = require("apollo-server-express");
 
 const typeDefs = gql`
   # Tipe untuk Material
@@ -181,18 +181,18 @@ const typeDefs = gql`
       supplierId: ID
       lowStock: Boolean
     ): [Material]
-    
+
     material(id: ID!): Material
     materialById(materialId: String!): Material
     materialCategories: [String]
     materialTypes: [String]
-    
+
     # Query untuk Supplier
     suppliers(status: String): [Supplier]
     supplier(id: ID!): Supplier
     supplierById(supplierId: String!): Supplier
     supplierMaterials(id: ID!): [Material]
-    
+
     # Query untuk Transaksi
     transactions(
       type: String
@@ -202,14 +202,14 @@ const typeDefs = gql`
       endDate: String
       limit: Int
     ): [MaterialTransaction]
-    
+
     transaction(id: ID!): MaterialTransaction
     materialTransactionHistory(materialId: ID!): [MaterialTransaction]
-    
+
     # Query untuk Laporan
     stockReport(category: String, lowStock: Boolean): StockReport
     supplierPerformance(supplierId: ID): [SupplierPerformance]
-    
+
     # Fitur Pengecekan
     checkStock(input: [StockCheckInput!]!): [StockCheckResult]
   }
@@ -220,12 +220,12 @@ const typeDefs = gql`
     createMaterial(input: MaterialInput!): Material
     updateMaterial(id: ID!, input: MaterialInput!): Material
     deleteMaterial(id: ID!): GenericResponse
-    
+
     # Mutations untuk Supplier
     createSupplier(input: SupplierInput!): Supplier
     updateSupplier(id: ID!, input: SupplierInput!): Supplier
     deleteSupplier(id: ID!): GenericResponse
-    
+
     # Mutations untuk Transaksi
     receiveMaterial(input: TransactionInput!): MaterialTransaction
     issueMaterial(input: TransactionInput!): MaterialTransaction

@@ -77,9 +77,6 @@ function SupplierDetail() {
         <strong>Kode Pos:</strong> {supplier.postalCode}
       </p>
       <p>
-        <strong>ID Pajak:</strong> {supplier.taxId || "-"}
-      </p>
-      <p>
         <strong>Syarat Pembayaran:</strong> {supplier.paymentTerms || "-"}
       </p>
       <p>

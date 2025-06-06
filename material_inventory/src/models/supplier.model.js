@@ -55,20 +55,21 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: true,
         field: "postal_code",
       },
-      taxId: {
-        type: DataTypes.STRING(50),
+      website: {
+        type: DataTypes.STRING(100),
         allowNull: true,
-        field: "tax_id",
       },
       paymentTerms: {
         type: DataTypes.STRING(100),
         allowNull: true,
         comment: "Syarat pembayaran (misal: Net 30, COD)",
+        field: "payment_terms",
       },
       leadTime: {
         type: DataTypes.INTEGER,
         allowNull: true,
         comment: "Waktu pengiriman rata-rata dalam hari",
+        field: "lead_time",
       },
       rating: {
         type: DataTypes.FLOAT,
