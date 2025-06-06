@@ -45,7 +45,7 @@ const MaterialPlanForm = () => {
     materialName: "",
     quantity: 1,
     unit: "",
-    requiredDate: new Date(new Date().setDate(new Date().getDate() + 7)), // Default to 7 days from now
+    requiredDate: null, // Default to null initially
     notes: "",
   });
 
@@ -121,7 +121,9 @@ const MaterialPlanForm = () => {
         materialName: materialPlan.materialName,
         quantity: materialPlan.quantity,
         unit: materialPlan.unit,
-        requiredDate: new Date(materialPlan.requiredDate),
+        requiredDate: materialPlan.requiredDate
+          ? new Date(materialPlan.requiredDate)
+          : null,
         notes: materialPlan.notes || "",
       });
     }
@@ -240,7 +242,9 @@ const MaterialPlanForm = () => {
         materialName: formData.materialName,
         quantity: formData.quantity,
         unit: formData.unit,
-        requiredDate: formData.requiredDate.toISOString(),
+        requiredDate: formData.requiredDate
+          ? formData.requiredDate.toISOString()
+          : null,
         notes: formData.notes,
       },
     };
@@ -307,10 +311,13 @@ const MaterialPlanForm = () => {
   }
 
   // Check if plan is in draft status
-  if (planData.plan.status !== "DRAFT") {
+  const isPlanEditable = planData.plan.status.toLowerCase() === "draft";
+
+  if (!isPlanEditable) {
     return (
       <Alert severity="warning" sx={{ mt: 2 }}>
-        Material plans can only be added or edited for plans in draft status
+        Material plans can only be added or edited for plans in draft status.
+        Current status: {planData.plan.status}
       </Alert>
     );
   }

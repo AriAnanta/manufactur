@@ -42,7 +42,7 @@ const ProductionPlanForm = () => {
     planningNotes: "",
     plannedStartDate: new Date(),
     plannedEndDate: new Date(new Date().setDate(new Date().getDate() + 30)), // Default to 30 days from now
-    priority: "MEDIUM",
+    priority: "normal",
     requestId: "",
   });
 
@@ -93,11 +93,11 @@ const ProductionPlanForm = () => {
         planningNotes: plan.planningNotes || "",
         plannedStartDate: plan.plannedStartDate
           ? new Date(plan.plannedStartDate)
-          : new Date(),
+          : null,
         plannedEndDate: plan.plannedEndDate
           ? new Date(plan.plannedEndDate)
-          : new Date(new Date().setDate(new Date().getDate() + 30)),
-        priority: plan.priority || "MEDIUM",
+          : null,
+        priority: plan.priority ? plan.priority.toLowerCase() : "normal",
         requestId: plan.requestId || "",
       });
     }
@@ -373,24 +373,22 @@ const ProductionPlanForm = () => {
                 }}
               />
             </Grid>
-            <Grid item xs={12} sm={6}>
-              <FormControl fullWidth required error={Boolean(errors.priority)}>
-                <InputLabel>Priority</InputLabel>
+            <Grid item xs={12} md={6}>
+              <FormControl fullWidth margin="normal" required>
+                <InputLabel id="priority-label">Priority</InputLabel>
                 <Select
+                  labelId="priority-label"
+                  id="priority"
                   name="priority"
                   value={formData.priority}
-                  label="Priority"
                   onChange={handleInputChange}
+                  label="Priority"
                 >
-                  <MenuItem value="LOW">Low</MenuItem>
-                  <MenuItem value="MEDIUM">Medium</MenuItem>
-                  <MenuItem value="HIGH">High</MenuItem>
+                  <MenuItem value="low">Low</MenuItem>
+                  <MenuItem value="normal">Medium</MenuItem>
+                  <MenuItem value="high">High</MenuItem>
+                  <MenuItem value="urgent">Urgent</MenuItem>
                 </Select>
-                {errors.priority && (
-                  <Typography color="error" variant="caption">
-                    {errors.priority}
-                  </Typography>
-                )}
               </FormControl>
             </Grid>
             <Grid item xs={12} sm={6}>

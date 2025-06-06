@@ -77,18 +77,46 @@ const authMiddleware = new ApolloLink((operation, forward) => {
   return forward(operation);
 });
 
-// Create split link based on operation type
-const serviceLink = split(
-  ({ query }) => {
-    const definition = getMainDefinition(query);
-    if (definition.kind !== "OperationDefinition") return false;
+// Custom link for routing operations to the correct microservice
+const routerLink = new ApolloLink((operation, forward) => {
+  const definition = getMainDefinition(operation.query);
+  const operationName = definition.name?.value || "";
 
-    // Route to appropriate service based on operation name or specific operations
-    const operationName = definition.name?.value || "";
+  let targetLink;
 
-    console.log("GraphQL Operation Name:", operationName);
-
-    const isUserServiceOperation = [
+  // Define routing logic based on operation names
+  if (
+    [
+      "GetMaterials",
+      "GetMaterial",
+      "GetMaterialById",
+      "GetMaterialCategories",
+      "GetMaterialTypes",
+      "GetLowStockMaterials",
+      "GetSuppliers",
+      "GetSupplier",
+      "GetSupplierById",
+      "GetSupplierMaterials",
+      "GetTransactions",
+      "GetTransaction",
+      "GetMaterialTransactionHistory",
+      "GetStockReport",
+      "GetSupplierPerformance",
+      "CheckStock",
+      "CreateMaterial",
+      "UpdateMaterial",
+      "DeleteMaterial",
+      "CreateSupplier",
+      "UpdateSupplier",
+      "DeleteSupplier",
+      "ReceiveMaterial",
+      "IssueMaterial",
+      "CreateStockAdjustment",
+    ].includes(operationName)
+  ) {
+    targetLink = materialInventoryLink;
+  } else if (
+    [
       "Login",
       "Register",
       "VerifyToken",
@@ -102,113 +130,64 @@ const serviceLink = split(
       "CreateUser",
       "UpdateUser",
       "UpdateUserStatus",
-    ].includes(operationName);
+    ].includes(operationName)
+  ) {
+    targetLink = userServiceLink;
+  } else if (operationName.startsWith("ProductionManagement")) {
+    targetLink = productionManagementLink;
+  } else if (
+    [
+      "GetPlans",
+      "GetPlan",
+      "GetCapacityPlans",
+      "GetMaterialPlans",
+      "GetCapacityPlan",
+      "GetMaterialPlan",
+      "GetPlansSummary",
+      "CreatePlan",
+      "UpdatePlan",
+      "DeletePlan",
+      "ApprovePlan",
+      "AddCapacityPlan",
+      "AddMaterialPlan",
+      "UpdateCapacityPlan",
+      "DeleteCapacityPlan",
+      "UpdateMaterialPlan",
+    ].includes(operationName)
+  ) {
+    targetLink = productionPlanningLink;
+  } else if (
+    [
+      "GetMachineTypes",
+      "GetMachines",
+      "GetMachine",
+      "GetQueues",
+      "GetQueue",
+      "CheckCapacity",
+      "CreateMachine",
+      "UpdateMachine",
+      "DeleteMachine",
+      "CreateQueue",
+      "UpdateQueue",
+      "DeleteQueue",
+    ].includes(operationName) ||
+    operationName.startsWith("MachineQueue")
+  ) {
+    targetLink = machineQueueLink;
+  } else {
+    // Default fallback to Production Feedback Service if no other service matches
+    targetLink = productionFeedbackLink;
+  }
 
-    if (isUserServiceOperation) {
-      console.log("Routing to User Service Link");
-      return true;
-    }
-    console.log("Not routing to User Service Link");
-    return false;
-  },
-  userServiceLink,
-  split(
-    ({ query }) => {
-      const definition = getMainDefinition(query);
-      if (definition.kind !== "OperationDefinition") return false;
-      const operationName = definition.name?.value || "";
-      console.log(
-        "GraphQL Operation Name (ProductionManagement check):",
-        operationName
-      );
-      if (operationName.startsWith("ProductionManagement")) {
-        console.log("Routing to Production Management Link");
-        return true;
-      }
-      console.log("Not routing to Production Management Link");
-      return false;
-    },
-    productionManagementLink,
-    split(
-      ({ query }) => {
-        const definition = getMainDefinition(query);
-        if (definition.kind !== "OperationDefinition") return false;
-        const operationName = definition.name?.value || "";
-        console.log(
-          "GraphQL Operation Name (ProductionPlanning check):",
-          operationName
-        );
-        const isProductionPlanningOperation = [
-          "GetPlans",
-          "GetPlan",
-          "GetCapacityPlans",
-          "GetMaterialPlans",
-          "GetCapacityPlan",
-          "GetMaterialPlan",
-          "GetPlansSummary",
-          "CreatePlan",
-          "UpdatePlan",
-          "DeletePlan",
-          "ApprovePlan",
-          "AddCapacityPlan",
-          "AddMaterialPlan",
-          "UpdateCapacityPlan",
-          "DeleteCapacityPlan",
-          "UpdateMaterialPlan",
-        ].includes(operationName);
-
-        if (isProductionPlanningOperation) {
-          console.log("Routing to Production Planning Link");
-          return true;
-        }
-        console.log("Not routing to Production Planning Link");
-        return false;
-      },
-      productionPlanningLink,
-      split(
-        ({ query }) => {
-          const definition = getMainDefinition(query);
-          if (definition.kind !== "OperationDefinition") return false;
-          const operationName = definition.name?.value || "";
-          console.log(
-            "GraphQL Operation Name (MachineQueue check):",
-            operationName
-          );
-          if (operationName.startsWith("MachineQueue")) {
-            console.log("Routing to Machine Queue Link");
-            return true;
-          }
-          console.log("Not routing to Machine Queue Link");
-          return false;
-        },
-        machineQueueLink,
-        split(
-          ({ query }) => {
-            const definition = getMainDefinition(query);
-            if (definition.kind !== "OperationDefinition") return false;
-            const operationName = definition.name?.value || "";
-            console.log(
-              "GraphQL Operation Name (MaterialInventory check):",
-              operationName
-            );
-            if (operationName.startsWith("MaterialInventory")) {
-              console.log("Routing to Material Inventory Link");
-              return true;
-            }
-            console.log("Not routing to Material Inventory Link");
-            return false;
-          },
-          materialInventoryLink,
-          productionFeedbackLink
-        )
-      )
-    )
-  )
-);
+  console.log(
+    `Routing operation '${operationName}' to: ${targetLink.options.uri}`
+  );
+  return targetLink.request(operation, forward);
+});
 
 // Create Apollo Client
 export const apolloClient = new ApolloClient({
-  link: from([errorLink, authMiddleware, serviceLink]),
+  link: from([authMiddleware, errorLink, routerLink]),
   cache: new InMemoryCache(),
   defaultOptions: {
     watchQuery: {

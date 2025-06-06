@@ -39,7 +39,7 @@ import {
   Cancel as CancelIcon,
 } from "@mui/icons-material";
 import { toast } from "react-toastify";
-import { format } from "date-fns";
+import { format, parseISO } from "date-fns";
 import {
   GET_PLAN,
   DELETE_PLAN,
@@ -291,8 +291,9 @@ const ProductionPlanDetail = () => {
   }
 
   const { plan } = data;
-  const isDraft = plan.status === "DRAFT";
-  const isPendingApproval = plan.status === "PENDING_APPROVAL";
+  const isDraft = plan.status && plan.status.toUpperCase() === "DRAFT";
+  const isPendingApproval =
+    plan.status && plan.status.toUpperCase() === "PENDING_APPROVAL";
 
   return (
     <Box>
@@ -389,7 +390,9 @@ const ProductionPlanDetail = () => {
               </Grid>
               <Grid item xs={8}>
                 <Typography variant="body2">
-                  {format(new Date(plan.plannedStartDate), "dd MMM yyyy")}
+                  {plan.plannedStartDate
+                    ? format(parseISO(plan.plannedStartDate), "dd MMM yyyy")
+                    : "N/A"}
                 </Typography>
               </Grid>
 
@@ -400,7 +403,9 @@ const ProductionPlanDetail = () => {
               </Grid>
               <Grid item xs={8}>
                 <Typography variant="body2">
-                  {format(new Date(plan.plannedEndDate), "dd MMM yyyy")}
+                  {plan.plannedEndDate
+                    ? format(parseISO(plan.plannedEndDate), "dd MMM yyyy")
+                    : "N/A"}
                 </Typography>
               </Grid>
             </Grid>
@@ -436,7 +441,7 @@ const ProductionPlanDetail = () => {
               </Grid>
               <Grid item xs={8}>
                 <Typography variant="body2">
-                  {plan.productionRequestId}
+                  {plan.productionRequestId || "-"}
                 </Typography>
               </Grid>
 
@@ -500,7 +505,12 @@ const ProductionPlanDetail = () => {
                   </Grid>
                   <Grid item xs={8}>
                     <Typography variant="body2">
-                      {format(new Date(plan.approvalDate), "dd MMM yyyy HH:mm")}
+                      {plan.approvalDate
+                        ? format(
+                            parseISO(plan.approvalDate),
+                            "dd MMM yyyy HH:mm"
+                          )
+                        : "N/A"}
                     </Typography>
                   </Grid>
                 </>
@@ -513,7 +523,9 @@ const ProductionPlanDetail = () => {
               </Grid>
               <Grid item xs={8}>
                 <Typography variant="body2">
-                  {format(new Date(plan.createdAt), "dd MMM yyyy HH:mm")}
+                  {plan.createdAt
+                    ? format(parseISO(plan.createdAt), "dd MMM yyyy HH:mm")
+                    : "N/A"}
                 </Typography>
               </Grid>
 
@@ -524,7 +536,9 @@ const ProductionPlanDetail = () => {
               </Grid>
               <Grid item xs={8}>
                 <Typography variant="body2">
-                  {format(new Date(plan.updatedAt), "dd MMM yyyy HH:mm")}
+                  {plan.updatedAt
+                    ? format(parseISO(plan.updatedAt), "dd MMM yyyy HH:mm")
+                    : "N/A"}
                 </Typography>
               </Grid>
             </Grid>
@@ -583,16 +597,20 @@ const ProductionPlanDetail = () => {
                         <TableCell>{capacityPlan.machineType}</TableCell>
                         <TableCell>{capacityPlan.hoursRequired}</TableCell>
                         <TableCell>
-                          {format(
-                            new Date(capacityPlan.startDate),
-                            "dd MMM yyyy"
-                          )}
+                          {capacityPlan.startDate
+                            ? format(
+                                parseISO(capacityPlan.startDate),
+                                "dd MMM yyyy"
+                              )
+                            : "N/A"}
                         </TableCell>
                         <TableCell>
-                          {format(
-                            new Date(capacityPlan.endDate),
-                            "dd MMM yyyy"
-                          )}
+                          {capacityPlan.endDate
+                            ? format(
+                                parseISO(capacityPlan.endDate),
+                                "dd MMM yyyy"
+                              )
+                            : "N/A"}
                         </TableCell>
                         <TableCell align="right">
                           {isDraft && (
@@ -672,10 +690,12 @@ const ProductionPlanDetail = () => {
                         <TableCell>{materialPlan.quantityRequired}</TableCell>
                         <TableCell>{materialPlan.unitOfMeasure}</TableCell>
                         <TableCell>
-                          {format(
-                            new Date(materialPlan.availabilityDate),
-                            "dd MMM yyyy"
-                          )}
+                          {materialPlan.availabilityDate
+                            ? format(
+                                parseISO(materialPlan.availabilityDate),
+                                "dd MMM yyyy"
+                              )
+                            : "N/A"}
                         </TableCell>
                         <TableCell>{materialPlan.notes || "-"}</TableCell>
                         <TableCell align="right">

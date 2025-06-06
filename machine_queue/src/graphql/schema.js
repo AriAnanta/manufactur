@@ -1,10 +1,10 @@
 /**
  * GraphQL Schema untuk Machine Queue Service
  */
-const { buildSchema } = require('graphql');
-const { Machine, MachineQueue } = require('../models');
-const { Op } = require('sequelize');
-const axios = require('axios');
+const { buildSchema } = require("graphql");
+const { Machine, MachineQueue, sequelize } = require("../models");
+const { Op } = require("sequelize");
+const axios = require("axios");
 
 // Definisi schema GraphQL
 const schema = buildSchema(`
@@ -303,173 +303,152 @@ const schema = buildSchema(`
 const root = {
   // Format tanggal
   Date: {
-    serialize: (date) => date instanceof Date ? date.toISOString() : null,
-    parseValue: (value) => value ? new Date(value) : null,
-    parseLiteral: (ast) => ast.value ? new Date(ast.value) : null
+    serialize: (date) => (date instanceof Date ? date.toISOString() : null),
+    parseValue: (value) => (value ? new Date(value) : null),
+    parseLiteral: (ast) => (ast.value ? new Date(ast.value) : null),
   },
 
   // Query Resolvers
   machines: async ({ filter }) => {
     try {
       const where = {};
-      
+
       if (filter) {
         if (filter.type) where.type = filter.type;
         if (filter.status) where.status = filter.status;
       }
-      
+
       const machines = await Machine.findAll({
         where,
-        order: [['name', 'ASC']],
+        order: [["name", "ASC"]],
         include: [
           {
             model: MachineQueue,
-            as: 'queues',
+            as: "queues",
             where: {
               status: {
-                [Op.ne]: 'completed'
-              }
-            },
-            required: false
-          }
-        ]
-      });
-      
-      return machines;
-    } catch (error) {
-      console.error('GraphQL error - machines query:', error);
-      throw new Error('Gagal mengambil data mesin');
-    }
-  },
-  
-  machine: async ({ id }) => {
-    try {
-      const machine = await Machine.findByPk(id, {
-        include: [
-          {
-            model: MachineQueue,
-            as: 'queues',
-            where: {
-              status: {
-                [Op.ne]: 'completed'
-              }
+                [Op.ne]: "completed",
+              },
             },
             required: false,
-            order: [['position', 'ASC']]
-          }
-        ]
+          },
+        ],
       });
-      
-      if (!machine) {
-        throw new Error('Mesin tidak ditemukan');
-      }
-      
-      return machine;
+
+      return machines;
     } catch (error) {
-      console.error('GraphQL error - machine query:', error);
-      throw new Error(error.message);
+      console.error("GraphQL error - machines query:", error);
+      throw new Error("Gagal mengambil data mesin");
     }
   },
-  
+
+  machine: async ({ id }) => {
+    try {
+      const machine = await Machine.findByPk(id);
+      if (!machine) {
+        throw new Error("Mesin tidak ditemukan");
+      }
+      return formatMachine(machine);
+    } catch (error) {
+      console.error("Error mengambil mesin berdasarkan ID:", error);
+      throw new Error("Gagal mengambil mesin");
+    }
+  },
+
   machineTypes: async () => {
     try {
       const types = await Machine.findAll({
-        attributes: [[Machine.sequelize.fn('DISTINCT', Machine.sequelize.col('type')), 'type']],
-        order: [['type', 'ASC']]
+        attributes: [[sequelize.fn("DISTINCT", sequelize.col("type")), "type"]],
+        raw: true,
       });
-      
-      return types.map(t => t.type);
+      return types.map((item) => item.type);
     } catch (error) {
-      console.error('GraphQL error - machineTypes query:', error);
-      throw new Error('Gagal mengambil tipe mesin');
+      console.error("Error mengambil tipe mesin:", error);
+      throw new Error("Gagal mengambil tipe mesin");
     }
   },
-  
+
   queues: async ({ filter }) => {
     try {
       const where = {};
-      
-      if (filter) {
-        if (filter.machineId) where.machineId = filter.machineId;
-        if (filter.batchId) where.batchId = filter.batchId;
-        if (filter.status) where.status = filter.status;
-        if (filter.priority) where.priority = filter.priority;
+      if (filter && filter.machineId) {
+        where.machineId = filter.machineId;
       }
-      
+
       const queues = await MachineQueue.findAll({
         where,
         include: [
           {
             model: Machine,
-            as: 'machine'
-          }
+            as: "machine",
+          },
         ],
         order: [
-          ['status', 'ASC'],
-          ['priority', 'DESC'],
-          ['scheduledStartTime', 'ASC']
-        ]
+          ["status", "ASC"],
+          ["priority", "DESC"],
+          ["scheduledStartTime", "ASC"],
+        ],
       });
-      
+
       return queues;
     } catch (error) {
-      console.error('GraphQL error - queues query:', error);
-      throw new Error('Gagal mengambil data antrian');
+      console.error("GraphQL error - queues query:", error);
+      throw new Error("Gagal mengambil data antrian");
     }
   },
-  
+
   queue: async ({ id }) => {
     try {
       const queue = await MachineQueue.findByPk(id, {
         include: [
           {
             model: Machine,
-            as: 'machine'
-          }
-        ]
+            as: "machine",
+          },
+        ],
       });
-      
+
       if (!queue) {
-        throw new Error('Antrian tidak ditemukan');
+        throw new Error("Antrian tidak ditemukan");
       }
-      
+
       return queue;
     } catch (error) {
-      console.error('GraphQL error - queue query:', error);
+      console.error("GraphQL error - queue query:", error);
       throw new Error(error.message);
     }
   },
-  
+
   machineQueues: async ({ machineId }) => {
     try {
       const machine = await Machine.findByPk(machineId);
       if (!machine) {
-        throw new Error('Mesin tidak ditemukan');
+        throw new Error("Mesin tidak ditemukan");
       }
-      
+
       const queues = await MachineQueue.findAll({
         where: { machineId },
         order: [
-          ['status', 'ASC'],
-          ['position', 'ASC'],
-          ['priority', 'DESC'],
-          ['scheduledStartTime', 'ASC']
+          ["status", "ASC"],
+          ["position", "ASC"],
+          ["priority", "DESC"],
+          ["scheduledStartTime", "ASC"],
         ],
         include: [
           {
             model: Machine,
-            as: 'machine'
-          }
-        ]
+            as: "machine",
+          },
+        ],
       });
-      
+
       return queues;
     } catch (error) {
-      console.error('GraphQL error - machineQueues query:', error);
+      console.error("GraphQL error - machineQueues query:", error);
       throw new Error(error.message);
     }
   },
-  
+
   batchQueues: async ({ batchId }) => {
     try {
       const queues = await MachineQueue.findAll({
@@ -477,111 +456,113 @@ const root = {
         include: [
           {
             model: Machine,
-            as: 'machine'
-          }
+            as: "machine",
+          },
         ],
         order: [
-          ['status', 'ASC'],
-          ['scheduledStartTime', 'ASC']
-        ]
+          ["status", "ASC"],
+          ["scheduledStartTime", "ASC"],
+        ],
       });
-      
+
       return queues;
     } catch (error) {
-      console.error('GraphQL error - batchQueues query:', error);
-      throw new Error('Gagal mengambil antrian untuk batch');
+      console.error("GraphQL error - batchQueues query:", error);
+      throw new Error("Gagal mengambil antrian untuk batch");
     }
   },
-  
+
   checkCapacity: async ({ machineType, hoursRequired, startDate, endDate }) => {
     try {
       if (!machineType || !hoursRequired) {
-        throw new Error('Tipe mesin dan jam yang dibutuhkan diperlukan');
+        throw new Error("Tipe mesin dan jam yang dibutuhkan diperlukan");
       }
-      
+
       // Dapatkan semua mesin dengan tipe yang diminta dan status operational
       const machines = await Machine.findAll({
         where: {
           type: machineType,
-          status: 'operational'
-        }
+          status: "operational",
+        },
       });
-      
+
       if (machines.length === 0) {
         return {
           available: false,
           message: `Tidak ada mesin ${machineType} yang tersedia`,
-          machines: []
+          machines: [],
         };
       }
-      
+
       // Untuk setiap mesin, periksa ketersediaan pada rentang waktu yang diminta
       const availableMachines = [];
-      
+
       const requestedStart = startDate ? new Date(startDate) : new Date();
-      const requestedEnd = endDate ? new Date(endDate) : new Date(requestedStart.getTime() + hoursRequired * 60 * 60 * 1000);
-      
+      const requestedEnd = endDate
+        ? new Date(endDate)
+        : new Date(requestedStart.getTime() + hoursRequired * 60 * 60 * 1000);
+
       for (const machine of machines) {
         // Dapatkan semua antrian yang tumpang tindih dengan rentang waktu yang diminta
         const overlappingQueues = await MachineQueue.findAll({
           where: {
             machineId: machine.id,
             status: {
-              [Op.in]: ['waiting', 'in_progress']
+              [Op.in]: ["waiting", "in_progress"],
             },
             [Op.or]: [
               {
                 scheduledStartTime: {
-                  [Op.between]: [requestedStart, requestedEnd]
-                }
+                  [Op.between]: [requestedStart, requestedEnd],
+                },
               },
               {
                 scheduledEndTime: {
-                  [Op.between]: [requestedStart, requestedEnd]
-                }
+                  [Op.between]: [requestedStart, requestedEnd],
+                },
               },
               {
                 [Op.and]: [
                   {
                     scheduledStartTime: {
-                      [Op.lte]: requestedStart
-                    }
+                      [Op.lte]: requestedStart,
+                    },
                   },
                   {
                     scheduledEndTime: {
-                      [Op.gte]: requestedEnd
-                    }
-                  }
-                ]
-              }
-            ]
-          }
+                      [Op.gte]: requestedEnd,
+                    },
+                  },
+                ],
+              },
+            ],
+          },
         });
-        
+
         if (overlappingQueues.length === 0) {
           // Mesin tersedia
           availableMachines.push(machine);
         }
       }
-      
+
       // Jika ada mesin yang tersedia, kembalikan true
       if (availableMachines.length > 0) {
         return {
           available: true,
           message: `${availableMachines.length} mesin ${machineType} tersedia`,
-          machines: availableMachines
+          machines: availableMachines,
         };
       } else {
         // Tidak ada mesin yang tersedia pada rentang waktu yang diminta
         return {
           available: false,
           message: `Semua mesin ${machineType} sudah dijadwalkan pada rentang waktu yang diminta`,
-          machines: []
+          machines: [],
         };
       }
     } catch (error) {
-      console.error('GraphQL error - checkCapacity query:', error);
-      throw new Error('Gagal memeriksa kapasitas: ' + error.message);
+      console.error("GraphQL error - checkCapacity query:", error);
+      throw new Error("Gagal memeriksa kapasitas: " + error.message);
     }
   },
 
@@ -598,17 +579,19 @@ const root = {
         location,
         installationDate,
         hoursPerDay,
-        notes
+        notes,
       } = input;
-      
+
       // Validasi data masukan
       if (!name || !type) {
-        throw new Error('Nama dan tipe mesin diperlukan');
+        throw new Error("Nama dan tipe mesin diperlukan");
       }
-      
+
       // Buat ID mesin unik
-      const machineId = `MACHINE-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
-      
+      const machineId = `MACHINE-${Date.now()}-${Math.floor(
+        Math.random() * 1000
+      )}`;
+
       // Buat mesin baru
       const newMachine = await Machine.create({
         machineId,
@@ -621,21 +604,21 @@ const root = {
         location,
         installationDate: installationDate ? new Date(installationDate) : null,
         hoursPerDay: hoursPerDay || 8.0,
-        status: 'operational',
-        notes
+        status: "operational",
+        notes,
       });
-      
+
       return newMachine;
     } catch (error) {
-      console.error('GraphQL error - createMachine mutation:', error);
-      throw new Error('Gagal membuat mesin: ' + error.message);
+      console.error("GraphQL error - createMachine mutation:", error);
+      throw new Error("Gagal membuat mesin: " + error.message);
     }
-  }
-  
+  },
+
   // Mutation lainnya akan dilanjutkan di resolver-mutations.js
 };
 
 module.exports = {
   schema,
-  root
+  root,
 };

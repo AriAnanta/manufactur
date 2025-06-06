@@ -120,10 +120,8 @@ const CapacityPlanForm = () => {
         hoursRequired: capacityPlan.hoursRequired || 0,
         startDate: capacityPlan.startDate
           ? new Date(capacityPlan.startDate)
-          : new Date(),
-        endDate: capacityPlan.endDate
-          ? new Date(capacityPlan.endDate)
-          : new Date(new Date().setDate(new Date().getDate() + 7)),
+          : null,
+        endDate: capacityPlan.endDate ? new Date(capacityPlan.endDate) : null,
         notes: capacityPlan.notes || "",
       });
     }
@@ -299,14 +297,38 @@ const CapacityPlanForm = () => {
     );
   }
 
-  // Check if plan is in draft status
-  if (planData.plan.status !== "DRAFT") {
+  const productionPlan = planData?.plan;
+
+  if (!productionPlan) {
     return (
-      <Alert severity="warning" sx={{ mt: 2 }}>
-        Capacity plans can only be added or edited for plans in draft status
+      <Alert severity="error" sx={{ mt: 4 }}>
+        Production Plan not found.
       </Alert>
     );
   }
+
+  // Check if plan status allows adding/editing capacity plans
+  const isPlanEditable = productionPlan.status.toLowerCase() === "draft";
+
+  if (!isPlanEditable && !isEditMode) {
+    return (
+      <Alert severity="warning" sx={{ mt: 4 }}>
+        Capacity plans can only be added for plans in DRAFT status. Current
+        status: {productionPlan.status}
+      </Alert>
+    );
+  }
+
+  if (!isPlanEditable && isEditMode) {
+    return (
+      <Alert severity="warning" sx={{ mt: 4 }}>
+        Capacity plans can only be edited for plans in DRAFT status. Current
+        status: {productionPlan.status}
+      </Alert>
+    );
+  }
+
+  const machineTypes = machineTypesData?.machineTypes || [];
 
   return (
     <LocalizationProvider dateAdapter={AdapterDateFns}>
@@ -346,16 +368,16 @@ const CapacityPlanForm = () => {
           <Divider sx={{ mb: 3 }} />
 
           <Typography variant="subtitle1" gutterBottom>
-            Production Plan: {planData.plan.productName}
+            Production Plan: {productionPlan.productName}
           </Typography>
           <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
             Plan Period:{" "}
-            {planData.plan.plannedStartDate
-              ? new Date(planData.plan.plannedStartDate).toLocaleDateString()
+            {productionPlan.plannedStartDate
+              ? new Date(productionPlan.plannedStartDate).toLocaleDateString()
               : "N/A"}{" "}
             -{" "}
-            {planData.plan.plannedEndDate
-              ? new Date(planData.plan.plannedEndDate).toLocaleDateString()
+            {productionPlan.plannedEndDate
+              ? new Date(productionPlan.plannedEndDate).toLocaleDateString()
               : "N/A"}
           </Typography>
 
@@ -375,14 +397,12 @@ const CapacityPlanForm = () => {
                     <MenuItem disabled>Loading machine types...</MenuItem>
                   ) : machineTypesError ? (
                     <MenuItem disabled>Error loading machine types</MenuItem>
-                  ) : machineTypesData && machineTypesData.machineTypes ? (
-                    machineTypesData.machineTypes.map((type) => (
-                      <MenuItem key={type.id} value={type.name}>
-                        {type.name}
+                  ) : (
+                    machineTypes.map((type) => (
+                      <MenuItem key={type} value={type}>
+                        {type}
                       </MenuItem>
                     ))
-                  ) : (
-                    <MenuItem disabled>No machine types available</MenuItem>
                   )}
                 </Select>
                 {errors.machineType && (
@@ -419,13 +439,13 @@ const CapacityPlanForm = () => {
                 value={formData.startDate}
                 onChange={(date) => handleDateChange("startDate", date)}
                 minDate={
-                  planData.plan.plannedStartDate
-                    ? new Date(planData.plan.plannedStartDate)
+                  productionPlan.plannedStartDate
+                    ? new Date(productionPlan.plannedStartDate)
                     : null
                 }
                 maxDate={
-                  planData.plan.plannedEndDate
-                    ? new Date(planData.plan.plannedEndDate)
+                  productionPlan.plannedEndDate
+                    ? new Date(productionPlan.plannedEndDate)
                     : null
                 }
                 slotProps={{
@@ -445,13 +465,13 @@ const CapacityPlanForm = () => {
                 value={formData.endDate}
                 onChange={(date) => handleDateChange("endDate", date)}
                 minDate={
-                  planData.plan.plannedStartDate
-                    ? new Date(planData.plan.plannedStartDate)
+                  productionPlan.plannedStartDate
+                    ? new Date(productionPlan.plannedStartDate)
                     : null
                 }
                 maxDate={
-                  planData.plan.plannedEndDate
-                    ? new Date(planData.plan.plannedEndDate)
+                  productionPlan.plannedEndDate
+                    ? new Date(productionPlan.plannedEndDate)
                     : null
                 }
                 slotProps={{

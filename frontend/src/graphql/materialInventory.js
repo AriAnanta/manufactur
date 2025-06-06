@@ -1,18 +1,23 @@
-import { gql } from '@apollo/client';
+import { gql } from "@apollo/client";
 
 // Fragments
 const MATERIAL_FIELDS = gql`
   fragment MaterialFields on Material {
     id
+    materialId
     name
     description
+    category
     type
     unit
-    unitPrice
-    currentStock
-    minimumStock
+    stockQuantity
+    reorderLevel
+    price
+    leadTime
     location
+    supplierId
     status
+    notes
     createdAt
     updatedAt
   }
@@ -55,8 +60,8 @@ const TRANSACTION_FIELDS = gql`
 
 // Queries
 export const GET_MATERIALS = gql`
-  query GetMaterials($filter: MaterialFilter) {
-    materials(filter: $filter) {
+  query GetMaterials {
+    materials {
       ...MaterialFields
     }
   }

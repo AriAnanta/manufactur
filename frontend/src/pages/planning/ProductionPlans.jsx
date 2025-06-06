@@ -39,7 +39,7 @@ import {
   CheckCircle as CheckCircleIcon,
 } from "@mui/icons-material";
 import { toast } from "react-toastify";
-import { format } from "date-fns";
+import { format, parseISO } from "date-fns";
 import {
   GET_PLANS,
   DELETE_PLAN,
@@ -355,20 +355,27 @@ const ProductionPlans = () => {
                             : plan.planningNotes}
                         </TableCell>
                         <TableCell>
-                          {format(
-                            new Date(plan.plannedStartDate),
-                            "dd MMM yyyy"
-                          )}
+                          {plan.plannedStartDate
+                            ? format(
+                                parseISO(plan.plannedStartDate),
+                                "dd MMM yyyy"
+                              )
+                            : "N/A"}
                         </TableCell>
                         <TableCell>
-                          {format(new Date(plan.plannedEndDate), "dd MMM yyyy")}
+                          {plan.plannedEndDate
+                            ? format(
+                                parseISO(plan.plannedEndDate),
+                                "dd MMM yyyy"
+                              )
+                            : "N/A"}
                         </TableCell>
                         <TableCell>{plan.priority}</TableCell>
                         <TableCell>
                           <StatusChip status={plan.status} />
                         </TableCell>
                         <TableCell>
-                          {format(new Date(plan.createdAt), "dd MMM yyyy")}
+                          {format(parseISO(plan.createdAt), "dd MMM yyyy")}
                         </TableCell>
                         <TableCell align="right">
                           <Tooltip title="View">
@@ -379,39 +386,44 @@ const ProductionPlans = () => {
                               <VisibilityIcon fontSize="small" />
                             </IconButton>
                           </Tooltip>
-                          {plan.status === "DRAFT" && (
-                            <>
-                              <Tooltip title="Edit">
+                          {plan.status &&
+                            plan.status.toUpperCase() === "DRAFT" && (
+                              <>
+                                <Tooltip title="Edit">
+                                  <IconButton
+                                    size="small"
+                                    onClick={() => handleEditPlan(plan.id)}
+                                  >
+                                    <EditIcon fontSize="small" />
+                                  </IconButton>
+                                </Tooltip>
+                                <Tooltip title="Delete">
+                                  <IconButton
+                                    size="small"
+                                    onClick={() =>
+                                      handleOpenDeleteDialog(plan.id)
+                                    }
+                                  >
+                                    <DeleteIcon fontSize="small" />
+                                  </IconButton>
+                                </Tooltip>
+                              </>
+                            )}
+                          {plan.status &&
+                            plan.status.toUpperCase() ===
+                              "PENDING_APPROVAL" && (
+                              <Tooltip title="Approve">
                                 <IconButton
                                   size="small"
-                                  onClick={() => handleEditPlan(plan.id)}
-                                >
-                                  <EditIcon fontSize="small" />
-                                </IconButton>
-                              </Tooltip>
-                              <Tooltip title="Delete">
-                                <IconButton
-                                  size="small"
+                                  color="success"
                                   onClick={() =>
-                                    handleOpenDeleteDialog(plan.id)
+                                    handleOpenApproveDialog(plan.id)
                                   }
                                 >
-                                  <DeleteIcon fontSize="small" />
+                                  <CheckCircleIcon fontSize="small" />
                                 </IconButton>
                               </Tooltip>
-                            </>
-                          )}
-                          {plan.status === "PENDING_APPROVAL" && (
-                            <Tooltip title="Approve">
-                              <IconButton
-                                size="small"
-                                color="success"
-                                onClick={() => handleOpenApproveDialog(plan.id)}
-                              >
-                                <CheckCircleIcon fontSize="small" />
-                              </IconButton>
-                            </Tooltip>
-                          )}
+                            )}
                         </TableCell>
                       </TableRow>
                     ))}

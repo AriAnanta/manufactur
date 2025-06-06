@@ -13,6 +13,7 @@ const schema = buildSchema(`
     plans: [ProductionPlan]
     plan(id: ID!): ProductionPlan
     capacityPlans(planId: ID!): [CapacityPlan]
+    capacityPlan(id: ID!): CapacityPlan
     materialPlans(planId: ID!): [MaterialPlan]
   }
 
@@ -39,6 +40,7 @@ const schema = buildSchema(`
   }
 
   input PlanUpdateInput {
+    productName: String
     plannedStartDate: String
     plannedEndDate: String
     priority: String
@@ -47,6 +49,7 @@ const schema = buildSchema(`
     totalCapacityRequired: Float
     totalMaterialCost: Float
     plannedBatches: Int
+    requestId: Int
   }
 
   input CapacityPlanInput {
@@ -216,6 +219,19 @@ const root = {
     }
   },
 
+  capacityPlan: async ({ id }) => {
+    try {
+      const capacityPlan = await CapacityPlan.findByPk(id);
+      if (!capacityPlan) {
+        throw new Error("Rencana kapasitas tidak ditemukan");
+      }
+      return formatCapacityPlan(capacityPlan);
+    } catch (error) {
+      console.error("Error mengambil detail rencana kapasitas:", error);
+      throw new Error("Gagal mengambil detail rencana kapasitas");
+    }
+  },
+
   materialPlans: async ({ planId }) => {
     try {
       const materials = await MaterialPlan.findAll({
@@ -258,31 +274,18 @@ const root = {
 
   updatePlan: async ({ id, input }) => {
     try {
-      // Cari rencana
       const plan = await ProductionPlan.findByPk(id);
-
       if (!plan) {
         throw new Error("Rencana produksi tidak ditemukan");
       }
 
-      // Update rencana
+      // Konversi priority ke lowercase jika ada
+      if (input.priority) {
+        input.priority = input.priority.toLowerCase();
+      }
+
       await plan.update(input);
-
-      // Ambil rencana yang telah diperbarui dengan relasi
-      const updatedPlan = await ProductionPlan.findByPk(id, {
-        include: [
-          {
-            model: CapacityPlan,
-            as: "capacityPlans",
-          },
-          {
-            model: MaterialPlan,
-            as: "materialPlans",
-          },
-        ],
-      });
-
-      return formatPlan(updatedPlan);
+      return formatPlan(plan);
     } catch (error) {
       console.error("Error memperbarui rencana produksi:", error);
       throw new Error("Gagal memperbarui rencana produksi");
@@ -433,11 +436,15 @@ const root = {
 
   addCapacityPlan: async ({ planId, input }) => {
     try {
-      // Cari rencana produksi
       const plan = await ProductionPlan.findByPk(planId);
-
       if (!plan) {
         throw new Error("Rencana produksi tidak ditemukan");
+      }
+
+      if (plan.status.toLowerCase() !== "draft") {
+        throw new Error(
+          "Capacity plans can only be added or edited for plans in draft status"
+        );
       }
 
       // Buat rencana kapasitas
@@ -509,8 +516,19 @@ const root = {
     try {
       const capacityPlan = await CapacityPlan.findByPk(id);
       if (!capacityPlan) {
-        throw new Error("Capacity plan not found");
+        throw new Error("Rencana kapasitas tidak ditemukan");
       }
+
+      const plan = await ProductionPlan.findByPk(capacityPlan.planId);
+      if (!plan || plan.status.toLowerCase() !== "draft") {
+        throw new Error(
+          "Capacity plans can only be added or edited for plans in draft status"
+        );
+      }
+
+      // Panggil Machine Queue Service untuk memeriksa ketersediaan kapasitas jika machineType atau hoursRequired diupdate
+      // ... existing code ...
+
       await capacityPlan.update(input);
       // Recalculate totalCapacityRequired for the parent plan if needed
       await updatePlanCapacity(capacityPlan.planId);
@@ -573,29 +591,22 @@ const root = {
 };
 
 // Helper untuk memformat tanggal dalam rencana produksi
+function toISOStringOrNull(dateInput) {
+  if (!dateInput) {
+    return null;
+  }
+  const date = new Date(dateInput);
+  return isNaN(date.getTime()) ? null : date.toISOString();
+}
+
 function formatPlan(plan) {
   const formatted = {
     ...plan.dataValues,
-    plannedStartDate:
-      plan.plannedStartDate instanceof Date && !isNaN(plan.plannedStartDate)
-        ? plan.plannedStartDate.toISOString()
-        : null,
-    plannedEndDate:
-      plan.plannedEndDate instanceof Date && !isNaN(plan.plannedEndDate)
-        ? plan.plannedEndDate.toISOString()
-        : null,
-    approvalDate:
-      plan.approvalDate instanceof Date && !isNaN(plan.approvalDate)
-        ? plan.approvalDate.toISOString()
-        : null,
-    createdAt:
-      plan.createdAt instanceof Date && !isNaN(plan.createdAt)
-        ? plan.createdAt.toISOString()
-        : null,
-    updatedAt:
-      plan.updatedAt instanceof Date && !isNaN(plan.updatedAt)
-        ? plan.updatedAt.toISOString()
-        : null,
+    plannedStartDate: toISOStringOrNull(plan.plannedStartDate),
+    plannedEndDate: toISOStringOrNull(plan.plannedEndDate),
+    approvalDate: toISOStringOrNull(plan.approvalDate),
+    createdAt: toISOStringOrNull(plan.createdAt),
+    updatedAt: toISOStringOrNull(plan.updatedAt),
   };
 
   // Format relasi jika ada
@@ -614,10 +625,10 @@ function formatPlan(plan) {
 function formatCapacityPlan(capacity) {
   return {
     ...capacity.dataValues,
-    startDate: capacity.startDate ? capacity.startDate.toISOString() : null,
-    endDate: capacity.endDate ? capacity.endDate.toISOString() : null,
-    createdAt: capacity.createdAt ? capacity.createdAt.toISOString() : null,
-    updatedAt: capacity.updatedAt ? capacity.updatedAt.toISOString() : null,
+    startDate: toISOStringOrNull(capacity.startDate),
+    endDate: toISOStringOrNull(capacity.endDate),
+    createdAt: toISOStringOrNull(capacity.createdAt),
+    updatedAt: toISOStringOrNull(capacity.updatedAt),
   };
 }
 
@@ -625,11 +636,9 @@ function formatCapacityPlan(capacity) {
 function formatMaterialPlan(material) {
   return {
     ...material.dataValues,
-    availabilityDate: material.availabilityDate
-      ? material.availabilityDate.toISOString()
-      : null,
-    createdAt: material.createdAt ? material.createdAt.toISOString() : null,
-    updatedAt: material.updatedAt ? material.updatedAt.toISOString() : null,
+    availabilityDate: toISOStringOrNull(material.availabilityDate),
+    createdAt: toISOStringOrNull(material.createdAt),
+    updatedAt: toISOStringOrNull(material.updatedAt),
   };
 }
 
