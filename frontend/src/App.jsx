@@ -25,6 +25,7 @@ import ProductionRequests from "./pages/production-management/ProductionRequests
 import ProductionRequestDetail from "./pages/production-management/ProductionRequestDetail";
 import ProductionBatches from "./pages/production-management/ProductionBatches";
 import ProductionBatchDetail from "./pages/production-management/ProductionBatchDetail";
+import ProductionBatchForm from "./pages/production-management/ProductionBatchForm";
 
 // Material Inventory Pages
 import MaterialList from "./pages/material-inventory/MaterialList";
@@ -96,8 +97,16 @@ function App() {
             />
             <Route path="/production-batches" element={<ProductionBatches />} />
             <Route
+              path="/production-batches/add"
+              element={<ProductionBatchForm />}
+            />
+            <Route
               path="/production-batches/:id"
               element={<ProductionBatchDetail />}
+            />
+            <Route
+              path="/production-batches/:id/edit"
+              element={<ProductionBatchForm />}
             />
 
             {/* Material Inventory Routes */}

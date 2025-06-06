@@ -24,6 +24,10 @@ import {
   Select,
   MenuItem,
   LinearProgress,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
 } from "@mui/material";
 import {
   Add as AddIcon,
@@ -53,6 +57,11 @@ const ProductionBatches = () => {
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [filterStatus, setFilterStatus] = useState("");
   const navigate = useNavigate();
+
+  // New states for alert dialog
+  const [openAlertDialog, setOpenAlertDialog] = useState(false);
+  const [alertTitle, setAlertTitle] = useState("");
+  const [alertContent, setAlertContent] = useState("");
 
   useEffect(() => {
     fetchBatches();
@@ -147,7 +156,14 @@ const ProductionBatches = () => {
         fetchBatches();
       } catch (err) {
         console.error("Error deleting batch:", err);
-        setError("Gagal menghapus batch produksi.");
+        if (err.response && err.response.status === 400) {
+          setAlertTitle("Cannot Delete Batch");
+          setAlertContent(err.response.data.message);
+          setOpenAlertDialog(true);
+          // No need to set global error state here if using a dedicated dialog
+        } else {
+          setError("Gagal menghapus batch produksi.");
+        }
       } finally {
         setLoading(false);
       }
@@ -218,7 +234,11 @@ const ProductionBatches = () => {
           }}
         >
           <Typography variant="h5">Production Batches</Typography>
-          <Button variant="contained" startIcon={<AddIcon />}>
+          <Button
+            variant="contained"
+            startIcon={<AddIcon />}
+            onClick={() => navigate("/production-batches/add")}
+          >
             New Batch
           </Button>
         </Box>
@@ -340,7 +360,9 @@ const ProductionBatches = () => {
                     <Tooltip title="Edit">
                       <IconButton
                         size="small"
-                        onClick={() => handleEditBatch(batch.id)}
+                        onClick={() =>
+                          navigate(`/production-batches/${batch.id}/edit`)
+                        }
                       >
                         <EditIcon fontSize="small" />
                       </IconButton>
@@ -371,6 +393,24 @@ const ProductionBatches = () => {
           onRowsPerPageChange={handleChangeRowsPerPage}
         />
       </Paper>
+
+      {/* Alert Dialog for Delete Errors */}
+      <Dialog
+        open={openAlertDialog}
+        onClose={() => setOpenAlertDialog(false)}
+        aria-labelledby="alert-dialog-title"
+        aria-describedby="alert-dialog-description"
+      >
+        <DialogTitle id="alert-dialog-title">{alertTitle}</DialogTitle>
+        <DialogContent>
+          <Typography id="alert-dialog-description">{alertContent}</Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setOpenAlertDialog(false)} autoFocus>
+            OK
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 };

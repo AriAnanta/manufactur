@@ -241,6 +241,7 @@ exports.updateBatch = async (req, res) => {
       actualEndDate,
       status,
       notes,
+      quantity,
     } = req.body;
 
     // Find the batch
@@ -258,6 +259,7 @@ exports.updateBatch = async (req, res) => {
     if (actualEndDate) updateData.actualEndDate = actualEndDate;
     if (status) updateData.status = status;
     if (notes) updateData.notes = notes;
+    if (quantity) updateData.quantity = quantity;
 
     // Update batch
     await batch.update(updateData);
@@ -448,6 +450,45 @@ exports.updateStep = async (req, res) => {
     });
   } catch (error) {
     console.error("Error updating production step:", error);
+    return res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+/**
+ * Delete a production batch
+ */
+exports.deleteBatch = async (req, res) => {
+  try {
+    const batchId = req.params.id;
+
+    const batch = await ProductionBatch.findByPk(batchId);
+
+    if (!batch) {
+      return res.status(404).json({ message: "Production batch not found" });
+    }
+
+    // Check for associated steps or material allocations before deleting
+    const steps = await ProductionStep.findAll({
+      where: { batch_id: batch.id },
+    });
+    const materialAllocations = await MaterialAllocation.findAll({
+      where: { batch_id: batch.id },
+    });
+
+    if (steps.length > 0 || materialAllocations.length > 0) {
+      return res.status(400).json({
+        message:
+          "Cannot delete batch with associated steps or material allocations. Consider cancelling or completing it instead.",
+      });
+    }
+
+    await batch.destroy();
+
+    return res
+      .status(200)
+      .json({ message: "Production batch deleted successfully" });
+  } catch (error) {
+    console.error("Error deleting production batch:", error);
     return res.status(500).json({ message: "Internal server error" });
   }
 };
