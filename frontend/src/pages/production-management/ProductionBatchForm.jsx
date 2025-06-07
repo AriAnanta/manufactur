@@ -13,10 +13,17 @@ import {
   Select,
   FormControl,
   InputLabel,
+  Card,
+  CardContent,
+  Avatar,
+  Fade,
+  Grow,
+  Stack,
 } from "@mui/material";
 import {
   ArrowBack as ArrowBackIcon,
   Save as SaveIcon,
+  Assignment as AssignmentIcon,
 } from "@mui/icons-material";
 import axios from "axios";
 
@@ -138,134 +145,264 @@ const ProductionBatchForm = () => {
         display="flex"
         justifyContent="center"
         alignItems="center"
-        minHeight="80vh"
+        minHeight="400px"
       >
-        <CircularProgress />
+        <CircularProgress size={60} thickness={4} />
       </Box>
     );
   }
 
   if (error) {
     return (
-      <Box
-        display="flex"
-        justifyContent="center"
-        alignItems="center"
-        minHeight="80vh"
-      >
-        <Alert severity="error">{error}</Alert>
-      </Box>
+      <Fade in>
+        <Alert severity="error" sx={{ m: 2, borderRadius: 2 }}>
+          {error}
+        </Alert>
+      </Fade>
     );
   }
 
   return (
-    <Box sx={{ p: 3 }}>
-      <Button
-        startIcon={<ArrowBackIcon />}
-        onClick={() => navigate("/production-batches")}
-        sx={{ mb: 2 }}
-      >
-        Kembali ke Batch Produksi
-      </Button>
-      <Typography variant="h4" gutterBottom>
-        {isEditMode
-          ? `Edit Batch: ${batch?.batchNumber}`
-          : "Create New Production Batch"}
-      </Typography>
-      <Paper elevation={2} sx={{ p: 3, mt: 3 }}>
-        <Grid container spacing={3}>
-          <Grid item xs={12}>
-            <FormControl fullWidth required>
-              <InputLabel>Production Request</InputLabel>
-              <Select
-                name="requestId"
-                value={formData.requestId}
-                onChange={handleInputChange}
-                label="Production Request"
-                disabled={isEditMode} // Cannot change request for existing batch
+    <Box
+      sx={{
+        width: "100%",
+        maxWidth: 1200,
+        mx: "auto",
+        p: { xs: 2, sm: 3 },
+        overflow: "hidden",
+      }}
+    >
+      {/* Header Section */}
+      <Fade in timeout={600}>
+        <Card
+          elevation={0}
+          sx={{
+            mb: 4,
+            background:
+              "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+            color: "white",
+            borderRadius: 3,
+            width: "100%",
+          }}
+        >
+          <CardContent sx={{ p: { xs: 3, sm: 4 } }}>
+            <Box sx={{ display: "flex", alignItems: "center" }}>
+              <Avatar
+                sx={{
+                  bgcolor: "rgba(255,255,255,0.2)",
+                  width: { xs: 56, sm: 64 },
+                  height: { xs: 56, sm: 64 },
+                  mr: { xs: 2, sm: 3 },
+                }}
               >
-                {requests.map((req) => (
-                  <MenuItem key={req.id} value={req.id}>
-                    {req.requestId} - {req.productName} ({req.quantity})
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-          </Grid>
-          <Grid item xs={12} sm={6}>
-            <TextField
-              fullWidth
-              label="Quantity"
-              name="quantity"
-              type="number"
-              value={formData.quantity}
-              onChange={handleInputChange}
-              required
-              InputProps={{ inputProps: { min: 1 } }}
-            />
-          </Grid>
-          <Grid item xs={12} sm={6}>
-            <FormControl fullWidth>
-              <InputLabel>Status</InputLabel>
-              <Select
-                name="status"
-                value={formData.status}
-                onChange={handleInputChange}
-                label="Status"
-              >
-                <MenuItem value="pending">Pending</MenuItem>
-                <MenuItem value="scheduled">Scheduled</MenuItem>
-                <MenuItem value="in_progress">In Progress</MenuItem>
-                <MenuItem value="completed">Completed</MenuItem>
-                <MenuItem value="cancelled">Cancelled</MenuItem>
-              </Select>
-            </FormControl>
-          </Grid>
-          <Grid item xs={12} sm={6}>
-            <TextField
-              fullWidth
-              label="Scheduled Start Date"
-              name="scheduledStartDate"
-              type="date"
-              value={formData.scheduledStartDate}
-              onChange={handleInputChange}
-              InputLabelProps={{ shrink: true }}
-            />
-          </Grid>
-          <Grid item xs={12} sm={6}>
-            <TextField
-              fullWidth
-              label="Scheduled End Date"
-              name="scheduledEndDate"
-              type="date"
-              value={formData.scheduledEndDate}
-              onChange={handleInputChange}
-              InputLabelProps={{ shrink: true }}
-            />
-          </Grid>
-          <Grid item xs={12}>
-            <TextField
-              fullWidth
-              label="Notes"
-              name="notes"
-              value={formData.notes}
-              onChange={handleInputChange}
-              multiline
-              rows={3}
-            />
-          </Grid>
-          <Grid item xs={12}>
-            <Button
-              variant="contained"
-              color="primary"
-              startIcon={<SaveIcon />}
-              onClick={handleSave}
+                <AssignmentIcon sx={{ fontSize: { xs: 28, sm: 32 } }} />
+              </Avatar>
+              <Box>
+                <Typography
+                  variant="h4"
+                  sx={{
+                    fontWeight: 700,
+                    mb: 1,
+                    fontSize: { xs: "1.75rem", sm: "2.125rem" },
+                  }}
+                >
+                  {isEditMode
+                    ? `Edit Batch: ${batch?.batchNumber}`
+                    : "Create New Production Batch"}
+                </Typography>
+                <Typography variant="h6" sx={{ opacity: 0.9 }}>
+                  {isEditMode
+                    ? "Modify batch details and settings"
+                    : "Set up a new production batch"}
+                </Typography>
+              </Box>
+            </Box>
+          </CardContent>
+        </Card>
+      </Fade>
+
+      {/* Navigation */}
+      <Box sx={{ mb: 3 }}>
+        <Button
+          startIcon={<ArrowBackIcon />}
+          onClick={() => navigate("/production-batches")}
+          sx={{
+            color: "text.secondary",
+            "&:hover": {
+              bgcolor: "grey.100",
+            },
+          }}
+        >
+          Back to Production Batches
+        </Button>
+      </Box>
+
+      {/* Form Section */}
+      <Grow in timeout={800}>
+        <Paper
+          sx={{
+            borderRadius: 3,
+            overflow: "hidden",
+            border: "1px solid",
+            borderColor: "grey.200",
+            width: "100%",
+          }}
+        >
+          <Box sx={{ p: 4 }}>
+            <Typography
+              variant="h6"
+              sx={{
+                mb: 3,
+                fontWeight: 600,
+                color: "text.primary",
+              }}
             >
-              {isEditMode ? "Save Changes" : "Create Batch"}
-            </Button>
-          </Grid>
-        </Grid>
-      </Paper>
+              Batch Information
+            </Typography>
+
+            <Grid container spacing={3}>
+              <Grid item xs={12}>
+                <FormControl fullWidth required>
+                  <InputLabel>Production Request</InputLabel>
+                  <Select
+                    name="requestId"
+                    value={formData.requestId}
+                    onChange={handleInputChange}
+                    label="Production Request"
+                    disabled={isEditMode}
+                    sx={{
+                      "& .MuiOutlinedInput-root": {
+                        borderRadius: 2,
+                      },
+                    }}
+                  >
+                    {requests.map((req) => (
+                      <MenuItem key={req.id} value={req.id}>
+                        {req.requestId} - {req.productName} ({req.quantity})
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </Grid>
+
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  fullWidth
+                  label="Quantity"
+                  name="quantity"
+                  type="number"
+                  value={formData.quantity}
+                  onChange={handleInputChange}
+                  required
+                  InputProps={{ inputProps: { min: 1 } }}
+                  sx={{
+                    "& .MuiOutlinedInput-root": {
+                      borderRadius: 2,
+                    },
+                  }}
+                />
+              </Grid>
+
+              <Grid item xs={12} sm={6}>
+                <FormControl fullWidth>
+                  <InputLabel>Status</InputLabel>
+                  <Select
+                    name="status"
+                    value={formData.status}
+                    onChange={handleInputChange}
+                    label="Status"
+                    sx={{
+                      "& .MuiOutlinedInput-root": {
+                        borderRadius: 2,
+                      },
+                    }}
+                  >
+                    <MenuItem value="pending">Pending</MenuItem>
+                    <MenuItem value="scheduled">Scheduled</MenuItem>
+                    <MenuItem value="in_progress">In Progress</MenuItem>
+                    <MenuItem value="completed">Completed</MenuItem>
+                    <MenuItem value="cancelled">Cancelled</MenuItem>
+                  </Select>
+                </FormControl>
+              </Grid>
+
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  fullWidth
+                  label="Scheduled Start Date"
+                  name="scheduledStartDate"
+                  type="date"
+                  value={formData.scheduledStartDate}
+                  onChange={handleInputChange}
+                  InputLabelProps={{ shrink: true }}
+                  sx={{
+                    "& .MuiOutlinedInput-root": {
+                      borderRadius: 2,
+                    },
+                  }}
+                />
+              </Grid>
+
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  fullWidth
+                  label="Scheduled End Date"
+                  name="scheduledEndDate"
+                  type="date"
+                  value={formData.scheduledEndDate}
+                  onChange={handleInputChange}
+                  InputLabelProps={{ shrink: true }}
+                  sx={{
+                    "& .MuiOutlinedInput-root": {
+                      borderRadius: 2,
+                    },
+                  }}
+                />
+              </Grid>
+
+              <Grid item xs={12}>
+                <TextField
+                  fullWidth
+                  label="Notes"
+                  name="notes"
+                  value={formData.notes}
+                  onChange={handleInputChange}
+                  multiline
+                  rows={3}
+                  sx={{
+                    "& .MuiOutlinedInput-root": {
+                      borderRadius: 2,
+                    },
+                  }}
+                />
+              </Grid>
+
+              <Grid item xs={12}>
+                <Stack direction="row" spacing={2} sx={{ mt: 2 }}>
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    size="large"
+                    startIcon={<SaveIcon />}
+                    onClick={handleSave}
+                    sx={{ px: 4 }}
+                  >
+                    {isEditMode ? "Save Changes" : "Create Batch"}
+                  </Button>
+                  <Button
+                    variant="outlined"
+                    size="large"
+                    onClick={() => navigate("/production-batches")}
+                    sx={{ px: 4 }}
+                  >
+                    Cancel
+                  </Button>
+                </Stack>
+              </Grid>
+            </Grid>
+          </Box>
+        </Paper>
+      </Grow>
     </Box>
   );
 };

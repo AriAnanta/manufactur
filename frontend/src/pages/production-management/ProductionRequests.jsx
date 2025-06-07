@@ -27,6 +27,12 @@ import {
   InputLabel,
   Select,
   MenuItem,
+  Card,
+  CardContent,
+  Fade,
+  Grow,
+  Avatar,
+  Stack,
 } from "@mui/material";
 import {
   Add as AddIcon,
@@ -38,6 +44,7 @@ import {
 } from "@mui/icons-material";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import FactoryIcon from "@mui/icons-material/Factory";
 
 const ProductionRequests = () => {
   const [requests, setRequests] = useState([]);
@@ -85,30 +92,66 @@ const ProductionRequests = () => {
 
   const getStatusChip = (status) => {
     const statusConfig = {
-      received: { color: "info", label: "Received" },
-      planned: { color: "warning", label: "Planned" },
-      in_production: { color: "primary", label: "In Production" },
-      completed: { color: "success", label: "Completed" },
-      cancelled: { color: "error", label: "Cancelled" },
+      received: { color: "info", label: "Received", bgcolor: "#e3f2fd" },
+      planned: { color: "warning", label: "Planned", bgcolor: "#fff3e0" },
+      in_production: {
+        color: "primary",
+        label: "In Production",
+        bgcolor: "#e8f4fd",
+      },
+      completed: { color: "success", label: "Completed", bgcolor: "#e8f5e8" },
+      cancelled: { color: "error", label: "Cancelled", bgcolor: "#ffebee" },
     };
 
-    const config = statusConfig[status] || { color: "default", label: status };
-    return <Chip label={config.label} color={config.color} size="small" />;
+    const config = statusConfig[status] || {
+      color: "default",
+      label: status,
+      bgcolor: "#f5f5f5",
+    };
+    return (
+      <Chip
+        label={config.label}
+        size="small"
+        sx={{
+          fontWeight: 500,
+          bgcolor: config.bgcolor,
+          color:
+            config.color === "default"
+              ? "text.primary"
+              : `${config.color}.main`,
+          border: `1px solid`,
+          borderColor:
+            config.color === "default" ? "grey.300" : `${config.color}.light`,
+        }}
+      />
+    );
   };
 
   const getPriorityChip = (priority) => {
     const priorityConfig = {
-      low: { color: "success", label: "Low" },
-      normal: { color: "info", label: "Normal" },
-      high: { color: "warning", label: "High" },
-      urgent: { color: "error", label: "Urgent" },
+      low: { color: "success", label: "Low", bgcolor: "#e8f5e8" },
+      normal: { color: "info", label: "Normal", bgcolor: "#e3f2fd" },
+      high: { color: "warning", label: "High", bgcolor: "#fff3e0" },
+      urgent: { color: "error", label: "Urgent", bgcolor: "#ffebee" },
     };
 
     const config = priorityConfig[priority] || {
       color: "default",
       label: priority,
+      bgcolor: "#f5f5f5",
     };
-    return <Chip label={config.label} color={config.color} size="small" />;
+    return (
+      <Chip
+        label={config.label}
+        size="small"
+        sx={{
+          fontWeight: 500,
+          bgcolor: config.bgcolor,
+          color: `${config.color}.main`,
+          border: `1px solid ${config.color}.light`,
+        }}
+      />
+    );
   };
 
   const handleSearchChange = (event) => {
@@ -220,159 +263,321 @@ const ProductionRequests = () => {
         alignItems="center"
         minHeight="400px"
       >
-        <CircularProgress />
+        <CircularProgress size={60} thickness={4} />
       </Box>
     );
   }
 
   if (error) {
     return (
-      <Alert severity="error" sx={{ m: 2 }}>
-        {error}
-      </Alert>
+      <Fade in>
+        <Alert severity="error" sx={{ m: 2, borderRadius: 2 }}>
+          {error}
+        </Alert>
+      </Fade>
     );
   }
 
   return (
-    <Box>
-      <Paper sx={{ p: 3, mb: 3 }}>
-        <Box
+    <Box
+      sx={{
+        width: "100%",
+        maxWidth: "100%",
+        mx: "auto",
+        p: { xs: 2, sm: 3 },
+        overflow: "hidden",
+      }}
+    >
+      {/* Header Section */}
+      <Fade in timeout={600}>
+        <Card
+          elevation={0}
           sx={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            mb: 3,
+            mb: 4,
+            background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+            color: "white",
+            borderRadius: 3,
+            width: "100%",
           }}
         >
-          <Typography variant="h5">Production Requests</Typography>
-          <Button
-            variant="contained"
-            startIcon={<AddIcon />}
-            onClick={() => setOpenCreateDialog(true)}
-          >
-            New Request
-          </Button>
-        </Box>
-
-        {/* Filters */}
-        <Grid container spacing={2} sx={{ mb: 3 }}>
-          <Grid item xs={12} md={6}>
-            <TextField
-              fullWidth
-              label="Search Requests"
-              value={searchTerm}
-              onChange={handleSearchChange}
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <SearchIcon />
-                  </InputAdornment>
-                ),
-                endAdornment: searchTerm && (
-                  <InputAdornment position="end">
-                    <IconButton size="small" onClick={() => setSearchTerm("")}>
-                      <ClearIcon />
-                    </IconButton>
-                  </InputAdornment>
-                ),
+          <CardContent sx={{ p: { xs: 3, sm: 4 } }}>
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: { xs: "flex-start", sm: "center" },
+                flexDirection: { xs: "column", sm: "row" },
+                gap: { xs: 3, sm: 0 },
               }}
-            />
-          </Grid>
-          <Grid item xs={12} md={3}>
-            <FormControl fullWidth>
-              <InputLabel>Status Filter</InputLabel>
-              <Select
-                value={filterStatus}
-                onChange={handleFilterStatusChange}
-                label="Status Filter"
+            >
+              <Box sx={{ display: "flex", alignItems: "center" }}>
+                <Avatar
+                  sx={{
+                    bgcolor: "rgba(255,255,255,0.2)",
+                    width: { xs: 56, sm: 64 },
+                    height: { xs: 56, sm: 64 },
+                    mr: { xs: 2, sm: 3 },
+                  }}
+                >
+                  <FactoryIcon sx={{ fontSize: { xs: 28, sm: 32 } }} />
+                </Avatar>
+                <Box>
+                  <Typography
+                    variant="h4"
+                    sx={{
+                      fontWeight: 700,
+                      mb: 1,
+                      fontSize: { xs: "1.75rem", sm: "2.125rem" },
+                    }}
+                  >
+                    Production Requests
+                  </Typography>
+                  <Typography variant="h6" sx={{ opacity: 0.9 }}>
+                    Manage and track all production requests
+                  </Typography>
+                </Box>
+              </Box>
+              <Button
+                variant="contained"
+                size="large"
+                startIcon={<AddIcon />}
+                onClick={() => setOpenCreateDialog(true)}
+                sx={{
+                  bgcolor: "rgba(255,255,255,0.2)",
+                  color: "white",
+                  "&:hover": {
+                    bgcolor: "rgba(255,255,255,0.3)",
+                  },
+                  px: 4,
+                  py: 1.5,
+                  borderRadius: 2,
+                  width: { xs: "100%", sm: "auto" },
+                }}
               >
-                <MenuItem value="">All Statuses</MenuItem>
-                <MenuItem value="received">Received</MenuItem>
-                <MenuItem value="planned">Planned</MenuItem>
-                <MenuItem value="in_production">In Production</MenuItem>
-                <MenuItem value="completed">Completed</MenuItem>
-                <MenuItem value="cancelled">Cancelled</MenuItem>
-              </Select>
-            </FormControl>
-          </Grid>
-        </Grid>
+                New Request
+              </Button>
+            </Box>
+          </CardContent>
+        </Card>
+      </Fade>
 
-        {/* Table */}
-        <TableContainer>
-          <Table>
-            <TableHead>
-              <TableRow>
-                <TableCell>Request ID</TableCell>
-                <TableCell>Product Name</TableCell>
-                <TableCell>Quantity</TableCell>
-                <TableCell>Priority</TableCell>
-                <TableCell>Status</TableCell>
-                <TableCell>Due Date</TableCell>
-                <TableCell>Created Date</TableCell>
-                <TableCell>Actions</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {paginatedRequests.map((request) => (
-                <TableRow key={request.id}>
-                  <TableCell>
-                    <Typography variant="body1" sx={{ fontWeight: "medium" }}>
-                      {request.requestId}
-                    </Typography>
+      <Grow in timeout={800}>
+        <Paper
+          sx={{
+            borderRadius: 3,
+            overflow: "hidden",
+            border: "1px solid",
+            borderColor: "grey.200",
+            width: "100%",
+          }}
+        >
+          {/* Filters Section */}
+          <Box
+            sx={{
+              p: 3,
+              bgcolor: "grey.50",
+              borderBottom: "1px solid",
+              borderColor: "grey.200",
+            }}
+          >
+            <Grid container spacing={3}>
+              <Grid item xs={12} md={8}>
+                <TextField
+                  fullWidth
+                  label="Search Requests"
+                  value={searchTerm}
+                  onChange={handleSearchChange}
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <SearchIcon color="action" />
+                      </InputAdornment>
+                    ),
+                    endAdornment: searchTerm && (
+                      <InputAdornment position="end">
+                        <IconButton
+                          size="small"
+                          onClick={() => setSearchTerm("")}
+                        >
+                          <ClearIcon />
+                        </IconButton>
+                      </InputAdornment>
+                    ),
+                  }}
+                  sx={{
+                    "& .MuiOutlinedInput-root": {
+                      bgcolor: "white",
+                    },
+                  }}
+                />
+              </Grid>
+              <Grid item xs={12} md={4}>
+                <FormControl fullWidth>
+                  <InputLabel>Status Filter</InputLabel>
+                  <Select
+                    value={filterStatus}
+                    onChange={handleFilterStatusChange}
+                    label="Status Filter"
+                    sx={{
+                      bgcolor: "white",
+                    }}
+                  >
+                    <MenuItem value="">All Statuses</MenuItem>
+                    <MenuItem value="received">Received</MenuItem>
+                    <MenuItem value="planned">Planned</MenuItem>
+                    <MenuItem value="in_production">In Production</MenuItem>
+                    <MenuItem value="completed">Completed</MenuItem>
+                    <MenuItem value="cancelled">Cancelled</MenuItem>
+                  </Select>
+                </FormControl>
+              </Grid>
+            </Grid>
+          </Box>
+
+          {/* Table Section */}
+          <Box sx={{ width: "100%", overflowX: "auto" }}>
+            <Table sx={{ minWidth: 800 }}>
+              <TableHead>
+                <TableRow>
+                  <TableCell sx={{ fontWeight: 600, py: 2 }}>
+                    Request ID
                   </TableCell>
-                  <TableCell>
-                    <Typography variant="body1" sx={{ fontWeight: "medium" }}>
-                      {request.productName}
-                    </Typography>
+                  <TableCell sx={{ fontWeight: 600, py: 2 }}>
+                    Product Name
                   </TableCell>
-                  <TableCell>{request.quantity}</TableCell>
-                  <TableCell>{getPriorityChip(request.priority)}</TableCell>
-                  <TableCell>{getStatusChip(request.status)}</TableCell>
-                  <TableCell>
-                    {new Date(request.dueDate).toLocaleDateString()}
+                  <TableCell sx={{ fontWeight: 600, py: 2 }}>
+                    Quantity
                   </TableCell>
-                  <TableCell>
-                    {new Date(request.createdAt).toLocaleDateString()}
+                  <TableCell sx={{ fontWeight: 600, py: 2 }}>
+                    Priority
                   </TableCell>
-                  <TableCell>
-                    <Tooltip title="View Details">
-                      <IconButton
-                        size="small"
-                        color="primary"
-                        onClick={() => handleViewDetails(request.id)}
-                      >
-                        <VisibilityIcon fontSize="small" />
-                      </IconButton>
-                    </Tooltip>
+                  <TableCell sx={{ fontWeight: 600, py: 2 }}>Status</TableCell>
+                  <TableCell sx={{ fontWeight: 600, py: 2 }}>
+                    Due Date
                   </TableCell>
+                  <TableCell sx={{ fontWeight: 600, py: 2 }}>Created</TableCell>
+                  <TableCell sx={{ fontWeight: 600, py: 2 }}>Actions</TableCell>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
+              </TableHead>
+              <TableBody>
+                {paginatedRequests.map((request, index) => (
+                  <Fade in timeout={300 + index * 100} key={request.id}>
+                    <TableRow
+                      sx={{
+                        "&:hover": {
+                          bgcolor: "grey.50",
+                          transform: "scale(1.001)",
+                          transition: "all 0.2s ease-in-out",
+                        },
+                        "&:last-child td": { border: 0 },
+                      }}
+                    >
+                      <TableCell sx={{ py: 2 }}>
+                        <Typography
+                          variant="body1"
+                          sx={{ fontWeight: 600, color: "primary.main" }}
+                        >
+                          {request.requestId}
+                        </Typography>
+                      </TableCell>
+                      <TableCell sx={{ py: 2 }}>
+                        <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                          {request.productName}
+                        </Typography>
+                      </TableCell>
+                      <TableCell sx={{ py: 2 }}>
+                        <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                          {request.quantity.toLocaleString()}
+                        </Typography>
+                      </TableCell>
+                      <TableCell sx={{ py: 2 }}>
+                        {getPriorityChip(request.priority)}
+                      </TableCell>
+                      <TableCell sx={{ py: 2 }}>
+                        {getStatusChip(request.status)}
+                      </TableCell>
+                      <TableCell sx={{ py: 2 }}>
+                        <Typography variant="body2">
+                          {new Date(request.dueDate).toLocaleDateString()}
+                        </Typography>
+                      </TableCell>
+                      <TableCell sx={{ py: 2 }}>
+                        <Typography variant="body2" color="text.secondary">
+                          {new Date(request.createdAt).toLocaleDateString()}
+                        </Typography>
+                      </TableCell>
+                      <TableCell sx={{ py: 2 }}>
+                        <Stack direction="row" spacing={1}>
+                          <Tooltip title="View Details">
+                            <IconButton
+                              size="small"
+                              color="primary"
+                              onClick={() => handleViewDetails(request.id)}
+                              sx={{
+                                "&:hover": {
+                                  bgcolor: "primary.light",
+                                  color: "white",
+                                },
+                              }}
+                            >
+                              <VisibilityIcon fontSize="small" />
+                            </IconButton>
+                          </Tooltip>
+                        </Stack>
+                      </TableCell>
+                    </TableRow>
+                  </Fade>
+                ))}
+              </TableBody>
+            </Table>
+          </Box>
 
-        <TablePagination
-          rowsPerPageOptions={[5, 10, 25]}
-          component="div"
-          count={filteredRequests.length}
-          rowsPerPage={rowsPerPage}
-          page={page}
-          onPageChange={handleChangePage}
-          onRowsPerPageChange={handleChangeRowsPerPage}
-        />
-      </Paper>
+          <TablePagination
+            rowsPerPageOptions={[5, 10, 25]}
+            component="div"
+            count={filteredRequests.length}
+            rowsPerPage={rowsPerPage}
+            page={page}
+            onPageChange={handleChangePage}
+            onRowsPerPageChange={handleChangeRowsPerPage}
+            sx={{
+              borderTop: "1px solid",
+              borderColor: "grey.200",
+              bgcolor: "grey.50",
+            }}
+          />
+        </Paper>
+      </Grow>
 
-      {/* Create Request Dialog */}
+      {/* Create Request Dialog - Enhanced */}
       <Dialog
         open={openCreateDialog}
         onClose={() => setOpenCreateDialog(false)}
-        maxWidth="sm"
+        maxWidth="md"
         fullWidth
+        PaperProps={{
+          sx: {
+            borderRadius: 3,
+          },
+        }}
       >
-        <DialogTitle>Create Production Request</DialogTitle>
-        <DialogContent>
-          <Grid container spacing={2} sx={{ mt: 1 }}>
-            <Grid item xs={12}>
+        <DialogTitle
+          sx={{
+            bgcolor: "primary.main",
+            color: "white",
+            py: 3,
+            display: "flex",
+            alignItems: "center",
+          }}
+        >
+          <FactoryIcon sx={{ mr: 2 }} />
+          <Typography variant="h6" sx={{ fontWeight: 600 }}>
+            Create Production Request
+          </Typography>
+        </DialogTitle>
+        <DialogContent sx={{ p: 4 }}>
+          <Grid container spacing={3} sx={{ mt: 0.5 }}>
+            <Grid item xs={12} sm={6}>
               <TextField
                 fullWidth
                 label="Request ID"
@@ -380,9 +585,14 @@ const ProductionRequests = () => {
                 value={formData.requestId}
                 onChange={handleInputChange}
                 required
+                sx={{
+                  "& .MuiOutlinedInput-root": {
+                    borderRadius: 2,
+                  },
+                }}
               />
             </Grid>
-            <Grid item xs={12}>
+            <Grid item xs={12} sm={6}>
               <TextField
                 fullWidth
                 label="Customer ID"
@@ -390,6 +600,11 @@ const ProductionRequests = () => {
                 value={formData.customerId}
                 onChange={handleInputChange}
                 required
+                sx={{
+                  "& .MuiOutlinedInput-root": {
+                    borderRadius: 2,
+                  },
+                }}
               />
             </Grid>
             <Grid item xs={12}>
@@ -400,6 +615,11 @@ const ProductionRequests = () => {
                 value={formData.productName}
                 onChange={handleInputChange}
                 required
+                sx={{
+                  "& .MuiOutlinedInput-root": {
+                    borderRadius: 2,
+                  },
+                }}
               />
             </Grid>
             <Grid item xs={12} sm={6}>
@@ -411,6 +631,11 @@ const ProductionRequests = () => {
                 value={formData.quantity}
                 onChange={handleInputChange}
                 required
+                sx={{
+                  "& .MuiOutlinedInput-root": {
+                    borderRadius: 2,
+                  },
+                }}
               />
             </Grid>
             <Grid item xs={12} sm={6}>
@@ -421,6 +646,12 @@ const ProductionRequests = () => {
                   value={formData.priority}
                   onChange={handleInputChange}
                   label="Priority"
+                  sx={{
+                    bgcolor: "white",
+                    "& .MuiSelect-select": {
+                      borderRadius: 2,
+                    },
+                  }}
                 >
                   <MenuItem value="low">Low</MenuItem>
                   <MenuItem value="normal">Normal</MenuItem>
@@ -439,6 +670,11 @@ const ProductionRequests = () => {
                 onChange={handleInputChange}
                 InputLabelProps={{ shrink: true }}
                 required
+                sx={{
+                  "& .MuiOutlinedInput-root": {
+                    borderRadius: 2,
+                  },
+                }}
               />
             </Grid>
             <Grid item xs={12}>
@@ -450,6 +686,11 @@ const ProductionRequests = () => {
                 onChange={handleInputChange}
                 multiline
                 rows={2}
+                sx={{
+                  "& .MuiOutlinedInput-root": {
+                    borderRadius: 2,
+                  },
+                }}
               />
             </Grid>
             <Grid item xs={12}>
@@ -462,13 +703,25 @@ const ProductionRequests = () => {
                 multiline
                 rows={2}
                 helperText="Enter as valid JSON string, e.g., {'marketplace':'tokopedia','order_id':'TKP-001'}"
+                sx={{
+                  "& .MuiOutlinedInput-root": {
+                    borderRadius: 2,
+                  },
+                }}
               />
             </Grid>
           </Grid>
         </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setOpenCreateDialog(false)}>Cancel</Button>
-          <Button onClick={handleCreateRequest} variant="contained">
+        <DialogActions sx={{ p: 3, bgcolor: "grey.50" }}>
+          <Button onClick={() => setOpenCreateDialog(false)} size="large">
+            Cancel
+          </Button>
+          <Button
+            onClick={handleCreateRequest}
+            variant="contained"
+            size="large"
+            sx={{ px: 4 }}
+          >
             Create Request
           </Button>
         </DialogActions>

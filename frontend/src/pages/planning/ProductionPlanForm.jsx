@@ -16,6 +16,10 @@ import {
   Alert,
   IconButton,
   Divider,
+  Avatar,
+  Stack,
+  Card,
+  CardContent,
 } from "@mui/material";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFnsV3";
@@ -23,6 +27,7 @@ import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import {
   ArrowBack as ArrowBackIcon,
   Save as SaveIcon,
+  Schedule as ScheduleIcon,
 } from "@mui/icons-material";
 import { toast } from "react-toastify";
 import {
@@ -281,129 +286,255 @@ const ProductionPlanForm = () => {
 
   return (
     <LocalizationProvider dateAdapter={AdapterDateFns}>
-      <Box component="form" onSubmit={handleSubmit}>
-        <Paper sx={{ p: 3, mb: 3 }}>
-          <Box
-            sx={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-              mb: 3,
-            }}
-          >
-            <Box sx={{ display: "flex", alignItems: "center" }}>
-              <IconButton onClick={handleCancel} sx={{ mr: 1 }}>
-                <ArrowBackIcon />
-              </IconButton>
-              <Typography variant="h5">
-                {isEditMode ? "Edit Production Plan" : "Create Production Plan"}
-              </Typography>
-            </Box>
-            <Button
-              variant="contained"
-              color="primary"
-              startIcon={<SaveIcon />}
-              type="submit"
-              disabled={submitting || createLoading || updateLoading}
+      <Box
+        sx={{
+          width: "100%",
+          maxWidth: 1200,
+          mx: "auto",
+          p: { xs: 2, sm: 3 },
+          overflow: "hidden",
+        }}
+      >
+        {/* Header Section */}
+        <Card
+          elevation={0}
+          sx={{
+            mb: 4,
+            background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+            color: "white",
+            borderRadius: 3,
+            width: "100%",
+          }}
+        >
+          <CardContent sx={{ p: { xs: 3, sm: 4 } }}>
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: { xs: "flex-start", sm: "center" },
+                flexDirection: { xs: "column", sm: "row" },
+                gap: { xs: 3, sm: 0 },
+              }}
             >
-              {submitting || createLoading || updateLoading ? (
-                <CircularProgress size={24} color="inherit" />
-              ) : (
-                "Save"
-              )}
-            </Button>
-          </Box>
-
-          <Divider sx={{ mb: 3 }} />
-
-          <Grid container spacing={3}>
-            <Grid item xs={12} sm={6}>
-              <TextField
-                fullWidth
-                label="Product Name"
-                name="productName"
-                value={formData.productName}
-                onChange={handleInputChange}
-                error={Boolean(errors.productName)}
-                helperText={errors.productName}
-                required
-              />
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <TextField
-                fullWidth
-                label="Planning Notes"
-                name="planningNotes"
-                value={formData.planningNotes}
-                onChange={handleInputChange}
-                error={Boolean(errors.planningNotes)}
-                helperText={errors.planningNotes}
-                multiline
-                rows={4}
-                required
-              />
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <DatePicker
-                label="Planned Start Date"
-                value={formData.plannedStartDate}
-                onChange={(date) => handleDateChange("plannedStartDate", date)}
-                slotProps={{
-                  textField: {
-                    fullWidth: true,
-                    error: Boolean(errors.plannedStartDate),
-                    helperText: errors.plannedStartDate,
-                    required: true,
-                  },
-                }}
-              />
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <DatePicker
-                label="Planned End Date"
-                value={formData.plannedEndDate}
-                onChange={(date) => handleDateChange("plannedEndDate", date)}
-                slotProps={{
-                  textField: {
-                    fullWidth: true,
-                    error: Boolean(errors.plannedEndDate),
-                    helperText: errors.plannedEndDate,
-                    required: true,
-                  },
-                }}
-              />
-            </Grid>
-            <Grid item xs={12} md={6}>
-              <FormControl fullWidth margin="normal" required>
-                <InputLabel id="priority-label">Priority</InputLabel>
-                <Select
-                  labelId="priority-label"
-                  id="priority"
-                  name="priority"
-                  value={formData.priority}
-                  onChange={handleInputChange}
-                  label="Priority"
+              <Box sx={{ display: "flex", alignItems: "center" }}>
+                <Avatar
+                  sx={{
+                    bgcolor: "rgba(255,255,255,0.2)",
+                    width: { xs: 56, sm: 64 },
+                    height: { xs: 56, sm: 64 },
+                    mr: { xs: 2, sm: 3 },
+                  }}
                 >
-                  <MenuItem value="low">Low</MenuItem>
-                  <MenuItem value="normal">Medium</MenuItem>
-                  <MenuItem value="high">High</MenuItem>
-                  <MenuItem value="urgent">Urgent</MenuItem>
-                </Select>
-              </FormControl>
+                  <ScheduleIcon sx={{ fontSize: { xs: 28, sm: 32 } }} />
+                </Avatar>
+                <Box>
+                  <Typography
+                    variant="h4"
+                    sx={{
+                      fontWeight: 700,
+                      mb: 1,
+                      fontSize: { xs: "1.75rem", sm: "2.125rem" },
+                    }}
+                  >
+                    {isEditMode
+                      ? "Edit Production Plan"
+                      : "Create Production Plan"}
+                  </Typography>
+                  <Typography variant="h6" sx={{ opacity: 0.9 }}>
+                    {isEditMode
+                      ? "Modify plan details and settings"
+                      : "Set up a new production plan"}
+                  </Typography>
+                </Box>
+              </Box>
+              <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
+                <Button
+                  variant="outlined"
+                  startIcon={<ArrowBackIcon />}
+                  onClick={handleCancel}
+                  fullWidth={{ xs: true, sm: false }}
+                  sx={{
+                    bgcolor: "rgba(255,255,255,0.1)",
+                    color: "white",
+                    borderColor: "rgba(255,255,255,0.5)",
+                    "&:hover": {
+                      bgcolor: "rgba(255,255,255,0.2)",
+                    },
+                  }}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  variant="contained"
+                  startIcon={<SaveIcon />}
+                  type="submit"
+                  disabled={submitting || createLoading || updateLoading}
+                  fullWidth={{ xs: true, sm: false }}
+                  sx={{
+                    bgcolor: "rgba(255,255,255,0.2)",
+                    color: "white",
+                    "&:hover": {
+                      bgcolor: "rgba(255,255,255,0.3)",
+                    },
+                  }}
+                >
+                  {submitting || createLoading || updateLoading ? (
+                    <CircularProgress size={24} color="inherit" />
+                  ) : (
+                    "Save"
+                  )}
+                </Button>
+              </Stack>
+            </Box>
+          </CardContent>
+        </Card>
+
+        {/* Form Section */}
+        <Paper
+          component="form"
+          onSubmit={handleSubmit}
+          sx={{
+            borderRadius: 3,
+            overflow: "hidden",
+            border: "1px solid",
+            borderColor: "grey.200",
+            width: "100%",
+          }}
+        >
+          <Box sx={{ p: 4 }}>
+            <Typography
+              variant="h6"
+              sx={{
+                mb: 3,
+                fontWeight: 600,
+                color: "text.primary",
+                borderBottom: "1px solid",
+                borderColor: "grey.300",
+                pb: 2,
+              }}
+            >
+              Plan Information
+            </Typography>
+
+            <Grid container spacing={3}>
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  fullWidth
+                  label="Product Name"
+                  name="productName"
+                  value={formData.productName}
+                  onChange={handleInputChange}
+                  error={Boolean(errors.productName)}
+                  helperText={errors.productName}
+                  required
+                  sx={{
+                    "& .MuiOutlinedInput-root": {
+                      borderRadius: 2,
+                    },
+                  }}
+                />
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  fullWidth
+                  label="Request ID"
+                  name="requestId"
+                  value={formData.requestId}
+                  onChange={handleInputChange}
+                  error={Boolean(errors.requestId)}
+                  helperText={errors.requestId}
+                  required
+                  sx={{
+                    "& .MuiOutlinedInput-root": {
+                      borderRadius: 2,
+                    },
+                  }}
+                />
+              </Grid>
+              <Grid item xs={12}>
+                <TextField
+                  fullWidth
+                  label="Planning Notes"
+                  name="planningNotes"
+                  value={formData.planningNotes}
+                  onChange={handleInputChange}
+                  error={Boolean(errors.planningNotes)}
+                  helperText={errors.planningNotes}
+                  multiline
+                  rows={4}
+                  required
+                  sx={{
+                    "& .MuiOutlinedInput-root": {
+                      borderRadius: 2,
+                    },
+                  }}
+                />
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <DatePicker
+                  label="Planned Start Date"
+                  value={formData.plannedStartDate}
+                  onChange={(date) => handleDateChange("plannedStartDate", date)}
+                  slotProps={{
+                    textField: {
+                      fullWidth: true,
+                      error: Boolean(errors.plannedStartDate),
+                      helperText: errors.plannedStartDate,
+                      required: true,
+                      sx: {
+                        "& .MuiOutlinedInput-root": {
+                          borderRadius: 2,
+                        },
+                      },
+                    },
+                  }}
+                />
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <DatePicker
+                  label="Planned End Date"
+                  value={formData.plannedEndDate}
+                  onChange={(date) => handleDateChange("plannedEndDate", date)}
+                  slotProps={{
+                    textField: {
+                      fullWidth: true,
+                      error: Boolean(errors.plannedEndDate),
+                      helperText: errors.plannedEndDate,
+                      required: true,
+                      sx: {
+                        "& .MuiOutlinedInput-root": {
+                          borderRadius: 2,
+                        },
+                      },
+                    },
+                  }}
+                />
+              </Grid>
+              <Grid item xs={12} md={6}>
+                <FormControl fullWidth required>
+                  <InputLabel id="priority-label">Priority</InputLabel>
+                  <Select
+                    labelId="priority-label"
+                    id="priority"
+                    name="priority"
+                    value={formData.priority}
+                    onChange={handleInputChange}
+                    label="Priority"
+                    sx={{
+                      "& .MuiOutlinedInput-root": {
+                        borderRadius: 2,
+                      },
+                    }}
+                  >
+                    <MenuItem value="low">Low</MenuItem>
+                    <MenuItem value="normal">Medium</MenuItem>
+                    <MenuItem value="high">High</MenuItem>
+                    <MenuItem value="urgent">Urgent</MenuItem>
+                  </Select>
+                </FormControl>
+              </Grid>
             </Grid>
-            <Grid item xs={12} sm={6}>
-              <TextField
-                fullWidth
-                label="Request ID"
-                name="requestId"
-                value={formData.requestId}
-                onChange={handleInputChange}
-                error={Boolean(errors.requestId)}
-                helperText={errors.requestId}
-                required
-              />
-            </Grid>
-          </Grid>
+          </Box>
         </Paper>
       </Box>
     </LocalizationProvider>

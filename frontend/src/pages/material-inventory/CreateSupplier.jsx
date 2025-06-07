@@ -1,22 +1,43 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import {
+  Box,
+  Typography,
+  TextField,
+  Button,
+  Grid,
+  Card,
+  CardContent,
+  Avatar,
+  Fade,
+  Grow,
+  Stack,
+  Paper,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  Alert,
+  CircularProgress,
+} from "@mui/material";
+import {
+  ArrowBack as ArrowBackIcon,
+  Save as SaveIcon,
+  Business as BusinessIcon,
+} from "@mui/icons-material";
 
 function CreateSupplier() {
   const [formData, setFormData] = useState({
     supplierId: "",
     name: "",
+    description: "",
+    contactPerson: "",
+    email: "",
+    phone: "",
+    website: "",
     address: "",
     city: "",
-    state: "",
-    postalCode: "",
-    country: "Indonesia",
-    contactPerson: "",
-    phone: "",
-    email: "",
-    website: "",
-    paymentTerms: "",
-    leadTime: 7,
-    rating: 0.0,
+    country: "",
     status: "Active",
     notes: "",
   });
@@ -54,314 +75,350 @@ function CreateSupplier() {
       }
 
       const result = await response.json();
-      alert("Supplier berhasil ditambahkan!");
-      navigate("/suppliers"); // Kembali ke daftar supplier setelah berhasil
+      alert("Supplier added successfully!");
+      navigate("/suppliers");
     } catch (e) {
       setError(e);
-      alert(`Gagal menambahkan supplier: ${e.message}`);
+      alert(`Failed to add supplier: ${e.message}`);
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div
-      className="create-supplier-container"
-      style={{
-        padding: "20px",
-        maxWidth: "800px",
-        margin: "auto",
-        border: "1px solid #ccc",
-        borderRadius: "8px",
+    <Box
+      sx={{
+        width: "100%",
+        maxWidth: 1200,
+        mx: "auto",
+        p: { xs: 2, sm: 3 },
+        overflow: "hidden",
       }}
     >
-      <h1>Tambah Supplier Baru</h1>
-      <form
-        onSubmit={handleSubmit}
-        style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "15px" }}
-      >
-        <div>
-          <label>Supplier ID:</label>
-          <input
-            type="text"
-            name="supplierId"
-            value={formData.supplierId}
-            onChange={handleChange}
-            style={{
-              width: "90%",
-              padding: "8px",
-              border: "1px solid #ddd",
-              borderRadius: "4px",
-            }}
-          />
-        </div>
-        <div>
-          <label>Nama Supplier:</label>
-          <input
-            type="text"
-            name="name"
-            value={formData.name}
-            onChange={handleChange}
-            required
-            style={{
-              width: "90%",
-              padding: "8px",
-              border: "1px solid #ddd",
-              borderRadius: "4px",
-            }}
-          />
-        </div>
-        <div style={{ gridColumn: "1 / 3" }}>
-          <label>Alamat:</label>
-          <textarea
-            name="address"
-            value={formData.address}
-            onChange={handleChange}
-            rows="3"
-            style={{
-              width: "calc(100% - 16px)",
-              padding: "8px",
-              border: "1px solid #ddd",
-              borderRadius: "4px",
-            }}
-          ></textarea>
-        </div>
-        <div>
-          <label>Kota:</label>
-          <input
-            type="text"
-            name="city"
-            value={formData.city}
-            onChange={handleChange}
-            style={{
-              width: "90%",
-              padding: "8px",
-              border: "1px solid #ddd",
-              borderRadius: "4px",
-            }}
-          />
-        </div>
-        <div>
-          <label>Provinsi/Negara Bagian:</label>
-          <input
-            type="text"
-            name="state"
-            value={formData.state}
-            onChange={handleChange}
-            style={{
-              width: "90%",
-              padding: "8px",
-              border: "1px solid #ddd",
-              borderRadius: "4px",
-            }}
-          />
-        </div>
-        <div>
-          <label>Kode Pos:</label>
-          <input
-            type="text"
-            name="postalCode"
-            value={formData.postalCode}
-            onChange={handleChange}
-            style={{
-              width: "90%",
-              padding: "8px",
-              border: "1px solid #ddd",
-              borderRadius: "4px",
-            }}
-          />
-        </div>
-        <div>
-          <label>Negara:</label>
-          <input
-            type="text"
-            name="country"
-            value={formData.country}
-            onChange={handleChange}
-            style={{
-              width: "90%",
-              padding: "8px",
-              border: "1px solid #ddd",
-              borderRadius: "4px",
-            }}
-          />
-        </div>
-        <div>
-          <label>Kontak Person:</label>
-          <input
-            type="text"
-            name="contactPerson"
-            value={formData.contactPerson}
-            onChange={handleChange}
-            style={{
-              width: "90%",
-              padding: "8px",
-              border: "1px solid #ddd",
-              borderRadius: "4px",
-            }}
-          />
-        </div>
-        <div>
-          <label>Telepon:</label>
-          <input
-            type="text"
-            name="phone"
-            value={formData.phone}
-            onChange={handleChange}
-            style={{
-              width: "90%",
-              padding: "8px",
-              border: "1px solid #ddd",
-              borderRadius: "4px",
-            }}
-          />
-        </div>
-        <div>
-          <label>Email:</label>
-          <input
-            type="email"
-            name="email"
-            value={formData.email}
-            onChange={handleChange}
-            style={{
-              width: "90%",
-              padding: "8px",
-              border: "1px solid #ddd",
-              borderRadius: "4px",
-            }}
-          />
-        </div>
-        <div>
-          <label>Website:</label>
-          <input
-            type="text"
-            name="website"
-            value={formData.website}
-            onChange={handleChange}
-            style={{
-              width: "90%",
-              padding: "8px",
-              border: "1px solid #ddd",
-              borderRadius: "4px",
-            }}
-          />
-        </div>
-        <div>
-          <label>Syarat Pembayaran:</label>
-          <input
-            type="text"
-            name="paymentTerms"
-            value={formData.paymentTerms}
-            onChange={handleChange}
-            style={{
-              width: "90%",
-              padding: "8px",
-              border: "1px solid #ddd",
-              borderRadius: "4px",
-            }}
-          />
-        </div>
-        <div>
-          <label>Lead Time (hari):</label>
-          <input
-            type="number"
-            name="leadTime"
-            value={formData.leadTime}
-            onChange={handleChange}
-            style={{
-              width: "90%",
-              padding: "8px",
-              border: "1px solid #ddd",
-              borderRadius: "4px",
-            }}
-          />
-        </div>
-        <div>
-          <label>Rating (0-5):</label>
-          <input
-            type="number"
-            name="rating"
-            step="0.01"
-            min="0"
-            max="5"
-            value={formData.rating}
-            onChange={handleChange}
-            style={{
-              width: "90%",
-              padding: "8px",
-              border: "1px solid #ddd",
-              borderRadius: "4px",
-            }}
-          />
-        </div>
-        <div>
-          <label>Status:</label>
-          <select
-            name="status"
-            value={formData.status}
-            onChange={handleChange}
-            style={{
-              width: "90%",
-              padding: "8px",
-              border: "1px solid #ddd",
-              borderRadius: "4px",
-            }}
-          >
-            <option value="Active">Active</option>
-            <option value="Inactive">Inactive</option>
-            <option value="On Hold">On Hold</option>
-            <option value="Terminated">Terminated</option>
-          </select>
-        </div>
-        <div style={{ gridColumn: "1 / 3" }}>
-          <label>Catatan:</label>
-          <textarea
-            name="notes"
-            value={formData.notes}
-            onChange={handleChange}
-            rows="4"
-            style={{
-              width: "calc(100% - 16px)",
-              padding: "8px",
-              border: "1px solid #ddd",
-              borderRadius: "4px",
-            }}
-          ></textarea>
-        </div>
+      {/* Header Section */}
+      <Fade in timeout={600}>
+        <Card
+          elevation={0}
+          sx={{
+            mb: 4,
+            background: "linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)",
+            color: "white",
+            borderRadius: 3,
+            width: "100%",
+          }}
+        >
+          <CardContent sx={{ p: { xs: 3, sm: 4 } }}>
+            <Box sx={{ display: "flex", alignItems: "center" }}>
+              <Avatar
+                sx={{
+                  bgcolor: "rgba(255,255,255,0.2)",
+                  width: { xs: 56, sm: 64 },
+                  height: { xs: 56, sm: 64 },
+                  mr: { xs: 2, sm: 3 },
+                }}
+              >
+                <BusinessIcon sx={{ fontSize: { xs: 28, sm: 32 } }} />
+              </Avatar>
+              <Box>
+                <Typography
+                  variant="h4"
+                  sx={{
+                    fontWeight: 700,
+                    mb: 1,
+                    fontSize: { xs: "1.75rem", sm: "2.125rem" },
+                    color: "text.primary",
+                  }}
+                >
+                  Add New Supplier
+                </Typography>
+                <Typography
+                  variant="h6"
+                  sx={{ opacity: 0.8, color: "text.secondary" }}
+                >
+                  Create a new supplier entry for inventory management
+                </Typography>
+              </Box>
+            </Box>
+          </CardContent>
+        </Card>
+      </Fade>
 
-        <div style={{ gridColumn: "1 / 3", textAlign: "right" }}>
-          <button
-            type="submit"
-            disabled={loading}
-            style={{
-              padding: "10px 15px",
-              backgroundColor: "#007bff",
-              color: "white",
-              border: "none",
-              borderRadius: "5px",
-              cursor: "pointer",
-              marginRight: "10px",
-            }}
-          >
-            {loading ? "Menambahkan..." : "Tambah Supplier"}
-          </button>
-          <button
-            type="button"
-            onClick={() => navigate("/suppliers")}
-            style={{
-              padding: "10px 15px",
-              backgroundColor: "#6c757d",
-              color: "white",
-              border: "none",
-              borderRadius: "5px",
-              cursor: "pointer",
-            }}
-          >
-            Batal
-          </button>
-        </div>
-      </form>
-    </div>
+      {/* Navigation */}
+      <Box sx={{ mb: 3 }}>
+        <Button
+          startIcon={<ArrowBackIcon />}
+          onClick={() => navigate("/suppliers")}
+          sx={{
+            color: "text.secondary",
+            "&:hover": {
+              bgcolor: "grey.100",
+            },
+          }}
+        >
+          Back to Suppliers
+        </Button>
+      </Box>
+
+      {/* Error Display */}
+      {error && (
+        <Alert severity="error" sx={{ mb: 3 }}>
+          Error: {error.message}
+        </Alert>
+      )}
+
+      {/* Form Section */}
+      <Grow in timeout={800}>
+        <Paper
+          component="form"
+          onSubmit={handleSubmit}
+          sx={{
+            borderRadius: 3,
+            overflow: "hidden",
+            border: "1px solid",
+            borderColor: "grey.200",
+            width: "100%",
+          }}
+        >
+          <Box sx={{ p: 4 }}>
+            <Typography
+              variant="h6"
+              sx={{
+                mb: 3,
+                fontWeight: 600,
+                color: "text.primary",
+              }}
+            >
+              Supplier Information
+            </Typography>
+
+            <Grid container spacing={3}>
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  fullWidth
+                  label="Supplier ID"
+                  name="supplierId"
+                  value={formData.supplierId}
+                  onChange={handleChange}
+                  sx={{
+                    "& .MuiOutlinedInput-root": {
+                      borderRadius: 2,
+                    },
+                  }}
+                />
+              </Grid>
+
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  fullWidth
+                  label="Company Name"
+                  name="name"
+                  value={formData.name}
+                  onChange={handleChange}
+                  required
+                  sx={{
+                    "& .MuiOutlinedInput-root": {
+                      borderRadius: 2,
+                    },
+                  }}
+                />
+              </Grid>
+
+              <Grid item xs={12}>
+                <TextField
+                  fullWidth
+                  label="Description"
+                  name="description"
+                  value={formData.description}
+                  onChange={handleChange}
+                  multiline
+                  rows={3}
+                  sx={{
+                    "& .MuiOutlinedInput-root": {
+                      borderRadius: 2,
+                    },
+                  }}
+                />
+              </Grid>
+
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  fullWidth
+                  label="Contact Person"
+                  name="contactPerson"
+                  value={formData.contactPerson}
+                  onChange={handleChange}
+                  sx={{
+                    "& .MuiOutlinedInput-root": {
+                      borderRadius: 2,
+                    },
+                  }}
+                />
+              </Grid>
+
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  fullWidth
+                  label="Email Address"
+                  name="email"
+                  type="email"
+                  value={formData.email}
+                  onChange={handleChange}
+                  sx={{
+                    "& .MuiOutlinedInput-root": {
+                      borderRadius: 2,
+                    },
+                  }}
+                />
+              </Grid>
+
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  fullWidth
+                  label="Phone Number"
+                  name="phone"
+                  value={formData.phone}
+                  onChange={handleChange}
+                  sx={{
+                    "& .MuiOutlinedInput-root": {
+                      borderRadius: 2,
+                    },
+                  }}
+                />
+              </Grid>
+
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  fullWidth
+                  label="Website"
+                  name="website"
+                  value={formData.website}
+                  onChange={handleChange}
+                  sx={{
+                    "& .MuiOutlinedInput-root": {
+                      borderRadius: 2,
+                    },
+                  }}
+                />
+              </Grid>
+
+              <Grid item xs={12}>
+                <TextField
+                  fullWidth
+                  label="Address"
+                  name="address"
+                  value={formData.address}
+                  onChange={handleChange}
+                  sx={{
+                    "& .MuiOutlinedInput-root": {
+                      borderRadius: 2,
+                    },
+                  }}
+                />
+              </Grid>
+
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  fullWidth
+                  label="City"
+                  name="city"
+                  value={formData.city}
+                  onChange={handleChange}
+                  sx={{
+                    "& .MuiOutlinedInput-root": {
+                      borderRadius: 2,
+                    },
+                  }}
+                />
+              </Grid>
+
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  fullWidth
+                  label="Country"
+                  name="country"
+                  value={formData.country}
+                  onChange={handleChange}
+                  sx={{
+                    "& .MuiOutlinedInput-root": {
+                      borderRadius: 2,
+                    },
+                  }}
+                />
+              </Grid>
+
+              <Grid item xs={12} sm={6}>
+                <FormControl fullWidth>
+                  <InputLabel>Status</InputLabel>
+                  <Select
+                    name="status"
+                    value={formData.status}
+                    onChange={handleChange}
+                    label="Status"
+                    sx={{
+                      "& .MuiOutlinedInput-root": {
+                        borderRadius: 2,
+                      },
+                    }}
+                  >
+                    <MenuItem value="Active">Active</MenuItem>
+                    <MenuItem value="Inactive">Inactive</MenuItem>
+                    <MenuItem value="On Hold">On Hold</MenuItem>
+                    <MenuItem value="Terminated">Terminated</MenuItem>
+                  </Select>
+                </FormControl>
+              </Grid>
+
+              <Grid item xs={12}>
+                <TextField
+                  fullWidth
+                  label="Notes"
+                  name="notes"
+                  value={formData.notes}
+                  onChange={handleChange}
+                  multiline
+                  rows={3}
+                  sx={{
+                    "& .MuiOutlinedInput-root": {
+                      borderRadius: 2,
+                    },
+                  }}
+                />
+              </Grid>
+
+              <Grid item xs={12}>
+                <Stack direction="row" spacing={2} sx={{ mt: 2 }}>
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    size="large"
+                    startIcon={
+                      loading ? (
+                        <CircularProgress size={20} color="inherit" />
+                      ) : (
+                        <SaveIcon />
+                      )
+                    }
+                    type="submit"
+                    disabled={loading}
+                    sx={{ px: 4 }}
+                  >
+                    {loading ? "Saving..." : "Save Supplier"}
+                  </Button>
+                  <Button
+                    variant="outlined"
+                    size="large"
+                    onClick={() => navigate("/suppliers")}
+                    sx={{ px: 4 }}
+                  >
+                    Cancel
+                  </Button>
+                </Stack>
+              </Grid>
+            </Grid>
+          </Box>
+        </Paper>
+      </Grow>
+    </Box>
   );
 }
 

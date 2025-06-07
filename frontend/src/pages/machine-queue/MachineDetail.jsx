@@ -1,29 +1,39 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { 
-  Box, 
-  Typography, 
-  Button, 
-  CircularProgress, 
-  Alert, 
-  Paper,
-  Grid,
+import {
+  Box,
+  Typography,
   Card,
   CardContent,
+  CircularProgress,
+  Alert,
+  Button,
+  Grid,
+  Avatar,
+  Fade,
+  Grow,
+  Stack,
   Chip,
-  Divider,
+  Paper,
+  List,
+  ListItem,
+  ListItemText,
+  ListItemIcon,
   Table,
   TableBody,
   TableCell,
   TableContainer,
   TableHead,
-  TableRow
+  TableRow,
 } from '@mui/material';
-import { 
+import {
   ArrowBack as ArrowBackIcon,
   Edit as EditIcon,
-  Settings as SettingsIcon,
-  Schedule as ScheduleIcon
+  Settings as MachineIcon, // Changed from Precision to Settings
+  Info as InfoIcon,
+  Build as BuildIcon,
+  Schedule as ScheduleIcon,
+  Assignment as AssignmentIcon,
 } from '@mui/icons-material';
 import { machineQueueAPI } from '../../services/api';
 
@@ -31,7 +41,7 @@ const MachineDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const [machine, setMachine] = useState(null);
-  const [machineQueue, setMachineQueue] = useState([]);
+  const [queueItems, setQueueItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -45,10 +55,10 @@ const MachineDetail = () => {
       setLoading(true);
       setError(null);
       const response = await machineQueueAPI.getMachineById(id);
-      setMachine(response.data);
+      setMachine(response.data.data || response.data);
     } catch (err) {
-      setError('Failed to fetch machine details: ' + (err.response?.data?.message || err.message));
       console.error('Error fetching machine details:', err);
+      setError('Failed to fetch machine details');
     } finally {
       setLoading(false);
     }
@@ -57,341 +67,461 @@ const MachineDetail = () => {
   const fetchMachineQueue = async () => {
     try {
       const response = await machineQueueAPI.getMachineQueue(id);
-      setMachineQueue(response.data.data || []);
+      setQueueItems(response.data.data || response.data || []);
     } catch (err) {
       console.error('Error fetching machine queue:', err);
-      // Don't set error here as machine details are more important
+      // Non-critical error, don't set main error state
     }
   };
 
   const getStatusChip = (status) => {
-    let color;
-    switch (status) {
-      case 'operational':
-        color = 'success';
-        break;
-      case 'maintenance':
-        color = 'warning';
-        break;
-      case 'breakdown':
-        color = 'error';
-        break;
-      case 'inactive':
-        color = 'default';
-        break;
-      default:
-        color = 'default';
-    }
-    return <Chip label={status.charAt(0).toUpperCase() + status.slice(1)} color={color} size="small" />;
+    const statusConfig = {
+      operational: { color: "success", label: "Operational", bgcolor: "#e8f5e8" },
+      maintenance: { color: "warning", label: "Maintenance", bgcolor: "#fff3e0" },
+      breakdown: { color: "error", label: "Breakdown", bgcolor: "#ffebee" },
+      inactive: { color: "default", label: "Inactive", bgcolor: "#f5f5f5" },
+    };
+
+    const config = statusConfig[status] || { color: "default", label: status, bgcolor: "#f5f5f5" };
+    return (
+      <Chip 
+        label={config.label} 
+        sx={{ 
+          fontWeight: 500,
+          bgcolor: config.bgcolor,
+          color: config.color === 'default' ? 'text.primary' : `${config.color}.main`,
+          border: `1px solid`,
+          borderColor: config.color === 'default' ? 'grey.300' : `${config.color}.light`,
+        }} 
+      />
+    );
   };
 
   const getQueueStatusChip = (status) => {
-    let color;
-    switch (status) {
-      case 'in_progress':
-        color = 'info';
-        break;
-      case 'waiting':
-        color = 'warning';
-        break;
-      case 'completed':
-        color = 'success';
-        break;
-      case 'cancelled':
-        color = 'error';
-        break;
-      default:
-        color = 'default';
-    }
-    return <Chip label={status.replace('_', ' ').toUpperCase()} color={color} size="small" />;
+    const statusConfig = {
+      waiting: { color: "warning", label: "Waiting" },
+      in_progress: { color: "primary", label: "In Progress" },
+      completed: { color: "success", label: "Completed" },
+      cancelled: { color: "error", label: "Cancelled" },
+    };
+
+    const config = statusConfig[status] || { color: "default", label: status };
+    return (
+      <Chip
+        label={config.label}
+        color={config.color}
+        size="small"
+        sx={{ fontWeight: 500 }}
+      />
+    );
   };
 
   const formatDate = (dateString) => {
     if (!dateString) return '-';
-    return new Date(dateString).toLocaleDateString();
-  };
-
-  const formatDateTime = (dateString) => {
-    if (!dateString) return '-';
-    return new Date(dateString).toLocaleString();
+    return new Date(dateString).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+    });
   };
 
   if (loading) {
     return (
-      <Box display="flex" justifyContent="center" alignItems="center" minHeight="80vh">
-        <CircularProgress />
+      <Box
+        display="flex"
+        justifyContent="center"
+        alignItems="center"
+        minHeight="400px"
+      >
+        <CircularProgress size={60} thickness={4} />
       </Box>
     );
   }
 
   if (error) {
     return (
-      <Box sx={{ p: 3 }}>
-        <Button
-          variant="outlined"
-          startIcon={<ArrowBackIcon />}
-          onClick={() => navigate('/machines')}
-          sx={{ mb: 3 }}
-        >
-          Back to Machine List
-        </Button>
-        <Alert severity="error">{error}</Alert>
-      </Box>
+      <Fade in>
+        <Alert severity="error" sx={{ m: 2, borderRadius: 2 }}>
+          {error}
+        </Alert>
+      </Fade>
     );
   }
 
   if (!machine) {
     return (
-      <Box sx={{ p: 3 }}>
-        <Button
-          variant="outlined"
-          startIcon={<ArrowBackIcon />}
-          onClick={() => navigate('/machines')}
-          sx={{ mb: 3 }}
-        >
-          Back to Machine List
-        </Button>
-        <Alert severity="info">No machine details available.</Alert>
-      </Box>
+      <Fade in>
+        <Alert severity="info" sx={{ m: 2, borderRadius: 2 }}>
+          Machine not found.
+        </Alert>
+      </Fade>
     );
   }
 
-  const activeQueue = machineQueue.find(q => q.status === 'in_progress');
-  const waitingQueue = machineQueue.filter(q => q.status === 'waiting');
-
   return (
-    <Box sx={{ p: 3 }}>
-      {/* Header */}
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-        <Button
-          variant="outlined"
-          startIcon={<ArrowBackIcon />}
-          onClick={() => navigate('/machines')}
+    <Box
+      sx={{
+        width: "100%",
+        maxWidth: 1200,
+        mx: "auto",
+        p: { xs: 2, sm: 3 },
+        overflow: "hidden",
+      }}
+    >
+      {/* Header Section */}
+      <Fade in timeout={600}>
+        <Card
+          elevation={0}
+          sx={{
+            mb: 4,
+            background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+            color: "white",
+            borderRadius: 3,
+            width: "100%",
+          }}
         >
-          Back to Machine List
-        </Button>
-        <Button
-          variant="contained"
-          startIcon={<EditIcon />}
-          onClick={() => navigate(`/machines/${id}/edit`)}
-        >
-          Edit Machine
-        </Button>
-      </Box>
+          <CardContent sx={{ p: { xs: 3, sm: 4 } }}>
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: { xs: "flex-start", sm: "center" },
+                flexDirection: { xs: "column", sm: "row" },
+                gap: { xs: 3, sm: 0 },
+              }}
+            >
+              <Box sx={{ display: "flex", alignItems: "center" }}>
+                <Avatar
+                  sx={{
+                    bgcolor: "rgba(255,255,255,0.2)",
+                    width: { xs: 56, sm: 64 },
+                    height: { xs: 56, sm: 64 },
+                    mr: { xs: 2, sm: 3 },
+                  }}
+                >
+                  <MachineIcon sx={{ fontSize: { xs: 28, sm: 32 } }} />
+                </Avatar>
+                <Box>
+                  <Typography
+                    variant="h4"
+                    sx={{
+                      fontWeight: 700,
+                      mb: 1,
+                      fontSize: { xs: "1.75rem", sm: "2.125rem" },
+                    }}
+                  >
+                    {machine.name}
+                  </Typography>
+                  <Typography variant="h6" sx={{ opacity: 0.9 }}>
+                    Machine ID: {machine.machineId}
+                  </Typography>
+                </Box>
+              </Box>
+              <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
+                <Button
+                  variant="outlined"
+                  startIcon={<ArrowBackIcon />}
+                  onClick={() => navigate("/machines")}
+                  fullWidth={{ xs: true, sm: false }}
+                  sx={{
+                    bgcolor: "rgba(255,255,255,0.1)",
+                    color: "white",
+                    borderColor: "rgba(255,255,255,0.5)",
+                    "&:hover": {
+                      bgcolor: "rgba(255,255,255,0.2)",
+                    },
+                  }}
+                >
+                  Back
+                </Button>
+                <Button
+                  variant="contained"
+                  startIcon={<EditIcon />}
+                  onClick={() => navigate(`/machines/${id}/edit`)}
+                  fullWidth={{ xs: true, sm: false }}
+                  sx={{
+                    bgcolor: "rgba(255,255,255,0.2)",
+                    color: "white",
+                    "&:hover": {
+                      bgcolor: "rgba(255,255,255,0.3)",
+                    },
+                  }}
+                >
+                  Edit Machine
+                </Button>
+              </Stack>
+            </Box>
+          </CardContent>
+        </Card>
+      </Fade>
 
-      {/* Machine Information */}
-      <Grid container spacing={3}>
-        {/* Basic Information */}
-        <Grid item xs={12} md={8}>
-          <Paper sx={{ p: 3, mb: 3 }}>
-            <Typography variant="h4" gutterBottom>
-              {machine.name}
-            </Typography>
-            <Typography variant="subtitle1" color="text.secondary" gutterBottom>
-              Machine ID: {machine.machineId}
-            </Typography>
-            
-            <Grid container spacing={2} sx={{ mt: 2 }}>
-              <Grid item xs={12} sm={6}>
-                <Typography variant="body1">
-                  <strong>Type:</strong> {machine.type}
-                </Typography>
-              </Grid>
-              <Grid item xs={12} sm={6}>
-                <Typography variant="body1">
-                  <strong>Status:</strong> {getStatusChip(machine.status)}
-                </Typography>
-              </Grid>
-              <Grid item xs={12} sm={6}>
-                <Typography variant="body1">
-                  <strong>Location:</strong> {machine.location || '-'}
-                </Typography>
-              </Grid>
-              <Grid item xs={12} sm={6}>
-                <Typography variant="body1">
-                  <strong>Hours/Day:</strong> {machine.hoursPerDay} hours
-                </Typography>
-              </Grid>
-              {machine.manufacturer && (
-                <Grid item xs={12} sm={6}>
-                  <Typography variant="body1">
-                    <strong>Manufacturer:</strong> {machine.manufacturer}
+      <Grid container spacing={4}>
+        {/* Machine Information */}
+        <Grid item xs={12} md={6}>
+          <Grow in timeout={800}>
+            <Card
+              sx={{
+                height: "100%",
+                border: "1px solid",
+                borderColor: "grey.200",
+              }}
+            >
+              <CardContent sx={{ p: 4 }}>
+                <Box sx={{ display: "flex", alignItems: "center", mb: 3 }}>
+                  <Avatar sx={{ bgcolor: "primary.main", mr: 2 }}>
+                    <InfoIcon />
+                  </Avatar>
+                  <Typography variant="h6" sx={{ fontWeight: 600 }}>
+                    Machine Information
                   </Typography>
-                </Grid>
-              )}
-              {machine.modelNumber && (
-                <Grid item xs={12} sm={6}>
-                  <Typography variant="body1">
-                    <strong>Model:</strong> {machine.modelNumber}
-                  </Typography>
-                </Grid>
-              )}
-              {machine.capacity && (
-                <Grid item xs={12} sm={6}>
-                  <Typography variant="body1">
-                    <strong>Capacity:</strong> {machine.capacity} {machine.capacityUnit || ''}
-                  </Typography>
-                </Grid>
-              )}
-              <Grid item xs={12} sm={6}>
-                <Typography variant="body1">
-                  <strong>Installation Date:</strong> {formatDate(machine.installationDate)}
-                </Typography>
-              </Grid>
-              <Grid item xs={12} sm={6}>
-                <Typography variant="body1">
-                  <strong>Last Maintenance:</strong> {formatDate(machine.lastMaintenance)}
-                </Typography>
-              </Grid>
-              <Grid item xs={12} sm={6}>
-                <Typography variant="body1">
-                  <strong>Next Maintenance:</strong> {formatDate(machine.nextMaintenance)}
-                </Typography>
-              </Grid>
-            </Grid>
+                </Box>
 
-            {machine.notes && (
-              <>
-                <Divider sx={{ my: 2 }} />
-                <Typography variant="body1">
-                  <strong>Notes:</strong>
-                </Typography>
-                <Typography variant="body2" sx={{ mt: 1 }}>
-                  {machine.notes}
-                </Typography>
-              </>
-            )}
-          </Paper>
+                <Stack spacing={3}>
+                  <Box>
+                    <Typography
+                      variant="subtitle2"
+                      color="text.secondary"
+                      sx={{ fontWeight: 600 }}
+                    >
+                      Status
+                    </Typography>
+                    <Box sx={{ mt: 1 }}>{getStatusChip(machine.status)}</Box>
+                  </Box>
+
+                  <Box>
+                    <Typography
+                      variant="subtitle2"
+                      color="text.secondary"
+                      sx={{ fontWeight: 600 }}
+                    >
+                      Type
+                    </Typography>
+                    <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                      {machine.type}
+                    </Typography>
+                  </Box>
+
+                  <Box>
+                    <Typography
+                      variant="subtitle2"
+                      color="text.secondary"
+                      sx={{ fontWeight: 600 }}
+                    >
+                      Location
+                    </Typography>
+                    <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                      {machine.location || '-'}
+                    </Typography>
+                  </Box>
+
+                  <Box>
+                    <Typography
+                      variant="subtitle2"
+                      color="text.secondary"
+                      sx={{ fontWeight: 600 }}
+                    >
+                      Manufacturer
+                    </Typography>
+                    <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                      {machine.manufacturer || '-'}
+                    </Typography>
+                  </Box>
+
+                  <Box>
+                    <Typography
+                      variant="subtitle2"
+                      color="text.secondary"
+                      sx={{ fontWeight: 600 }}
+                    >
+                      Model
+                    </Typography>
+                    <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                      {machine.model || '-'}
+                    </Typography>
+                  </Box>
+
+                  <Box>
+                    <Typography
+                      variant="subtitle2"
+                      color="text.secondary"
+                      sx={{ fontWeight: 600 }}
+                    >
+                      Capacity
+                    </Typography>
+                    <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                      {machine.capacity && machine.capacityUnit 
+                        ? `${machine.capacity} ${machine.capacityUnit}` 
+                        : machine.capacity || '-'
+                      }
+                    </Typography>
+                  </Box>
+                </Stack>
+              </CardContent>
+            </Card>
+          </Grow>
         </Grid>
 
-        {/* Status Cards */}
-        <Grid item xs={12} md={4}>
-          <Grid container spacing={2}>
-            <Grid item xs={12}>
-              <Card>
-                <CardContent>
-                  <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-                    <SettingsIcon sx={{ mr: 1 }} />
-                    <Typography variant="h6">Machine Status</Typography>
-                  </Box>
-                  {getStatusChip(machine.status)}
-                </CardContent>
-              </Card>
-            </Grid>
-            
-            <Grid item xs={12}>
-              <Card>
-                <CardContent>
-                  <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-                    <ScheduleIcon sx={{ mr: 1 }} />
-                    <Typography variant="h6">Queue Status</Typography>
-                  </Box>
-                  <Typography variant="h4" color="primary">
-                    {machineQueue.length}
+        {/* Technical Details */}
+        <Grid item xs={12} md={6}>
+          <Grow in timeout={1000}>
+            <Card
+              sx={{
+                height: "100%",
+                border: "1px solid",
+                borderColor: "grey.200",
+              }}
+            >
+              <CardContent sx={{ p: 4 }}>
+                <Box sx={{ display: "flex", alignItems: "center", mb: 3 }}>
+                  <Avatar sx={{ bgcolor: "info.main", mr: 2 }}>
+                    <BuildIcon />
+                  </Avatar>
+                  <Typography variant="h6" sx={{ fontWeight: 600 }}>
+                    Technical Details
                   </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    Total Queue Items
-                  </Typography>
-                  <Box sx={{ mt: 1 }}>
-                    <Typography variant="body2">
-                      Active: {activeQueue ? 1 : 0}
+                </Box>
+
+                <Stack spacing={3}>
+                  <Box>
+                    <Typography
+                      variant="subtitle2"
+                      color="text.secondary"
+                      sx={{ fontWeight: 600 }}
+                    >
+                      Serial Number
                     </Typography>
-                    <Typography variant="body2">
-                      Waiting: {waitingQueue.length}
+                    <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                      {machine.serialNumber || '-'}
                     </Typography>
                   </Box>
-                </CardContent>
-              </Card>
-            </Grid>
-          </Grid>
+
+                  <Box>
+                    <Typography
+                      variant="subtitle2"
+                      color="text.secondary"
+                      sx={{ fontWeight: 600 }}
+                    >
+                      Installation Date
+                    </Typography>
+                    <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                      {formatDate(machine.installationDate)}
+                    </Typography>
+                  </Box>
+
+                  <Box>
+                    <Typography
+                      variant="subtitle2"
+                      color="text.secondary"
+                      sx={{ fontWeight: 600 }}
+                    >
+                      Maintenance Schedule
+                    </Typography>
+                    <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                      {machine.maintenanceSchedule || '-'}
+                    </Typography>
+                  </Box>
+
+                  <Box>
+                    <Typography
+                      variant="subtitle2"
+                      color="text.secondary"
+                      sx={{ fontWeight: 600 }}
+                    >
+                      Specifications
+                    </Typography>
+                    <Typography variant="body1">
+                      {machine.specifications || 'No specifications available'}
+                    </Typography>
+                  </Box>
+
+                  <Box>
+                    <Typography
+                      variant="subtitle2"
+                      color="text.secondary"
+                      sx={{ fontWeight: 600 }}
+                    >
+                      Notes
+                    </Typography>
+                    <Typography variant="body1">
+                      {machine.notes || 'No additional notes'}
+                    </Typography>
+                  </Box>
+                </Stack>
+              </CardContent>
+            </Card>
+          </Grow>
+        </Grid>
+
+        {/* Current Queue */}
+        <Grid item xs={12}>
+          <Grow in timeout={1200}>
+            <Card sx={{ border: "1px solid", borderColor: "grey.200" }}>
+              <CardContent sx={{ p: 4 }}>
+                <Box sx={{ display: "flex", alignItems: "center", mb: 3 }}>
+                  <Avatar sx={{ bgcolor: "success.main", mr: 2 }}>
+                    <ScheduleIcon />
+                  </Avatar>
+                  <Typography variant="h6" sx={{ fontWeight: 600 }}>
+                    Current Production Queue
+                  </Typography>
+                </Box>
+
+                {queueItems && queueItems.length > 0 ? (
+                  <TableContainer component={Paper} variant="outlined" sx={{ borderRadius: 2 }}>
+                    <Table>
+                      <TableHead>
+                        <TableRow>
+                          <TableCell sx={{ fontWeight: 600 }}>Position</TableCell>
+                          <TableCell sx={{ fontWeight: 600 }}>Product</TableCell>
+                          <TableCell sx={{ fontWeight: 600 }}>Batch</TableCell>
+                          <TableCell sx={{ fontWeight: 600 }}>Status</TableCell>
+                          <TableCell sx={{ fontWeight: 600 }}>Priority</TableCell>
+                          <TableCell sx={{ fontWeight: 600 }}>Hours Required</TableCell>
+                        </TableRow>
+                      </TableHead>
+                      <TableBody>
+                        {queueItems.map((item, index) => (
+                          <TableRow key={item.id}>
+                            <TableCell>
+                              <Chip 
+                                label={item.position === 0 ? 'Active' : item.position}
+                                size="small"
+                                color={item.position === 0 ? 'success' : 'default'}
+                                variant="outlined"
+                              />
+                            </TableCell>
+                            <TableCell sx={{ fontWeight: 500 }}>
+                              {item.productName}
+                            </TableCell>
+                            <TableCell>{item.batchNumber}</TableCell>
+                            <TableCell>{getQueueStatusChip(item.status)}</TableCell>
+                            <TableCell>
+                              <Chip
+                                label={item.priority}
+                                size="small"
+                                color={
+                                  item.priority === 'urgent' ? 'error' :
+                                  item.priority === 'high' ? 'warning' :
+                                  item.priority === 'normal' ? 'info' : 'success'
+                                }
+                              />
+                            </TableCell>
+                            <TableCell>{item.hoursRequired}h</TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </TableContainer>
+                ) : (
+                  <Alert severity="info" variant="outlined">
+                    No items currently in the production queue for this machine.
+                  </Alert>
+                )}
+              </CardContent>
+            </Card>
+          </Grow>
         </Grid>
       </Grid>
-
-      {/* Current Job */}
-      {activeQueue && (
-        <Paper sx={{ p: 3, mb: 3 }}>
-          <Typography variant="h6" gutterBottom>
-            Current Job
-          </Typography>
-          <Grid container spacing={2}>
-            <Grid item xs={12} sm={6}>
-              <Typography variant="body1">
-                <strong>Product:</strong> {activeQueue.productName}
-              </Typography>
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <Typography variant="body1">
-                <strong>Batch:</strong> {activeQueue.batchNumber}
-              </Typography>
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <Typography variant="body1">
-                <strong>Started:</strong> {formatDateTime(activeQueue.actualStartTime)}
-              </Typography>
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <Typography variant="body1">
-                <strong>Operator:</strong> {activeQueue.operatorName || '-'}
-              </Typography>
-            </Grid>
-            <Grid item xs={12}>
-              <Typography variant="body1">
-                <strong>Status:</strong> {getQueueStatusChip(activeQueue.status)}
-              </Typography>
-            </Grid>
-          </Grid>
-        </Paper>
-      )}
-
-      {/* Queue List */}
-      <Paper sx={{ p: 3 }}>
-        <Typography variant="h6" gutterBottom>
-          Machine Queue
-        </Typography>
-        {machineQueue.length === 0 ? (
-          <Typography variant="body2" color="text.secondary">
-            No items in queue
-          </Typography>
-        ) : (
-          <TableContainer>
-            <Table>
-              <TableHead>
-                <TableRow>
-                  <TableCell>Position</TableCell>
-                  <TableCell>Product</TableCell>
-                  <TableCell>Batch</TableCell>
-                  <TableCell>Status</TableCell>
-                  <TableCell>Priority</TableCell>
-                  <TableCell>Hours Required</TableCell>
-                  <TableCell>Scheduled Start</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {machineQueue.map((queue) => (
-                  <TableRow key={queue.id}>
-                    <TableCell>
-                      {queue.position === 0 ? 'Active' : queue.position}
-                    </TableCell>
-                    <TableCell>{queue.productName}</TableCell>
-                    <TableCell>{queue.batchNumber}</TableCell>
-                    <TableCell>{getQueueStatusChip(queue.status)}</TableCell>
-                    <TableCell>
-                      <Chip 
-                        label={queue.priority.toUpperCase()} 
-                        size="small" 
-                        variant="outlined"
-                        color={queue.priority === 'urgent' ? 'error' : queue.priority === 'high' ? 'warning' : 'default'}
-                      />
-                    </TableCell>
-                    <TableCell>{queue.hoursRequired}h</TableCell>
-                    <TableCell>{formatDateTime(queue.scheduledStartTime)}</TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </TableContainer>
-        )}
-      </Paper>
     </Box>
   );
 };

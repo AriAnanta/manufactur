@@ -28,6 +28,12 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
+  Card,
+  CardContent,
+  Avatar,
+  Fade,
+  Grow,
+  Stack,
 } from "@mui/material";
 import {
   Add as AddIcon,
@@ -38,6 +44,7 @@ import {
   Visibility as VisibilityIcon,
   PlayArrow as StartIcon,
   Pause as PauseIcon,
+  Assignment as AssignmentIcon,
 } from "@mui/icons-material";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
@@ -86,30 +93,50 @@ const ProductionBatches = () => {
 
   const getStatusChip = (status) => {
     const statusConfig = {
-      pending: { color: "warning", label: "Pending" },
-      scheduled: { color: "info", label: "Scheduled" },
-      in_progress: { color: "primary", label: "In Progress" },
-      completed: { color: "success", label: "Completed" },
-      cancelled: { color: "error", label: "Cancelled" },
+      pending: { color: "warning", label: "Pending", bgcolor: "#fff3e0" },
+      scheduled: { color: "info", label: "Scheduled", bgcolor: "#e3f2fd" },
+      in_progress: { color: "primary", label: "In Progress", bgcolor: "#e8f4fd" },
+      completed: { color: "success", label: "Completed", bgcolor: "#e8f5e8" },
+      cancelled: { color: "error", label: "Cancelled", bgcolor: "#ffebee" },
     };
 
-    const config = statusConfig[status] || { color: "default", label: status };
-    return <Chip label={config.label} color={config.color} size="small" />;
+    const config = statusConfig[status] || { color: "default", label: status, bgcolor: "#f5f5f5" };
+    return (
+      <Chip 
+        label={config.label} 
+        size="small" 
+        sx={{ 
+          fontWeight: 500,
+          bgcolor: config.bgcolor,
+          color: config.color === 'default' ? 'text.primary' : `${config.color}.main`,
+          border: `1px solid`,
+          borderColor: config.color === 'default' ? 'grey.300' : `${config.color}.light`,
+        }} 
+      />
+    );
   };
 
   const getPriorityChip = (priority) => {
     const priorityConfig = {
-      low: { color: "success", label: "Low" },
-      normal: { color: "info", label: "Normal" },
-      high: { color: "warning", label: "High" },
-      urgent: { color: "error", label: "Urgent" },
+      low: { color: "success", label: "Low", bgcolor: "#e8f5e8" },
+      normal: { color: "info", label: "Normal", bgcolor: "#e3f2fd" },
+      high: { color: "warning", label: "High", bgcolor: "#fff3e0" },
+      urgent: { color: "error", label: "Urgent", bgcolor: "#ffebee" },
     };
 
-    const config = priorityConfig[priority] || {
-      color: "default",
-      label: priority,
-    };
-    return <Chip label={config.label} color={config.color} size="small" />;
+    const config = priorityConfig[priority] || { color: "default", label: priority, bgcolor: "#f5f5f5" };
+    return (
+      <Chip 
+        label={config.label} 
+        size="small" 
+        sx={{ 
+          fontWeight: 500,
+          bgcolor: config.bgcolor,
+          color: `${config.color}.main`,
+          border: `1px solid ${config.color}.light`,
+        }} 
+      />
+    );
   };
 
   const getProgressPercentage = (produced, total) => {
@@ -225,204 +252,347 @@ const ProductionBatches = () => {
         alignItems="center"
         minHeight="400px"
       >
-        <CircularProgress />
+        <CircularProgress size={60} thickness={4} />
       </Box>
     );
   }
 
   if (error) {
     return (
-      <Alert severity="error" sx={{ m: 2 }}>
-        {error}
-      </Alert>
+      <Fade in>
+        <Alert severity="error" sx={{ m: 2, borderRadius: 2 }}>
+          {error}
+        </Alert>
+      </Fade>
     );
   }
 
   return (
-    <Box>
-      <Paper sx={{ p: 3, mb: 3 }}>
-        <Box
-          sx={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            mb: 3,
+    <Box sx={{ 
+      width: '100%',
+      maxWidth: '100%',
+      mx: 'auto', 
+      p: { xs: 2, sm: 3 },
+      overflow: 'hidden'
+    }}>
+      {/* Header Section */}
+      <Fade in timeout={600}>
+        <Card 
+          elevation={0}
+          sx={{ 
+            mb: 4, 
+            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+            color: 'white',
+            borderRadius: 3,
+            width: '100%',
           }}
         >
-          <Typography variant="h5">Production Batches</Typography>
-          <Button
-            variant="contained"
-            startIcon={<AddIcon />}
-            onClick={() => navigate("/production-batches/add")}
-          >
-            New Batch
-          </Button>
-        </Box>
-
-        {/* Filters */}
-        <Grid container spacing={2} sx={{ mb: 3 }}>
-          <Grid item xs={12} md={6}>
-            <TextField
-              fullWidth
-              label="Search Batches"
-              value={searchTerm}
-              onChange={handleSearchChange}
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <SearchIcon />
-                  </InputAdornment>
-                ),
-                endAdornment: searchTerm && (
-                  <InputAdornment position="end">
-                    <IconButton size="small" onClick={() => setSearchTerm("")}>
-                      <ClearIcon />
-                    </IconButton>
-                  </InputAdornment>
-                ),
-              }}
-            />
-          </Grid>
-          <Grid item xs={12} md={3}>
-            <FormControl fullWidth>
-              <InputLabel>Status Filter</InputLabel>
-              <Select
-                value={filterStatus}
-                onChange={handleFilterStatusChange}
-                label="Status Filter"
+          <CardContent sx={{ p: { xs: 3, sm: 4 } }}>
+            <Box sx={{ 
+              display: "flex", 
+              justifyContent: "space-between", 
+              alignItems: { xs: "flex-start", sm: "center" },
+              flexDirection: { xs: "column", sm: "row" },
+              gap: { xs: 3, sm: 0 }
+            }}>
+              <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                <Avatar
+                  sx={{
+                    bgcolor: 'rgba(255,255,255,0.2)',
+                    width: { xs: 56, sm: 64 },
+                    height: { xs: 56, sm: 64 },
+                    mr: { xs: 2, sm: 3 },
+                  }}
+                >
+                  <AssignmentIcon sx={{ fontSize: { xs: 28, sm: 32 } }} />
+                </Avatar>
+                <Box>
+                  <Typography variant="h4" sx={{ 
+                    fontWeight: 700, 
+                    mb: 1,
+                    fontSize: { xs: '1.75rem', sm: '2.125rem' }
+                  }}>
+                    Production Batches
+                  </Typography>
+                  <Typography variant="h6" sx={{ opacity: 0.9 }}>
+                    Manage and track production batches
+                  </Typography>
+                </Box>
+              </Box>
+              <Button
+                variant="contained"
+                size="large"
+                startIcon={<AddIcon />}
+                onClick={() => navigate("/production-batches/add")}
+                fullWidth={{ xs: true, sm: false }}
+                sx={{
+                  bgcolor: 'rgba(255,255,255,0.2)',
+                  color: 'white',
+                  '&:hover': {
+                    bgcolor: 'rgba(255,255,255,0.3)',
+                  },
+                  px: 4,
+                  py: 1.5,
+                  borderRadius: 2,
+                }}
               >
-                <MenuItem value="">All Statuses</MenuItem>
-                <MenuItem value="pending">Pending</MenuItem>
-                <MenuItem value="scheduled">Scheduled</MenuItem>
-                <MenuItem value="in_production">In Production</MenuItem>
-                <MenuItem value="completed">Completed</MenuItem>
-                <MenuItem value="cancelled">Cancelled</MenuItem>
-              </Select>
-            </FormControl>
-          </Grid>
-        </Grid>
+                New Batch
+              </Button>
+            </Box>
+          </CardContent>
+        </Card>
+      </Fade>
 
-        {/* Table */}
-        <TableContainer>
-          <Table>
-            <TableHead>
-              <TableRow>
-                <TableCell>Batch Number</TableCell>
-                <TableCell>Product</TableCell>
-                <TableCell>Quantity</TableCell>
-                <TableCell>Priority</TableCell>
-                <TableCell>Status</TableCell>
-                <TableCell>Scheduled Start Date</TableCell>
-                <TableCell>Scheduled End Date</TableCell>
-                <TableCell>Actions</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {paginatedBatches.map((batch) => (
-                <TableRow key={batch.id}>
-                  <TableCell>
-                    <Typography variant="body1" sx={{ fontWeight: "medium" }}>
-                      {batch.batchNumber}
-                    </Typography>
-                  </TableCell>
-                  <TableCell>
-                    <Typography variant="body2">
-                      {batch.request ? batch.request.productName : "N/A"}
-                    </Typography>
-                    <Typography variant="caption" color="text.secondary">
-                      Request ID:{" "}
-                      {batch.request ? batch.request.requestId : "N/A"}
-                    </Typography>
-                  </TableCell>
-                  <TableCell>{batch.quantity}</TableCell>
-                  <TableCell>
-                    {getPriorityChip(
-                      batch.request ? batch.request.priority : "normal"
-                    )}
-                  </TableCell>
-                  <TableCell>{getStatusChip(batch.status)}</TableCell>
-                  <TableCell>
-                    {batch.scheduledStartDate
-                      ? new Date(batch.scheduledStartDate).toLocaleDateString()
-                      : "-"}
-                  </TableCell>
-                  <TableCell>
-                    {batch.scheduledEndDate
-                      ? new Date(batch.scheduledEndDate).toLocaleDateString()
-                      : "-"}
-                  </TableCell>
-                  <TableCell>
-                    {batch.status === "pending" ||
-                    batch.status === "scheduled" ? (
-                      <Tooltip title="Start Production">
-                        <IconButton
-                          size="small"
-                          color="success"
-                          onClick={() => handleStartProduction(batch.id)}
-                        >
-                          <StartIcon fontSize="small" />
+      <Grow in timeout={800}>
+        <Paper sx={{ 
+          borderRadius: 3, 
+          overflow: 'hidden', 
+          border: '1px solid', 
+          borderColor: 'grey.200',
+          width: '100%'
+        }}>
+          {/* Filters Section */}
+          <Box sx={{ p: 3, bgcolor: 'grey.50', borderBottom: '1px solid', borderColor: 'grey.200' }}>
+            <Grid container spacing={3}>
+              <Grid item xs={12} md={6}>
+                <TextField
+                  fullWidth
+                  label="Search Batches"
+                  value={searchTerm}
+                  onChange={handleSearchChange}
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <SearchIcon color="action" />
+                      </InputAdornment>
+                    ),
+                    endAdornment: searchTerm && (
+                      <InputAdornment position="end">
+                        <IconButton size="small" onClick={() => setSearchTerm("")}>
+                          <ClearIcon />
                         </IconButton>
-                      </Tooltip>
-                    ) : null}
-                    <Tooltip title="View Details">
-                      <IconButton
-                        size="small"
-                        color="primary"
-                        onClick={() => handleViewDetails(batch.id)}
-                      >
-                        <VisibilityIcon fontSize="small" />
-                      </IconButton>
-                    </Tooltip>
-                    <Tooltip title="Edit">
-                      <IconButton
-                        size="small"
-                        onClick={() =>
-                          navigate(`/production-batches/${batch.id}/edit`)
-                        }
-                      >
-                        <EditIcon fontSize="small" />
-                      </IconButton>
-                    </Tooltip>
-                    <Tooltip title="Delete">
-                      <IconButton
-                        size="small"
-                        color="error"
-                        onClick={() => handleDeleteBatch(batch.id)}
-                      >
-                        <DeleteIcon fontSize="small" />
-                      </IconButton>
-                    </Tooltip>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
+                      </InputAdornment>
+                    ),
+                  }}
+                  sx={{
+                    '& .MuiOutlinedInput-root': {
+                      bgcolor: 'white',
+                    }
+                  }}
+                />
+              </Grid>
+              <Grid item xs={12} md={3}>
+                <FormControl fullWidth>
+                  <InputLabel>Status Filter</InputLabel>
+                  <Select
+                    value={filterStatus}
+                    onChange={handleFilterStatusChange}
+                    label="Status Filter"
+                    sx={{
+                      bgcolor: 'white',
+                    }}
+                  >
+                    <MenuItem value="">All Statuses</MenuItem>
+                    <MenuItem value="pending">Pending</MenuItem>
+                    <MenuItem value="scheduled">Scheduled</MenuItem>
+                    <MenuItem value="in_progress">In Progress</MenuItem>
+                    <MenuItem value="completed">Completed</MenuItem>
+                    <MenuItem value="cancelled">Cancelled</MenuItem>
+                  </Select>
+                </FormControl>
+              </Grid>
+            </Grid>
+          </Box>
 
-        <TablePagination
-          rowsPerPageOptions={[5, 10, 25]}
-          component="div"
-          count={filteredBatches.length}
-          rowsPerPage={rowsPerPage}
-          page={page}
-          onPageChange={handleChangePage}
-          onRowsPerPageChange={handleChangeRowsPerPage}
-        />
-      </Paper>
+          {/* Table Section */}
+          <Box sx={{ width: '100%', overflowX: 'auto' }}>
+            <Table sx={{ minWidth: 800 }}>
+              <TableHead>
+                <TableRow>
+                  <TableCell sx={{ fontWeight: 600, py: 2 }}>Batch Number</TableCell>
+                  <TableCell sx={{ fontWeight: 600, py: 2 }}>Product</TableCell>
+                  <TableCell sx={{ fontWeight: 600, py: 2 }}>Quantity</TableCell>
+                  <TableCell sx={{ fontWeight: 600, py: 2 }}>Priority</TableCell>
+                  <TableCell sx={{ fontWeight: 600, py: 2 }}>Status</TableCell>
+                  <TableCell sx={{ fontWeight: 600, py: 2 }}>Scheduled Start</TableCell>
+                  <TableCell sx={{ fontWeight: 600, py: 2 }}>Scheduled End</TableCell>
+                  <TableCell sx={{ fontWeight: 600, py: 2 }}>Actions</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {paginatedBatches.map((batch, index) => (
+                  <Fade in timeout={300 + index * 100} key={batch.id}>
+                    <TableRow 
+                      sx={{ 
+                        '&:hover': { 
+                          bgcolor: 'grey.50',
+                          transform: 'scale(1.001)',
+                          transition: 'all 0.2s ease-in-out',
+                        },
+                        '&:last-child td': { border: 0 },
+                      }}
+                    >
+                      <TableCell sx={{ py: 2 }}>
+                        <Typography variant="body1" sx={{ fontWeight: 600, color: 'primary.main' }}>
+                          {batch.batchNumber}
+                        </Typography>
+                      </TableCell>
+                      <TableCell sx={{ py: 2 }}>
+                        <Box>
+                          <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                            {batch.request ? batch.request.productName : "N/A"}
+                          </Typography>
+                          <Typography variant="caption" color="text.secondary">
+                            Request ID: {batch.request ? batch.request.requestId : "N/A"}
+                          </Typography>
+                        </Box>
+                      </TableCell>
+                      <TableCell sx={{ py: 2 }}>
+                        <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                          {batch.quantity.toLocaleString()}
+                        </Typography>
+                      </TableCell>
+                      <TableCell sx={{ py: 2 }}>
+                        {getPriorityChip(batch.request ? batch.request.priority : "normal")}
+                      </TableCell>
+                      <TableCell sx={{ py: 2 }}>{getStatusChip(batch.status)}</TableCell>
+                      <TableCell sx={{ py: 2 }}>
+                        <Typography variant="body2">
+                          {batch.scheduledStartDate
+                            ? new Date(batch.scheduledStartDate).toLocaleDateString()
+                            : "-"}
+                        </Typography>
+                      </TableCell>
+                      <TableCell sx={{ py: 2 }}>
+                        <Typography variant="body2">
+                          {batch.scheduledEndDate
+                            ? new Date(batch.scheduledEndDate).toLocaleDateString()
+                            : "-"}
+                        </Typography>
+                      </TableCell>
+                      <TableCell sx={{ py: 2 }}>
+                        <Stack direction="row" spacing={1}>
+                          {(batch.status === "pending" || batch.status === "scheduled") && (
+                            <Tooltip title="Start Production">
+                              <IconButton
+                                size="small"
+                                color="success"
+                                onClick={() => handleStartProduction(batch.id)}
+                                sx={{
+                                  '&:hover': {
+                                    bgcolor: 'success.light',
+                                    color: 'white',
+                                  }
+                                }}
+                              >
+                                <StartIcon fontSize="small" />
+                              </IconButton>
+                            </Tooltip>
+                          )}
+                          <Tooltip title="View Details">
+                            <IconButton
+                              size="small"
+                              color="primary"
+                              onClick={() => handleViewDetails(batch.id)}
+                              sx={{
+                                '&:hover': {
+                                  bgcolor: 'primary.light',
+                                  color: 'white',
+                                }
+                              }}
+                            >
+                              <VisibilityIcon fontSize="small" />
+                            </IconButton>
+                          </Tooltip>
+                          <Tooltip title="Edit">
+                            <IconButton
+                              size="small"
+                              color="info"
+                              onClick={() => navigate(`/production-batches/${batch.id}/edit`)}
+                              sx={{
+                                '&:hover': {
+                                  bgcolor: 'info.light',
+                                  color: 'white',
+                                }
+                              }}
+                            >
+                              <EditIcon fontSize="small" />
+                            </IconButton>
+                          </Tooltip>
+                          <Tooltip title="Delete">
+                            <IconButton
+                              size="small"
+                              color="error"
+                              onClick={() => handleDeleteBatch(batch.id)}
+                              sx={{
+                                '&:hover': {
+                                  bgcolor: 'error.light',
+                                  color: 'white',
+                                }
+                              }}
+                            >
+                              <DeleteIcon fontSize="small" />
+                            </IconButton>
+                          </Tooltip>
+                        </Stack>
+                      </TableCell>
+                    </TableRow>
+                  </Fade>
+                ))}
+              </TableBody>
+            </Table>
+          </Box>
+
+          <TablePagination
+            rowsPerPageOptions={[5, 10, 25]}
+            component="div"
+            count={filteredBatches.length}
+            rowsPerPage={rowsPerPage}
+            page={page}
+            onPageChange={handleChangePage}
+            onRowsPerPageChange={handleChangeRowsPerPage}
+            sx={{
+              borderTop: '1px solid',
+              borderColor: 'grey.200',
+              bgcolor: 'grey.50',
+            }}
+          />
+        </Paper>
+      </Grow>
 
       {/* Alert Dialog for Delete Errors */}
       <Dialog
         open={openAlertDialog}
         onClose={() => setOpenAlertDialog(false)}
-        aria-labelledby="alert-dialog-title"
-        aria-describedby="alert-dialog-description"
+        maxWidth="md"
+        fullWidth
+        PaperProps={{
+          sx: {
+            borderRadius: 3,
+          }
+        }}
       >
-        <DialogTitle id="alert-dialog-title">{alertTitle}</DialogTitle>
-        <DialogContent>
-          <Typography id="alert-dialog-description">{alertContent}</Typography>
+        <DialogTitle sx={{ 
+          bgcolor: 'error.main', 
+          color: 'white',
+          py: 3,
+          display: 'flex',
+          alignItems: 'center',
+        }}>
+          <Typography variant="h6" sx={{ fontWeight: 600 }}>
+            {alertTitle}
+          </Typography>
+        </DialogTitle>
+        <DialogContent sx={{ p: 4 }}>
+          <Typography>{alertContent}</Typography>
         </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setOpenAlertDialog(false)} autoFocus>
+        <DialogActions sx={{ p: 3, bgcolor: 'grey.50' }}>
+          <Button 
+            onClick={() => setOpenAlertDialog(false)} 
+            variant="contained"
+            size="large"
+            sx={{ px: 4 }}
+          >
             OK
           </Button>
         </DialogActions>

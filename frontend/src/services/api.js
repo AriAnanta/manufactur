@@ -6,7 +6,8 @@ const BASE_URLS = {
   production: 'http://localhost:3003/api',
   machineQueue: 'http://localhost:5003/api',
   materialInventory: 'http://localhost:3004/api',
-  productionFeedback: 'http://localhost:3005/api'
+  productionFeedback: 'http://localhost:3005/api',
+  machineQueueManagement: 'http://localhost:5001/api'
 };
 
 // Create axios instances for each service
@@ -55,6 +56,7 @@ const productionAPI = createApiInstance(BASE_URLS.production);
 const machineQueueAPIInstance = createApiInstance(BASE_URLS.machineQueue);
 const materialInventoryAPI = createApiInstance(BASE_URLS.materialInventory);
 const productionFeedbackAPI = createApiInstance(BASE_URLS.productionFeedback);
+const machineQueueManagementAPI = createApiInstance(BASE_URLS.machineQueueManagement);
 
 // Auth API endpoints
 export const authApiService = {
@@ -135,6 +137,26 @@ export const machineQueueAPI = {
   reorderQueue: (id, newPosition) => machineQueueAPIInstance.post(`/queues/${id}/reorder`, { newPosition }),
 };
 
+// Machine Queue Management API endpoints
+export const machineQueueManagementApiService = {
+  // Queue Management
+  getAllQueues: () => machineQueueManagementAPI.get('/queue'),
+  getQueueById: (id) => machineQueueManagementAPI.get(`/queue/${id}`),
+  addToQueue: (data) => machineQueueManagementAPI.post('/queue', data),
+  updateQueue: (id, data) => machineQueueManagementAPI.put(`/queue/${id}`, data),
+  deleteQueue: (id) => machineQueueManagementAPI.delete(`/queue/${id}`),
+  updateQueueStatus: (id, status) => machineQueueManagementAPI.patch(`/queue/${id}/status`, { status }),
+  getMachineQueue: (machineId) => machineQueueManagementAPI.get(`/queue/machine/${machineId}`),
+
+  // Machine Management
+  getAllMachines: () => machineQueueManagementAPI.get('/machines'),
+  getMachineById: (id) => machineQueueManagementAPI.get(`/machines/${id}`),
+  createMachine: (data) => machineQueueManagementAPI.post('/machines', data),
+  updateMachine: (id, data) => machineQueueManagementAPI.put(`/machines/${id}`, data),
+  deleteMachine: (id) => machineQueueManagementAPI.delete(`/machines/${id}`),
+  updateMachineStatus: (id, status) => machineQueueManagementAPI.patch(`/machines/${id}/status`, { status }),
+};
+
 // Material Inventory API endpoints
 export const materialInventoryApiService = {
   // Materials
@@ -196,4 +218,5 @@ export default {
   machineQueue: machineQueueAPI,
   materialInventory: materialInventoryApiService,
   productionFeedback: productionFeedbackApiService,
+  machineQueueManagement: machineQueueManagementApiService,
 };
