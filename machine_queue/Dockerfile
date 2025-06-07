@@ -1,4 +1,4 @@
-FROM node:16-alpine
+FROM node:16
 
 WORKDIR /app
 
@@ -15,4 +15,4 @@ COPY . .
 EXPOSE 5003
 
 # Start the application
-CMD ["node", "src/index.js"]
+CMD ["node", "src/app.js"]

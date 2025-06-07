@@ -25,6 +25,8 @@ import ProductionRequests from "./pages/production-management/ProductionRequests
 import ProductionRequestDetail from "./pages/production-management/ProductionRequestDetail";
 import ProductionBatches from "./pages/production-management/ProductionBatches";
 import ProductionBatchDetail from "./pages/production-management/ProductionBatchDetail";
+import ProductionBatchForm from "./pages/production-management/ProductionBatchForm";
+import ProductionRequestForm from "./pages/production-management/ProductionRequestForm";
 
 // Material Inventory Pages
 import MaterialList from "./pages/material-inventory/MaterialList";
@@ -32,6 +34,10 @@ import MaterialDetail from "./pages/material-inventory/MaterialDetail";
 import SupplierList from "./pages/material-inventory/SupplierList";
 import SupplierDetail from "./pages/material-inventory/SupplierDetail";
 import TransactionHistory from "./pages/material-inventory/TransactionHistory";
+import CreateMaterial from "./pages/material-inventory/CreateMaterial";
+import EditMaterial from "./pages/material-inventory/EditMaterial";
+import CreateSupplier from "./pages/material-inventory/CreateSupplier";
+import EditSupplier from "./pages/material-inventory/EditSupplier";
 
 // Production Planning Pages
 import ProductionPlans from "./pages/planning/ProductionPlans";
@@ -87,24 +93,44 @@ function App() {
 
             {/* Production Management Routes */}
             <Route
-              path="/production-requests"
-              element={<ProductionRequests />}
+              path="/production-requests/add"
+              element={<ProductionRequestForm />}
+            />
+            <Route
+              path="/production-requests/:id/edit"
+              element={<ProductionRequestForm />}
             />
             <Route
               path="/production-requests/:id"
               element={<ProductionRequestDetail />}
             />
+            <Route
+              path="/production-requests"
+              element={<ProductionRequests />}
+            />
             <Route path="/production-batches" element={<ProductionBatches />} />
+            <Route
+              path="/production-batches/add"
+              element={<ProductionBatchForm />}
+            />
             <Route
               path="/production-batches/:id"
               element={<ProductionBatchDetail />}
             />
+            <Route
+              path="/production-batches/:id/edit"
+              element={<ProductionBatchForm />}
+            />
 
             {/* Material Inventory Routes */}
             <Route path="/materials" element={<MaterialList />} />
+            <Route path="/materials/new" element={<CreateMaterial />} />
             <Route path="/materials/:id" element={<MaterialDetail />} />
+            <Route path="/materials/:id/edit" element={<EditMaterial />} />
             <Route path="/suppliers" element={<SupplierList />} />
+            <Route path="/suppliers/new" element={<CreateSupplier />} />
             <Route path="/suppliers/:id" element={<SupplierDetail />} />
+            <Route path="/suppliers/:id/edit" element={<EditSupplier />} />
             <Route path="/transactions" element={<TransactionHistory />} />
 
             {/* Production Planning Routes */}

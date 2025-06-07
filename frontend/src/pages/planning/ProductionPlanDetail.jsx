@@ -29,6 +29,10 @@ import {
   CardHeader,
   Tabs,
   Tab,
+  Avatar,
+  Stack,
+  Grow,
+  Fade,
 } from "@mui/material";
 import {
   Edit as EditIcon,
@@ -37,6 +41,9 @@ import {
   Add as AddIcon,
   CheckCircle as CheckCircleIcon,
   Cancel as CancelIcon,
+  Info as InfoIcon,
+  Assignment as AssignmentIcon,
+  Schedule as ScheduleIcon,
 } from "@mui/icons-material";
 import { toast } from "react-toastify";
 import { format, parseISO } from "date-fns";
@@ -296,444 +303,602 @@ const ProductionPlanDetail = () => {
     plan.status && plan.status.toUpperCase() === "PENDING_APPROVAL";
 
   return (
-    <Box>
-      {/* Header */}
-      <Paper sx={{ p: 3, mb: 3 }}>
-        <Box
+    <Box
+      sx={{
+        width: "100%",
+        maxWidth: 1200,
+        mx: "auto",
+        p: { xs: 2, sm: 3 },
+        overflow: "hidden",
+      }}
+    >
+      {/* Header Section */}
+      <Fade in timeout={600}>
+        <Card
+          elevation={0}
           sx={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            mb: 2,
+            mb: 4,
+            background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+            color: "white",
+            borderRadius: 3,
+            width: "100%",
           }}
         >
-          <Box sx={{ display: "flex", alignItems: "center" }}>
-            <IconButton onClick={handleBack} sx={{ mr: 1 }}>
-              <ArrowBackIcon />
-            </IconButton>
-            <Typography variant="h5">Production Plan Details</Typography>
-          </Box>
-          <Box>
-            {isDraft && (
-              <>
+          <CardContent sx={{ p: { xs: 3, sm: 4 } }}>
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: { xs: "flex-start", sm: "center" },
+                flexDirection: { xs: "column", sm: "row" },
+                gap: { xs: 3, sm: 0 },
+              }}
+            >
+              <Box sx={{ display: "flex", alignItems: "center" }}>
+                <Avatar
+                  sx={{
+                    bgcolor: "rgba(255,255,255,0.2)",
+                    width: { xs: 56, sm: 64 },
+                    height: { xs: 56, sm: 64 },
+                    mr: { xs: 2, sm: 3 },
+                  }}
+                >
+                  <ScheduleIcon sx={{ fontSize: { xs: 28, sm: 32 } }} />
+                </Avatar>
+                <Box>
+                  <Typography
+                    variant="h4"
+                    sx={{
+                      fontWeight: 700,
+                      mb: 1,
+                      fontSize: { xs: "1.75rem", sm: "2.125rem" },
+                    }}
+                  >
+                    Production Plan Details
+                  </Typography>
+                  <Typography variant="h6" sx={{ opacity: 0.9 }}>
+                    Plan ID: {plan.planId}
+                  </Typography>
+                </Box>
+              </Box>
+              <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
                 <Button
                   variant="outlined"
-                  startIcon={<EditIcon />}
-                  onClick={handleEditPlan}
-                  sx={{ mr: 1 }}
+                  startIcon={<ArrowBackIcon />}
+                  onClick={handleBack}
+                  sx={{
+                    bgcolor: "rgba(255,255,255,0.1)",
+                    color: "white",
+                    borderColor: "rgba(255,255,255,0.5)",
+                    "&:hover": {
+                      bgcolor: "rgba(255,255,255,0.2)",
+                    },
+                    width: { xs: "100%", sm: "auto" },
+                  }}
                 >
-                  Edit
+                  Back
                 </Button>
-                <Button
-                  variant="outlined"
-                  color="error"
-                  startIcon={<DeleteIcon />}
-                  onClick={handleOpenDeleteDialog}
-                >
-                  Delete
-                </Button>
-              </>
-            )}
-            {isPendingApproval && (
-              <Button
-                variant="contained"
-                color="success"
-                startIcon={<CheckCircleIcon />}
-                onClick={handleOpenApproveDialog}
-              >
-                Approve
-              </Button>
-            )}
-          </Box>
-        </Box>
+                {isDraft && (
+                  <>
+                    <Button
+                      variant="outlined"
+                      startIcon={<EditIcon />}
+                      onClick={handleEditPlan}
+                      sx={{
+                        bgcolor: "rgba(255,255,255,0.1)",
+                        color: "white",
+                        borderColor: "rgba(255,255,255,0.5)",
+                        "&:hover": {
+                          bgcolor: "rgba(255,255,255,0.2)",
+                        },
+                        width: { xs: "100%", sm: "auto" },
+                      }}
+                    >
+                      Edit
+                    </Button>
+                    <Button
+                      variant="contained"
+                      color="error"
+                      startIcon={<DeleteIcon />}
+                      onClick={handleOpenDeleteDialog}
+                      sx={{
+                        bgcolor: "rgba(244, 67, 54, 0.8)",
+                        "&:hover": {
+                          bgcolor: "rgba(244, 67, 54, 1)",
+                        },
+                        width: { xs: "100%", sm: "auto" },
+                      }}
+                    >
+                      Delete
+                    </Button>
+                  </>
+                )}
+                {isPendingApproval && (
+                  <Button
+                    variant="contained"
+                    color="success"
+                    startIcon={<CheckCircleIcon />}
+                    onClick={handleOpenApproveDialog}
+                    sx={{
+                      bgcolor: "rgba(76, 175, 80, 0.8)",
+                      "&:hover": {
+                        bgcolor: "rgba(76, 175, 80, 1)",
+                      },
+                      width: { xs: "100%", sm: "auto" },
+                    }}
+                  >
+                    Approve
+                  </Button>
+                )}
+              </Stack>
+            </Box>
+          </CardContent>
+        </Card>
+      </Fade>
 
-        <Divider sx={{ mb: 3 }} />
+      {/* Plan Details */}
+      <Grid container spacing={4}>
+        <Grid item xs={12} md={6}>
+          <Grow in timeout={800}>
+            <Card
+              sx={{
+                height: "100%",
+                border: "1px solid",
+                borderColor: "grey.200",
+              }}
+            >
+              <CardContent sx={{ p: 4 }}>
+                <Box sx={{ display: "flex", alignItems: "center", mb: 3 }}>
+                  <Avatar sx={{ bgcolor: "primary.main", mr: 2 }}>
+                    <InfoIcon />
+                  </Avatar>
+                  <Typography variant="h6" sx={{ fontWeight: 600 }}>
+                    Plan Information
+                  </Typography>
+                </Box>
 
-        {/* Plan Details */}
-        <Grid container spacing={3}>
-          <Grid item xs={12} md={6}>
-            <Typography variant="subtitle1" gutterBottom>
-              Plan Information
-            </Typography>
-            <Grid container spacing={2}>
-              <Grid item xs={4}>
-                <Typography variant="body2" color="text.secondary">
-                  Product Name
-                </Typography>
-              </Grid>
-              <Grid item xs={8}>
-                <Typography variant="body2">{plan.productName}</Typography>
-              </Grid>
+                <Stack spacing={3}>
+                  <Grid container spacing={2}>
+                    <Grid item xs={4}>
+                      <Typography variant="body2" color="text.secondary">
+                        Product Name
+                      </Typography>
+                    </Grid>
+                    <Grid item xs={8}>
+                      <Typography variant="body2">
+                        {plan.productName}
+                      </Typography>
+                    </Grid>
 
-              <Grid item xs={4}>
-                <Typography variant="body2" color="text.secondary">
-                  Notes
-                </Typography>
-              </Grid>
-              <Grid item xs={8}>
-                <Typography variant="body2">{plan.planningNotes}</Typography>
-              </Grid>
+                    <Grid item xs={4}>
+                      <Typography variant="body2" color="text.secondary">
+                        Notes
+                      </Typography>
+                    </Grid>
+                    <Grid item xs={8}>
+                      <Typography variant="body2">
+                        {plan.planningNotes}
+                      </Typography>
+                    </Grid>
 
-              <Grid item xs={4}>
-                <Typography variant="body2" color="text.secondary">
-                  Status
-                </Typography>
-              </Grid>
-              <Grid item xs={8}>
-                <StatusChip status={plan.status} />
-              </Grid>
+                    <Grid item xs={4}>
+                      <Typography variant="body2" color="text.secondary">
+                        Status
+                      </Typography>
+                    </Grid>
+                    <Grid item xs={8}>
+                      <StatusChip status={plan.status} />
+                    </Grid>
 
-              <Grid item xs={4}>
-                <Typography variant="body2" color="text.secondary">
-                  Planned Start Date
-                </Typography>
-              </Grid>
-              <Grid item xs={8}>
-                <Typography variant="body2">
-                  {plan.plannedStartDate
-                    ? format(parseISO(plan.plannedStartDate), "dd MMM yyyy")
-                    : "N/A"}
-                </Typography>
-              </Grid>
+                    <Grid item xs={4}>
+                      <Typography variant="body2" color="text.secondary">
+                        Planned Start Date
+                      </Typography>
+                    </Grid>
+                    <Grid item xs={8}>
+                      <Typography variant="body2">
+                        {plan.plannedStartDate
+                          ? format(
+                              parseISO(plan.plannedStartDate),
+                              "dd MMM yyyy"
+                            )
+                          : "N/A"}
+                      </Typography>
+                    </Grid>
 
-              <Grid item xs={4}>
-                <Typography variant="body2" color="text.secondary">
-                  Planned End Date
-                </Typography>
-              </Grid>
-              <Grid item xs={8}>
-                <Typography variant="body2">
-                  {plan.plannedEndDate
-                    ? format(parseISO(plan.plannedEndDate), "dd MMM yyyy")
-                    : "N/A"}
-                </Typography>
-              </Grid>
-            </Grid>
-          </Grid>
-
-          <Grid item xs={12} md={6}>
-            <Typography variant="subtitle1" gutterBottom>
-              Additional Information
-            </Typography>
-            <Grid container spacing={2}>
-              <Grid item xs={4}>
-                <Typography variant="body2" color="text.secondary">
-                  Plan ID
-                </Typography>
-              </Grid>
-              <Grid item xs={8}>
-                <Typography variant="body2">{plan.planId}</Typography>
-              </Grid>
-
-              <Grid item xs={4}>
-                <Typography variant="body2" color="text.secondary">
-                  Request ID
-                </Typography>
-              </Grid>
-              <Grid item xs={8}>
-                <Typography variant="body2">{plan.requestId}</Typography>
-              </Grid>
-
-              <Grid item xs={4}>
-                <Typography variant="body2" color="text.secondary">
-                  Production Request ID
-                </Typography>
-              </Grid>
-              <Grid item xs={8}>
-                <Typography variant="body2">
-                  {plan.productionRequestId || "-"}
-                </Typography>
-              </Grid>
-
-              <Grid item xs={4}>
-                <Typography variant="body2" color="text.secondary">
-                  Priority
-                </Typography>
-              </Grid>
-              <Grid item xs={8}>
-                <Typography variant="body2">{plan.priority}</Typography>
-              </Grid>
-
-              <Grid item xs={4}>
-                <Typography variant="body2" color="text.secondary">
-                  Total Capacity Required
-                </Typography>
-              </Grid>
-              <Grid item xs={8}>
-                <Typography variant="body2">
-                  {plan.totalCapacityRequired || "N/A"} hours
-                </Typography>
-              </Grid>
-
-              <Grid item xs={4}>
-                <Typography variant="body2" color="text.secondary">
-                  Total Material Cost
-                </Typography>
-              </Grid>
-              <Grid item xs={8}>
-                <Typography variant="body2">
-                  ${(plan.totalMaterialCost || 0).toLocaleString()}
-                </Typography>
-              </Grid>
-
-              <Grid item xs={4}>
-                <Typography variant="body2" color="text.secondary">
-                  Planned Batches
-                </Typography>
-              </Grid>
-              <Grid item xs={8}>
-                <Typography variant="body2">
-                  {plan.plannedBatches || "N/A"}
-                </Typography>
-              </Grid>
-
-              {plan.approvedBy && (
-                <>
-                  <Grid item xs={4}>
-                    <Typography variant="body2" color="text.secondary">
-                      Approved By
-                    </Typography>
+                    <Grid item xs={4}>
+                      <Typography variant="body2" color="text.secondary">
+                        Planned End Date
+                      </Typography>
+                    </Grid>
+                    <Grid item xs={8}>
+                      <Typography variant="body2">
+                        {plan.plannedEndDate
+                          ? format(parseISO(plan.plannedEndDate), "dd MMM yyyy")
+                          : "N/A"}
+                      </Typography>
+                    </Grid>
                   </Grid>
-                  <Grid item xs={8}>
-                    <Typography variant="body2">{plan.approvedBy}</Typography>
-                  </Grid>
-
-                  <Grid item xs={4}>
-                    <Typography variant="body2" color="text.secondary">
-                      Approved At
-                    </Typography>
-                  </Grid>
-                  <Grid item xs={8}>
-                    <Typography variant="body2">
-                      {plan.approvalDate
-                        ? format(
-                            parseISO(plan.approvalDate),
-                            "dd MMM yyyy HH:mm"
-                          )
-                        : "N/A"}
-                    </Typography>
-                  </Grid>
-                </>
-              )}
-
-              <Grid item xs={4}>
-                <Typography variant="body2" color="text.secondary">
-                  Created At
-                </Typography>
-              </Grid>
-              <Grid item xs={8}>
-                <Typography variant="body2">
-                  {plan.createdAt
-                    ? format(parseISO(plan.createdAt), "dd MMM yyyy HH:mm")
-                    : "N/A"}
-                </Typography>
-              </Grid>
-
-              <Grid item xs={4}>
-                <Typography variant="body2" color="text.secondary">
-                  Updated At
-                </Typography>
-              </Grid>
-              <Grid item xs={8}>
-                <Typography variant="body2">
-                  {plan.updatedAt
-                    ? format(parseISO(plan.updatedAt), "dd MMM yyyy HH:mm")
-                    : "N/A"}
-                </Typography>
-              </Grid>
-            </Grid>
-          </Grid>
+                </Stack>
+              </CardContent>
+            </Card>
+          </Grow>
         </Grid>
-      </Paper>
+
+        <Grid item xs={12} md={6}>
+          <Grow in timeout={1000}>
+            <Card
+              sx={{
+                height: "100%",
+                border: "1px solid",
+                borderColor: "grey.200",
+              }}
+            >
+              <CardContent sx={{ p: 4 }}>
+                <Box sx={{ display: "flex", alignItems: "center", mb: 3 }}>
+                  <Avatar sx={{ bgcolor: "info.main", mr: 2 }}>
+                    <AssignmentIcon />
+                  </Avatar>
+                  <Typography variant="h6" sx={{ fontWeight: 600 }}>
+                    Additional Information
+                  </Typography>
+                </Box>
+
+                <Stack spacing={3}>
+                  <Grid container spacing={2}>
+                    <Grid item xs={4}>
+                      <Typography variant="body2" color="text.secondary">
+                        Plan ID
+                      </Typography>
+                    </Grid>
+                    <Grid item xs={8}>
+                      <Typography variant="body2">{plan.planId}</Typography>
+                    </Grid>
+
+                    <Grid item xs={4}>
+                      <Typography variant="body2" color="text.secondary">
+                        Request ID
+                      </Typography>
+                    </Grid>
+                    <Grid item xs={8}>
+                      <Typography variant="body2">{plan.requestId}</Typography>
+                    </Grid>
+
+                    <Grid item xs={4}>
+                      <Typography variant="body2" color="text.secondary">
+                        Production Request ID
+                      </Typography>
+                    </Grid>
+                    <Grid item xs={8}>
+                      <Typography variant="body2">
+                        {plan.productionRequestId || "-"}
+                      </Typography>
+                    </Grid>
+
+                    <Grid item xs={4}>
+                      <Typography variant="body2" color="text.secondary">
+                        Priority
+                      </Typography>
+                    </Grid>
+                    <Grid item xs={8}>
+                      <Typography variant="body2">{plan.priority}</Typography>
+                    </Grid>
+
+                    <Grid item xs={4}>
+                      <Typography variant="body2" color="text.secondary">
+                        Total Capacity Required
+                      </Typography>
+                    </Grid>
+                    <Grid item xs={8}>
+                      <Typography variant="body2">
+                        {plan.totalCapacityRequired || "N/A"} hours
+                      </Typography>
+                    </Grid>
+
+                    <Grid item xs={4}>
+                      <Typography variant="body2" color="text.secondary">
+                        Total Material Cost
+                      </Typography>
+                    </Grid>
+                    <Grid item xs={8}>
+                      <Typography variant="body2">
+                        ${(plan.totalMaterialCost || 0).toLocaleString()}
+                      </Typography>
+                    </Grid>
+
+                    <Grid item xs={4}>
+                      <Typography variant="body2" color="text.secondary">
+                        Planned Batches
+                      </Typography>
+                    </Grid>
+                    <Grid item xs={8}>
+                      <Typography variant="body2">
+                        {plan.plannedBatches || "N/A"}
+                      </Typography>
+                    </Grid>
+
+                    {plan.approvedBy && (
+                      <>
+                        <Grid item xs={4}>
+                          <Typography variant="body2" color="text.secondary">
+                            Approved By
+                          </Typography>
+                        </Grid>
+                        <Grid item xs={8}>
+                          <Typography variant="body2">
+                            {plan.approvedBy}
+                          </Typography>
+                        </Grid>
+
+                        <Grid item xs={4}>
+                          <Typography variant="body2" color="text.secondary">
+                            Approved At
+                          </Typography>
+                        </Grid>
+                        <Grid item xs={8}>
+                          <Typography variant="body2">
+                            {plan.approvalDate
+                              ? format(
+                                  parseISO(plan.approvalDate),
+                                  "dd MMM yyyy HH:mm"
+                                )
+                              : "N/A"}
+                          </Typography>
+                        </Grid>
+                      </>
+                    )}
+
+                    <Grid item xs={4}>
+                      <Typography variant="body2" color="text.secondary">
+                        Created At
+                      </Typography>
+                    </Grid>
+                    <Grid item xs={8}>
+                      <Typography variant="body2">
+                        {plan.createdAt
+                          ? format(
+                              parseISO(plan.createdAt),
+                              "dd MMM yyyy HH:mm"
+                            )
+                          : "N/A"}
+                      </Typography>
+                    </Grid>
+
+                    <Grid item xs={4}>
+                      <Typography variant="body2" color="text.secondary">
+                        Updated At
+                      </Typography>
+                    </Grid>
+                    <Grid item xs={8}>
+                      <Typography variant="body2">
+                        {plan.updatedAt
+                          ? format(
+                              parseISO(plan.updatedAt),
+                              "dd MMM yyyy HH:mm"
+                            )
+                          : "N/A"}
+                      </Typography>
+                    </Grid>
+                  </Grid>
+                </Stack>
+              </CardContent>
+            </Card>
+          </Grow>
+        </Grid>
+      </Grid>
 
       {/* Tabs for Capacity and Material Plans */}
-      <Paper sx={{ p: 3 }}>
-        <Box sx={{ borderBottom: 1, borderColor: "divider", mb: 2 }}>
-          <Tabs value={tabValue} onChange={handleTabChange}>
-            <Tab label="Capacity Plans" />
-            <Tab label="Material Plans" />
-          </Tabs>
-        </Box>
-
-        {/* Capacity Plans Tab */}
-        {tabValue === 0 && (
-          <Box>
-            <Box
-              sx={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-                mb: 2,
-              }}
+      <Grow in timeout={1200}>
+        <Paper
+          sx={{
+            mt: 4,
+            borderRadius: 3,
+            overflow: "hidden",
+            border: "1px solid",
+            borderColor: "grey.200",
+            width: "100%",
+          }}
+        >
+          <Box sx={{ borderBottom: 1, borderColor: "divider", mb: 2 }}>
+            <Tabs
+              value={tabValue}
+              onChange={handleTabChange}
+              sx={{ px: 3, pt: 2 }}
             >
-              <Typography variant="h6">Capacity Plans</Typography>
-              {isDraft && (
-                <Button
-                  variant="contained"
-                  startIcon={<AddIcon />}
-                  onClick={handleAddCapacityPlan}
-                  size="small"
-                >
-                  Add Capacity Plan
-                </Button>
-              )}
-            </Box>
+              <Tab label="Capacity Plans" />
+              <Tab label="Material Plans" />
+            </Tabs>
+          </Box>
 
-            {plan.capacityPlans && plan.capacityPlans.length > 0 ? (
-              <TableContainer>
-                <Table>
-                  <TableHead>
-                    <TableRow>
-                      <TableCell>Machine Type</TableCell>
-                      <TableCell>Hours Required</TableCell>
-                      <TableCell>Start Date</TableCell>
-                      <TableCell>End Date</TableCell>
-                      <TableCell align="right">Actions</TableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {plan.capacityPlans.map((capacityPlan) => (
-                      <TableRow key={capacityPlan.id}>
-                        <TableCell>{capacityPlan.machineType}</TableCell>
-                        <TableCell>{capacityPlan.hoursRequired}</TableCell>
-                        <TableCell>
-                          {capacityPlan.startDate
-                            ? format(
-                                parseISO(capacityPlan.startDate),
-                                "dd MMM yyyy"
-                              )
-                            : "N/A"}
-                        </TableCell>
-                        <TableCell>
-                          {capacityPlan.endDate
-                            ? format(
-                                parseISO(capacityPlan.endDate),
-                                "dd MMM yyyy"
-                              )
-                            : "N/A"}
-                        </TableCell>
-                        <TableCell align="right">
-                          {isDraft && (
-                            <Box sx={{ display: "flex", gap: 1 }}>
-                              <IconButton
-                                size="small"
-                                onClick={() =>
-                                  handleEditCapacityPlan(capacityPlan.id)
-                                }
-                              >
-                                <EditIcon fontSize="small" />
-                              </IconButton>
-                              <IconButton
-                                size="small"
-                                color="error"
-                                onClick={() =>
-                                  handleOpenDeleteCapacityDialog(
-                                    capacityPlan.id
+          <Box sx={{ p: 4 }}>
+            {/* Capacity Plans Tab */}
+            {tabValue === 0 && (
+              <Box>
+                <Box
+                  sx={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    mb: 3,
+                  }}
+                >
+                  <Typography variant="h6" sx={{ fontWeight: 600 }}>
+                    Capacity Plans
+                  </Typography>
+                  {isDraft && (
+                    <Button
+                      variant="contained"
+                      startIcon={<AddIcon />}
+                      onClick={handleAddCapacityPlan}
+                      sx={{ borderRadius: 2 }}
+                    >
+                      Add Capacity Plan
+                    </Button>
+                  )}
+                </Box>
+
+                {plan.capacityPlans && plan.capacityPlans.length > 0 ? (
+                  <TableContainer>
+                    <Table>
+                      <TableHead>
+                        <TableRow>
+                          <TableCell>Machine Type</TableCell>
+                          <TableCell>Hours Required</TableCell>
+                          <TableCell>Start Date</TableCell>
+                          <TableCell>End Date</TableCell>
+                          <TableCell align="right">Actions</TableCell>
+                        </TableRow>
+                      </TableHead>
+                      <TableBody>
+                        {plan.capacityPlans.map((capacityPlan) => (
+                          <TableRow key={capacityPlan.id}>
+                            <TableCell>{capacityPlan.machineType}</TableCell>
+                            <TableCell>{capacityPlan.hoursRequired}</TableCell>
+                            <TableCell>
+                              {capacityPlan.startDate
+                                ? format(
+                                    parseISO(capacityPlan.startDate),
+                                    "dd MMM yyyy"
                                   )
-                                }
-                              >
-                                <DeleteIcon fontSize="small" />
-                              </IconButton>
-                            </Box>
-                          )}
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </TableContainer>
-            ) : (
-              <Alert severity="info">No capacity plans added yet.</Alert>
+                                : "N/A"}
+                            </TableCell>
+                            <TableCell>
+                              {capacityPlan.endDate
+                                ? format(
+                                    parseISO(capacityPlan.endDate),
+                                    "dd MMM yyyy"
+                                  )
+                                : "N/A"}
+                            </TableCell>
+                            <TableCell align="right">
+                              {isDraft && (
+                                <Box sx={{ display: "flex", gap: 1 }}>
+                                  <IconButton
+                                    size="small"
+                                    onClick={() =>
+                                      handleEditCapacityPlan(capacityPlan.id)
+                                    }
+                                  >
+                                    <EditIcon fontSize="small" />
+                                  </IconButton>
+                                  <IconButton
+                                    size="small"
+                                    color="error"
+                                    onClick={() =>
+                                      handleOpenDeleteCapacityDialog(
+                                        capacityPlan.id
+                                      )
+                                    }
+                                  >
+                                    <DeleteIcon fontSize="small" />
+                                  </IconButton>
+                                </Box>
+                              )}
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </TableContainer>
+                ) : (
+                  <Alert severity="info">No capacity plans added yet.</Alert>
+                )}
+              </Box>
+            )}
+
+            {/* Material Plans Tab */}
+            {tabValue === 1 && (
+              <Box>
+                <Box
+                  sx={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    mb: 3,
+                  }}
+                >
+                  <Typography variant="h6" sx={{ fontWeight: 600 }}>
+                    Material Plans
+                  </Typography>
+                  {isDraft && (
+                    <Button
+                      variant="contained"
+                      startIcon={<AddIcon />}
+                      onClick={handleAddMaterialPlan}
+                      sx={{ borderRadius: 2 }}
+                    >
+                      Add Material Plan
+                    </Button>
+                  )}
+                </Box>
+                {plan.materialPlans && plan.materialPlans.length > 0 ? (
+                  <TableContainer>
+                    <Table>
+                      <TableHead>
+                        <TableRow>
+                          <TableCell>Material Name</TableCell>
+                          <TableCell>Quantity Required</TableCell>
+                          <TableCell>Unit of Measure</TableCell>
+                          <TableCell>Availability Date</TableCell>
+                          <TableCell>Notes</TableCell>
+                          <TableCell align="right">Actions</TableCell>
+                        </TableRow>
+                      </TableHead>
+                      <TableBody>
+                        {plan.materialPlans.map((materialPlan) => (
+                          <TableRow key={materialPlan.id}>
+                            <TableCell>{materialPlan.materialName}</TableCell>
+                            <TableCell>
+                              {materialPlan.quantityRequired}
+                            </TableCell>
+                            <TableCell>{materialPlan.unitOfMeasure}</TableCell>
+                            <TableCell>
+                              {materialPlan.availabilityDate
+                                ? format(
+                                    parseISO(materialPlan.availabilityDate),
+                                    "dd MMM yyyy"
+                                  )
+                                : "N/A"}
+                            </TableCell>
+                            <TableCell>{materialPlan.notes || "-"}</TableCell>
+                            <TableCell align="right">
+                              {isDraft && (
+                                <Box sx={{ display: "flex", gap: 1 }}>
+                                  <IconButton
+                                    size="small"
+                                    onClick={() =>
+                                      handleEditMaterialPlan(materialPlan.id)
+                                    }
+                                  >
+                                    <EditIcon fontSize="small" />
+                                  </IconButton>
+                                  <IconButton
+                                    size="small"
+                                    color="error"
+                                    onClick={() =>
+                                      handleOpenDeleteMaterialDialog(
+                                        materialPlan.id
+                                      )
+                                    }
+                                  >
+                                    <DeleteIcon fontSize="small" />
+                                  </IconButton>
+                                </Box>
+                              )}
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </TableContainer>
+                ) : (
+                  <Alert severity="info">No material plans added yet.</Alert>
+                )}
+              </Box>
             )}
           </Box>
-        )}
-
-        {/* Material Plans Tab */}
-        {tabValue === 1 && (
-          <Box>
-            <Box
-              sx={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-                mb: 2,
-              }}
-            >
-              <Typography variant="h6">Material Plans</Typography>
-              {isDraft && (
-                <Button
-                  variant="contained"
-                  startIcon={<AddIcon />}
-                  onClick={handleAddMaterialPlan}
-                >
-                  Add Material Plan
-                </Button>
-              )}
-            </Box>
-            {plan.materialPlans && plan.materialPlans.length > 0 ? (
-              <TableContainer>
-                <Table>
-                  <TableHead>
-                    <TableRow>
-                      <TableCell>Material Name</TableCell>
-                      <TableCell>Quantity Required</TableCell>
-                      <TableCell>Unit of Measure</TableCell>
-                      <TableCell>Availability Date</TableCell>
-                      <TableCell>Notes</TableCell>
-                      <TableCell align="right">Actions</TableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {plan.materialPlans.map((materialPlan) => (
-                      <TableRow key={materialPlan.id}>
-                        <TableCell>{materialPlan.materialName}</TableCell>
-                        <TableCell>{materialPlan.quantityRequired}</TableCell>
-                        <TableCell>{materialPlan.unitOfMeasure}</TableCell>
-                        <TableCell>
-                          {materialPlan.availabilityDate
-                            ? format(
-                                parseISO(materialPlan.availabilityDate),
-                                "dd MMM yyyy"
-                              )
-                            : "N/A"}
-                        </TableCell>
-                        <TableCell>{materialPlan.notes || "-"}</TableCell>
-                        <TableCell align="right">
-                          {isDraft && (
-                            <Box sx={{ display: "flex", gap: 1 }}>
-                              <IconButton
-                                size="small"
-                                onClick={() =>
-                                  handleEditMaterialPlan(materialPlan.id)
-                                }
-                              >
-                                <EditIcon fontSize="small" />
-                              </IconButton>
-                              <IconButton
-                                size="small"
-                                color="error"
-                                onClick={() =>
-                                  handleOpenDeleteMaterialDialog(
-                                    materialPlan.id
-                                  )
-                                }
-                              >
-                                <DeleteIcon fontSize="small" />
-                              </IconButton>
-                            </Box>
-                          )}
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </TableContainer>
-            ) : (
-              <Alert severity="info">No material plans added yet.</Alert>
-            )}
-          </Box>
-        )}
-      </Paper>
+        </Paper>
+      </Grow>
 
       {/* Delete Plan Dialog */}
       <Dialog open={openDeleteDialog} onClose={handleCloseDeleteDialog}>

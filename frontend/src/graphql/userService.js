@@ -208,8 +208,8 @@ export const DELETE_USER = gql`
 `;
 
 export const UPDATE_PROFILE = gql`
-  mutation UpdateProfile($input: UpdateProfileInput!) {
-    updateProfile(input: $input) {
+  mutation UpdateProfile($id: ID!, $fullName: String, $email: String) {
+    updateUser(id: $id, fullName: $fullName, email: $email) {
       ...UserFields
     }
   }

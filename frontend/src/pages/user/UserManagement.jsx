@@ -1,7 +1,32 @@
-import React, { useState, useEffect } from 'react';
-import { Box, Typography, Button, IconButton, Tooltip, Dialog, DialogActions, DialogContent, DialogTitle, TextField, MenuItem, CircularProgress } from '@mui/material';
-import { Add as AddIcon, Edit as EditIcon, Delete as DeleteIcon, Refresh as RefreshIcon } from '@mui/icons-material';
-import { PageHeader, DataTable, ConfirmDialog, AlertMessage } from '../../components/common';
+import React, { useState, useEffect } from "react";
+import {
+  Box,
+  Typography,
+  Button,
+  IconButton,
+  Tooltip,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  TextField,
+  MenuItem,
+  CircularProgress,
+} from "@mui/material";
+import {
+  Add as AddIcon,
+  Edit as EditIcon,
+  Delete as DeleteIcon,
+  Refresh as RefreshIcon,
+} from "@mui/icons-material";
+import {
+  PageHeader,
+  DataTable,
+  ConfirmDialog,
+  AlertMessage,
+} from "../../components/common";
+import { useAuth } from "../../contexts/AuthContext";
+import { useNavigate } from "react-router-dom";
 
 /**
  * UserManagement Component
@@ -10,32 +35,45 @@ import { PageHeader, DataTable, ConfirmDialog, AlertMessage } from '../../compon
  * Menggunakan komponen umum seperti PageHeader, DataTable, ConfirmDialog, dan AlertMessage.
  */
 const UserManagement = () => {
+  const { user, loading: authLoading } = useAuth();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!authLoading && (!user || user.role !== "admin")) {
+      navigate("/");
+    }
+  }, [user, authLoading, navigate]);
+
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [openFormDialog, setOpenFormDialog] = useState(false);
   const [openConfirmDialog, setOpenConfirmDialog] = useState(false);
   const [currentUser, setCurrentUser] = useState(null);
-  const [formMode, setFormMode] = useState('add'); // 'add' or 'edit'
+  const [formMode, setFormMode] = useState("add"); // 'add' or 'edit'
   const [formData, setFormData] = useState({
-    username: '',
-    email: '',
-    role: '',
-    password: '',
-    confirmPassword: '',
+    username: "",
+    email: "",
+    role: "",
+    password: "",
+    confirmPassword: "",
   });
   const [formErrors, setFormErrors] = useState({});
-  const [alert, setAlert] = useState({ open: false, severity: '', message: '' });
+  const [alert, setAlert] = useState({
+    open: false,
+    severity: "",
+    message: "",
+  });
 
   // Kolom untuk DataTable
   const columns = [
-    { id: 'username', label: 'Nama Pengguna' },
-    { id: 'email', label: 'Email' },
-    { id: 'role', label: 'Peran' },
+    { id: "username", label: "Nama Pengguna" },
+    { id: "email", label: "Email" },
+    { id: "role", label: "Peran" },
     {
-      id: 'actions',
-      label: 'Aksi',
-      align: 'center',
+      id: "actions",
+      label: "Aksi",
+      align: "center",
       render: (row) => (
         <Box>
           <Tooltip title="Edit Pengguna">
@@ -66,16 +104,30 @@ const UserManagement = () => {
     setError(null);
     try {
       // Simulasi panggilan API
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await new Promise((resolve) => setTimeout(resolve, 1000));
       setUsers([
-        { id: '1', username: 'admin', email: 'admin@example.com', role: 'Admin' },
-        { id: '2', username: 'user1', email: 'user1@example.com', role: 'User' },
+        {
+          id: "1",
+          username: "admin",
+          email: "admin@example.com",
+          role: "Admin",
+        },
+        {
+          id: "2",
+          username: "user1",
+          email: "user1@example.com",
+          role: "User",
+        },
       ]);
       setLoading(false);
     } catch (err) {
-      setError('Gagal memuat pengguna.');
+      setError("Gagal memuat pengguna.");
       setLoading(false);
-      setAlert({ open: true, severity: 'error', message: 'Gagal memuat pengguna.' });
+      setAlert({
+        open: true,
+        severity: "error",
+        message: "Gagal memuat pengguna.",
+      });
     }
   };
 
@@ -83,13 +135,13 @@ const UserManagement = () => {
    * Menangani klik tombol tambah pengguna.
    */
   const handleAddClick = () => {
-    setFormMode('add');
+    setFormMode("add");
     setFormData({
-      username: '',
-      email: '',
-      role: '',
-      password: '',
-      confirmPassword: '',
+      username: "",
+      email: "",
+      role: "",
+      password: "",
+      confirmPassword: "",
     });
     setFormErrors({});
     setOpenFormDialog(true);
@@ -100,14 +152,14 @@ const UserManagement = () => {
    * @param {object} user - Data pengguna yang akan diedit.
    */
   const handleEditClick = (user) => {
-    setFormMode('edit');
+    setFormMode("edit");
     setCurrentUser(user);
     setFormData({
       username: user.username,
       email: user.email,
       role: user.role,
-      password: '', // Password tidak diisi saat edit
-      confirmPassword: '',
+      password: "", // Password tidak diisi saat edit
+      confirmPassword: "",
     });
     setFormErrors({});
     setOpenFormDialog(true);
@@ -140,19 +192,20 @@ const UserManagement = () => {
    */
   const validateForm = () => {
     let errors = {};
-    if (!formData.username) errors.username = 'Nama Pengguna wajib diisi.';
+    if (!formData.username) errors.username = "Nama Pengguna wajib diisi.";
     if (!formData.email) {
-      errors.email = 'Email wajib diisi.';
+      errors.email = "Email wajib diisi.";
     } else if (!/^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$/.test(formData.email)) {
-      errors.email = 'Format email tidak valid.';
+      errors.email = "Format email tidak valid.";
     }
-    if (!formData.role) errors.role = 'Peran wajib dipilih.';
+    if (!formData.role) errors.role = "Peran wajib dipilih.";
 
-    if (formMode === 'add' || (formMode === 'edit' && formData.password)) {
-      if (!formData.password) errors.password = 'Kata Sandi wajib diisi.';
-      if (formData.password.length < 6) errors.password = 'Kata Sandi minimal 6 karakter.';
+    if (formMode === "add" || (formMode === "edit" && formData.password)) {
+      if (!formData.password) errors.password = "Kata Sandi wajib diisi.";
+      if (formData.password.length < 6)
+        errors.password = "Kata Sandi minimal 6 karakter.";
       if (formData.password !== formData.confirmPassword) {
-        errors.confirmPassword = 'Konfirmasi Kata Sandi tidak cocok.';
+        errors.confirmPassword = "Konfirmasi Kata Sandi tidak cocok.";
       }
     }
 
@@ -168,18 +221,36 @@ const UserManagement = () => {
 
     setLoading(true);
     try {
-      await new Promise(resolve => setTimeout(resolve, 1000)); // Simulasi API call
-      if (formMode === 'add') {
+      await new Promise((resolve) => setTimeout(resolve, 1000)); // Simulasi API call
+      if (formMode === "add") {
         setUsers([...users, { id: String(users.length + 1), ...formData }]);
-        setAlert({ open: true, severity: 'success', message: 'Pengguna berhasil ditambahkan!' });
+        setAlert({
+          open: true,
+          severity: "success",
+          message: "Pengguna berhasil ditambahkan!",
+        });
       } else {
-        setUsers(users.map(user => (user.id === currentUser.id ? { ...user, ...formData } : user)));
-        setAlert({ open: true, severity: 'success', message: 'Pengguna berhasil diperbarui!' });
+        setUsers(
+          users.map((user) =>
+            user.id === currentUser.id ? { ...user, ...formData } : user
+          )
+        );
+        setAlert({
+          open: true,
+          severity: "success",
+          message: "Pengguna berhasil diperbarui!",
+        });
       }
       setOpenFormDialog(false);
       setLoading(false);
     } catch (err) {
-      setAlert({ open: true, severity: 'error', message: `Gagal ${formMode === 'add' ? 'menambahkan' : 'memperbarui'} pengguna.` });
+      setAlert({
+        open: true,
+        severity: "error",
+        message: `Gagal ${
+          formMode === "add" ? "menambahkan" : "memperbarui"
+        } pengguna.`,
+      });
       setLoading(false);
     }
   };
@@ -190,13 +261,21 @@ const UserManagement = () => {
   const handleConfirmDelete = async () => {
     setLoading(true);
     try {
-      await new Promise(resolve => setTimeout(resolve, 1000)); // Simulasi API call
-      setUsers(users.filter(user => user.id !== currentUser.id));
-      setAlert({ open: true, severity: 'success', message: 'Pengguna berhasil dihapus!' });
+      await new Promise((resolve) => setTimeout(resolve, 1000)); // Simulasi API call
+      setUsers(users.filter((user) => user.id !== currentUser.id));
+      setAlert({
+        open: true,
+        severity: "success",
+        message: "Pengguna berhasil dihapus!",
+      });
       setOpenConfirmDialog(false);
       setLoading(false);
     } catch (err) {
-      setAlert({ open: true, severity: 'error', message: 'Gagal menghapus pengguna.' });
+      setAlert({
+        open: true,
+        severity: "error",
+        message: "Gagal menghapus pengguna.",
+      });
       setLoading(false);
     }
   };
@@ -239,8 +318,15 @@ const UserManagement = () => {
       />
 
       {/* Form Dialog */}
-      <Dialog open={openFormDialog} onClose={() => setOpenFormDialog(false)} fullWidth maxWidth="sm">
-        <DialogTitle>{formMode === 'add' ? 'Tambah Pengguna Baru' : 'Edit Pengguna'}</DialogTitle>
+      <Dialog
+        open={openFormDialog}
+        onClose={() => setOpenFormDialog(false)}
+        fullWidth
+        maxWidth="sm"
+      >
+        <DialogTitle>
+          {formMode === "add" ? "Tambah Pengguna Baru" : "Edit Pengguna"}
+        </DialogTitle>
         <DialogContent>
           <TextField
             autoFocus
@@ -317,8 +403,19 @@ const UserManagement = () => {
           <Button onClick={() => setOpenFormDialog(false)} color="secondary">
             Batal
           </Button>
-          <Button onClick={handleFormSubmit} color="primary" variant="contained" disabled={loading}>
-            {loading ? <CircularProgress size={24} /> : (formMode === 'add' ? 'Tambah' : 'Simpan')}
+          <Button
+            onClick={handleFormSubmit}
+            color="primary"
+            variant="contained"
+            disabled={loading}
+          >
+            {loading ? (
+              <CircularProgress size={24} />
+            ) : formMode === "add" ? (
+              "Tambah"
+            ) : (
+              "Simpan"
+            )}
           </Button>
         </DialogActions>
       </Dialog>

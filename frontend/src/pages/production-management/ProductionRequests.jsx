@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 import {
   Box,
   Paper,
@@ -10,54 +10,44 @@ import {
   TableContainer,
   TableHead,
   TableRow,
-  TablePagination,
   Chip,
-  IconButton,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  TextField,
-  Grid,
-  InputAdornment,
-  Tooltip,
   CircularProgress,
   Alert,
+  Card,
+  CardContent,
+  Avatar,
+  Fade,
+  Grow,
+  Grid,
+  TextField,
+  InputAdornment,
+  IconButton,
   FormControl,
   InputLabel,
   Select,
-  MenuItem
-} from '@mui/material';
+  MenuItem,
+  Stack,
+  Tooltip,
+} from "@mui/material";
 import {
   Add as AddIcon,
-  Edit as EditIcon,
-  Delete as DeleteIcon,
+  Assignment as AssignmentIcon,
   Search as SearchIcon,
   Clear as ClearIcon,
-  Visibility as VisibilityIcon
-} from '@mui/icons-material';
+  Visibility as VisibilityIcon,
+  Edit as EditIcon,
+  Delete as DeleteIcon,
+} from "@mui/icons-material";
+import { useNavigate } from "react-router-dom";
+import productionService from "../../api/productionService";
 
 const ProductionRequests = () => {
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(10);
-  const [filterStatus, setFilterStatus] = useState('');
-
-  // Dialog states
-  const [openCreateDialog, setOpenCreateDialog] = useState(false);
-  const [selectedRequest, setSelectedRequest] = useState(null);
-
-  // Form data
-  const [formData, setFormData] = useState({
-    productName: '',
-    quantity: '',
-    priority: 'medium',
-    deadline: '',
-    notes: ''
-  });
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filterStatus, setFilterStatus] = useState("");
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetchRequests();
@@ -66,330 +56,359 @@ const ProductionRequests = () => {
   const fetchRequests = async () => {
     try {
       setLoading(true);
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      const mockData = [
-        {
-          id: 1,
-          productName: 'Steel Frame A',
-          quantity: 100,
-          priority: 'high',
-          status: 'pending',
-          deadline: '2024-02-15',
-          createdDate: '2024-01-15',
-          notes: 'Urgent order for client XYZ'
-        },
-        {
-          id: 2,
-          productName: 'Aluminum Sheet B',
-          quantity: 250,
-          priority: 'medium',
-          status: 'in_progress',
-          deadline: '2024-02-20',
-          createdDate: '2024-01-10',
-          notes: 'Standard production'
-        },
-        {
-          id: 3,
-          productName: 'Copper Wire C',
-          quantity: 500,
-          priority: 'low',
-          status: 'completed',
-          deadline: '2024-02-25',
-          createdDate: '2024-01-05',
-          notes: 'Bulk order'
-        }
-      ];
-      
-      setRequests(mockData);
+      setError(null);
+      const data = await productionService.getAllRequests();
+      setRequests(data);
     } catch (err) {
-      setError('Failed to load production requests');
+      console.error("Error fetching production requests:", err);
+      setError("Failed to load production requests");
     } finally {
       setLoading(false);
     }
   };
 
+  const handleDeleteRequest = async (requestId) => {
+    if (
+      window.confirm("Are you sure you want to delete this production request?")
+    ) {
+      try {
+        setLoading(true);
+        await productionService.deleteRequest(requestId);
+        fetchRequests();
+      } catch (err) {
+        console.error("Error deleting production request:", err);
+        setError("Failed to delete production request");
+      } finally {
+        setLoading(false);
+      }
+    }
+  };
+
   const getStatusChip = (status) => {
     const statusConfig = {
-      pending: { color: 'warning', label: 'Pending' },
-      in_progress: { color: 'info', label: 'In Progress' },
-      completed: { color: 'success', label: 'Completed' },
-      cancelled: { color: 'error', label: 'Cancelled' }
+      received: { color: "info", label: "Received" },
+      planned: { color: "warning", label: "Planned" },
+      in_production: { color: "primary", label: "In Production" },
+      completed: { color: "success", label: "Completed" },
+      cancelled: { color: "error", label: "Cancelled" },
     };
-    
-    const config = statusConfig[status] || { color: 'default', label: status };
-    return <Chip label={config.label} color={config.color} size="small" />;
+
+    const config = statusConfig[status] || { color: "default", label: status };
+    return (
+      <Chip
+        label={config.label}
+        color={config.color}
+        size="small"
+        sx={{ fontWeight: 500 }}
+      />
+    );
   };
 
-  const getPriorityChip = (priority) => {
-    const priorityConfig = {
-      high: { color: 'error', label: 'High' },
-      medium: { color: 'warning', label: 'Medium' },
-      low: { color: 'success', label: 'Low' }
-    };
-    
-    const config = priorityConfig[priority] || { color: 'default', label: priority };
-    return <Chip label={config.label} color={config.color} size="small" />;
-  };
-
-  const handleSearchChange = (event) => {
-    setSearchTerm(event.target.value);
-    setPage(0);
-  };
-
-  const handleFilterStatusChange = (event) => {
-    setFilterStatus(event.target.value);
-    setPage(0);
-  };
-
-  const handleChangePage = (event, newPage) => {
-    setPage(newPage);
-  };
-
-  const handleChangeRowsPerPage = (event) => {
-    setRowsPerPage(parseInt(event.target.value, 10));
-    setPage(0);
-  };
-
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
-  };
-
-  const handleCreateRequest = () => {
-    // Handle create logic here
-    console.log('Creating request:', formData);
-    setOpenCreateDialog(false);
-    setFormData({
-      productName: '',
-      quantity: '',
-      priority: 'medium',
-      deadline: '',
-      notes: ''
-    });
-  };
-
-  const filteredRequests = requests.filter(request =>
-    (request.productName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-     request.notes.toLowerCase().includes(searchTerm.toLowerCase())) &&
-    (filterStatus ? request.status === filterStatus : true)
-  );
-
-  const paginatedRequests = filteredRequests.slice(
-    page * rowsPerPage,
-    page * rowsPerPage + rowsPerPage
+  const filteredRequests = requests.filter(
+    (request) =>
+      (request.requestId.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        request.productName.toLowerCase().includes(searchTerm.toLowerCase())) &&
+      (filterStatus ? request.status === filterStatus : true)
   );
 
   if (loading) {
     return (
-      <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
-        <CircularProgress />
+      <Box
+        display="flex"
+        justifyContent="center"
+        alignItems="center"
+        minHeight="400px"
+      >
+        <CircularProgress size={60} thickness={4} />
       </Box>
     );
   }
 
   if (error) {
     return (
-      <Alert severity="error" sx={{ m: 2 }}>
-        {error}
-      </Alert>
+      <Fade in>
+        <Alert severity="error" sx={{ m: 2, borderRadius: 2 }}>
+          {error}
+        </Alert>
+      </Fade>
     );
   }
 
   return (
-    <Box>
-      <Paper sx={{ p: 3, mb: 3 }}>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-          <Typography variant="h5">Production Requests</Typography>
-          <Button
-            variant="contained"
-            startIcon={<AddIcon />}
-            onClick={() => setOpenCreateDialog(true)}
-          >
-            New Request
-          </Button>
-        </Box>
-
-        {/* Filters */}
-        <Grid container spacing={2} sx={{ mb: 3 }}>
-          <Grid item xs={12} md={6}>
-            <TextField
-              fullWidth
-              label="Search Requests"
-              value={searchTerm}
-              onChange={handleSearchChange}
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <SearchIcon />
-                  </InputAdornment>
-                ),
-                endAdornment: searchTerm && (
-                  <InputAdornment position="end">
-                    <IconButton size="small" onClick={() => setSearchTerm('')}>
-                      <ClearIcon />
-                    </IconButton>
-                  </InputAdornment>
-                ),
+    <Box
+      sx={{
+        width: "100%",
+        maxWidth: "100%",
+        mx: "auto",
+        p: { xs: 2, sm: 3 },
+        overflow: "hidden",
+      }}
+    >
+      {/* Header Section */}
+      <Fade in timeout={600}>
+        <Card
+          elevation={0}
+          sx={{
+            mb: 4,
+            background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+            color: "white",
+            borderRadius: 3,
+            width: "100%",
+          }}
+        >
+          <CardContent sx={{ p: { xs: 3, sm: 4 } }}>
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: { xs: "flex-start", sm: "center" },
+                flexDirection: { xs: "column", sm: "row" },
+                gap: { xs: 3, sm: 0 },
               }}
-            />
-          </Grid>
-          <Grid item xs={12} md={3}>
-            <FormControl fullWidth>
-              <InputLabel>Status Filter</InputLabel>
-              <Select
-                value={filterStatus}
-                onChange={handleFilterStatusChange}
-                label="Status Filter"
-              >
-                <MenuItem value="">All Statuses</MenuItem>
-                <MenuItem value="pending">Pending</MenuItem>
-                <MenuItem value="in_progress">In Progress</MenuItem>
-                <MenuItem value="completed">Completed</MenuItem>
-                <MenuItem value="cancelled">Cancelled</MenuItem>
-              </Select>
-            </FormControl>
-          </Grid>
-        </Grid>
-
-        {/* Table */}
-        <TableContainer>
-          <Table>
-            <TableHead>
-              <TableRow>
-                <TableCell>Product Name</TableCell>
-                <TableCell>Quantity</TableCell>
-                <TableCell>Priority</TableCell>
-                <TableCell>Status</TableCell>
-                <TableCell>Deadline</TableCell>
-                <TableCell>Created Date</TableCell>
-                <TableCell>Actions</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {paginatedRequests.map((request) => (
-                <TableRow key={request.id}>
-                  <TableCell>
-                    <Typography variant="body1" sx={{ fontWeight: 'medium' }}>
-                      {request.productName}
-                    </Typography>
-                  </TableCell>
-                  <TableCell>{request.quantity}</TableCell>
-                  <TableCell>{getPriorityChip(request.priority)}</TableCell>
-                  <TableCell>{getStatusChip(request.status)}</TableCell>
-                  <TableCell>{new Date(request.deadline).toLocaleDateString()}</TableCell>
-                  <TableCell>{new Date(request.createdDate).toLocaleDateString()}</TableCell>
-                  <TableCell>
-                    <Tooltip title="View Details">
-                      <IconButton size="small" color="primary">
-                        <VisibilityIcon fontSize="small" />
-                      </IconButton>
-                    </Tooltip>
-                    <Tooltip title="Edit">
-                      <IconButton size="small">
-                        <EditIcon fontSize="small" />
-                      </IconButton>
-                    </Tooltip>
-                    <Tooltip title="Delete">
-                      <IconButton size="small" color="error">
-                        <DeleteIcon fontSize="small" />
-                      </IconButton>
-                    </Tooltip>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
-
-        <TablePagination
-          rowsPerPageOptions={[5, 10, 25]}
-          component="div"
-          count={filteredRequests.length}
-          rowsPerPage={rowsPerPage}
-          page={page}
-          onPageChange={handleChangePage}
-          onRowsPerPageChange={handleChangeRowsPerPage}
-        />
-      </Paper>
-
-      {/* Create Request Dialog */}
-      <Dialog open={openCreateDialog} onClose={() => setOpenCreateDialog(false)} maxWidth="sm" fullWidth>
-        <DialogTitle>Create Production Request</DialogTitle>
-        <DialogContent>
-          <Grid container spacing={2} sx={{ mt: 1 }}>
-            <Grid item xs={12}>
-              <TextField
-                fullWidth
-                label="Product Name"
-                name="productName"
-                value={formData.productName}
-                onChange={handleInputChange}
-                required
-              />
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <TextField
-                fullWidth
-                label="Quantity"
-                name="quantity"
-                type="number"
-                value={formData.quantity}
-                onChange={handleInputChange}
-                required
-              />
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <FormControl fullWidth>
-                <InputLabel>Priority</InputLabel>
-                <Select
-                  name="priority"
-                  value={formData.priority}
-                  onChange={handleInputChange}
-                  label="Priority"
+            >
+              <Box sx={{ display: "flex", alignItems: "center" }}>
+                <Avatar
+                  sx={{
+                    bgcolor: "rgba(255,255,255,0.2)",
+                    width: { xs: 56, sm: 64 },
+                    height: { xs: 56, sm: 64 },
+                    mr: { xs: 2, sm: 3 },
+                  }}
                 >
-                  <MenuItem value="low">Low</MenuItem>
-                  <MenuItem value="medium">Medium</MenuItem>
-                  <MenuItem value="high">High</MenuItem>
-                </Select>
-              </FormControl>
+                  <AssignmentIcon sx={{ fontSize: { xs: 28, sm: 32 } }} />
+                </Avatar>
+                <Box>
+                  <Typography
+                    variant="h4"
+                    sx={{
+                      fontWeight: 700,
+                      mb: 1,
+                      fontSize: { xs: "1.75rem", sm: "2.125rem" },
+                    }}
+                  >
+                    Production Requests
+                  </Typography>
+                  <Typography variant="h6" sx={{ opacity: 0.9 }}>
+                    Manage production requests and orders
+                  </Typography>
+                </Box>
+              </Box>
+              <Button
+                variant="contained"
+                size="large"
+                startIcon={<AddIcon />}
+                onClick={() => navigate("/production-requests/add")}
+                sx={{
+                  bgcolor: "rgba(255,255,255,0.2)",
+                  color: "white",
+                  "&:hover": {
+                    bgcolor: "rgba(255,255,255,0.3)",
+                  },
+                  px: 4,
+                  py: 1.5,
+                  borderRadius: 2,
+                }}
+              >
+                New Request
+              </Button>
+            </Box>
+          </CardContent>
+        </Card>
+      </Fade>
+
+      <Grow in timeout={800}>
+        <Paper
+          sx={{
+            borderRadius: 3,
+            overflow: "hidden",
+            border: "1px solid",
+            borderColor: "grey.200",
+            width: "100%",
+          }}
+        >
+          {/* Filters Section */}
+          <Box
+            sx={{
+              p: 3,
+              bgcolor: "grey.50",
+              borderBottom: "1px solid",
+              borderColor: "grey.200",
+            }}
+          >
+            <Grid container spacing={3}>
+              <Grid item xs={12} md={6}>
+                <TextField
+                  fullWidth
+                  label="Search Requests"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <SearchIcon color="action" />
+                      </InputAdornment>
+                    ),
+                    endAdornment: searchTerm && (
+                      <InputAdornment position="end">
+                        <IconButton
+                          size="small"
+                          onClick={() => setSearchTerm("")}
+                        >
+                          <ClearIcon />
+                        </IconButton>
+                      </InputAdornment>
+                    ),
+                  }}
+                  sx={{
+                    "& .MuiOutlinedInput-root": {
+                      bgcolor: "white",
+                    },
+                  }}
+                />
+              </Grid>
+              <Grid item xs={12} md={3}>
+                <FormControl fullWidth>
+                  <InputLabel>Status Filter</InputLabel>
+                  <Select
+                    value={filterStatus}
+                    onChange={(e) => setFilterStatus(e.target.value)}
+                    label="Status Filter"
+                    sx={{
+                      bgcolor: "white",
+                    }}
+                  >
+                    <MenuItem value="">All Statuses</MenuItem>
+                    <MenuItem value="received">Received</MenuItem>
+                    <MenuItem value="planned">Planned</MenuItem>
+                    <MenuItem value="in_production">In Production</MenuItem>
+                    <MenuItem value="completed">Completed</MenuItem>
+                    <MenuItem value="cancelled">Cancelled</MenuItem>
+                  </Select>
+                </FormControl>
+              </Grid>
             </Grid>
-            <Grid item xs={12}>
-              <TextField
-                fullWidth
-                label="Deadline"
-                name="deadline"
-                type="date"
-                value={formData.deadline}
-                onChange={handleInputChange}
-                InputLabelProps={{ shrink: true }}
-                required
-              />
-            </Grid>
-            <Grid item xs={12}>
-              <TextField
-                fullWidth
-                label="Notes"
-                name="notes"
-                value={formData.notes}
-                onChange={handleInputChange}
-                multiline
-                rows={3}
-              />
-            </Grid>
-          </Grid>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setOpenCreateDialog(false)}>Cancel</Button>
-          <Button onClick={handleCreateRequest} variant="contained">
-            Create Request
-          </Button>
-        </DialogActions>
-      </Dialog>
+          </Box>
+
+          <TableContainer>
+            <Table>
+              <TableHead>
+                <TableRow>
+                  <TableCell sx={{ fontWeight: 600, py: 2 }}>
+                    Request ID
+                  </TableCell>
+                  <TableCell sx={{ fontWeight: 600, py: 2 }}>Product</TableCell>
+                  <TableCell sx={{ fontWeight: 600, py: 2 }}>
+                    Customer
+                  </TableCell>
+                  <TableCell sx={{ fontWeight: 600, py: 2 }}>
+                    Quantity
+                  </TableCell>
+                  <TableCell sx={{ fontWeight: 600, py: 2 }}>Status</TableCell>
+                  <TableCell sx={{ fontWeight: 600, py: 2 }}>
+                    Due Date
+                  </TableCell>
+                  <TableCell sx={{ fontWeight: 600, py: 2 }}>Actions</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {filteredRequests.map((request, index) => (
+                  <Fade in timeout={300 + index * 100} key={request.id}>
+                    <TableRow
+                      sx={{
+                        "&:hover": {
+                          bgcolor: "grey.50",
+                        },
+                        "&:last-child td": { border: 0 },
+                      }}
+                    >
+                      <TableCell sx={{ py: 2 }}>
+                        <Typography
+                          variant="body1"
+                          sx={{ fontWeight: 600, color: "primary.main" }}
+                        >
+                          {request.requestId}
+                        </Typography>
+                      </TableCell>
+                      <TableCell sx={{ py: 2 }}>
+                        <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                          {request.productName}
+                        </Typography>
+                      </TableCell>
+                      <TableCell sx={{ py: 2 }}>
+                        <Typography variant="body1">
+                          {request.customerId}
+                        </Typography>
+                      </TableCell>
+                      <TableCell sx={{ py: 2 }}>
+                        <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                          {request.quantity.toLocaleString()}
+                        </Typography>
+                      </TableCell>
+                      <TableCell sx={{ py: 2 }}>
+                        {getStatusChip(request.status)}
+                      </TableCell>
+                      <TableCell sx={{ py: 2 }}>
+                        <Typography variant="body2">
+                          {request.dueDate
+                            ? new Date(request.dueDate).toLocaleDateString()
+                            : "-"}
+                        </Typography>
+                      </TableCell>
+                      <TableCell sx={{ py: 2 }}>
+                        <Stack direction="row" spacing={1}>
+                          <Tooltip title="View Details">
+                            <IconButton
+                              size="small"
+                              color="primary"
+                              onClick={() =>
+                                navigate(`/production-requests/${request.id}`)
+                              }
+                            >
+                              <VisibilityIcon fontSize="small" />
+                            </IconButton>
+                          </Tooltip>
+                          <Tooltip title="Edit">
+                            <IconButton
+                              size="small"
+                              color="info"
+                              onClick={() =>
+                                navigate(
+                                  `/production-requests/${request.id}/edit`
+                                )
+                              }
+                            >
+                              <EditIcon fontSize="small" />
+                            </IconButton>
+                          </Tooltip>
+                          {request.status !== "received" ? (
+                            <Tooltip title="Can only delete requests with 'received' status">
+                              <span>
+                                <IconButton size="small" color="error" disabled>
+                                  <DeleteIcon fontSize="small" />
+                                </IconButton>
+                              </span>
+                            </Tooltip>
+                          ) : (
+                            <Tooltip title="Delete">
+                              <IconButton
+                                size="small"
+                                color="error"
+                                onClick={() => handleDeleteRequest(request.id)}
+                              >
+                                <DeleteIcon fontSize="small" />
+                              </IconButton>
+                            </Tooltip>
+                          )}
+                        </Stack>
+                      </TableCell>
+                    </TableRow>
+                  </Fade>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        </Paper>
+      </Grow>
     </Box>
   );
 };

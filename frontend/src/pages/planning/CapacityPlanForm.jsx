@@ -17,6 +17,12 @@ import {
   IconButton,
   Divider,
   InputAdornment,
+  Avatar,
+  Card,
+  CardContent,
+  Stack,
+  Fade,
+  Grow,
 } from "@mui/material";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFnsV3";
@@ -24,6 +30,7 @@ import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import {
   ArrowBack as ArrowBackIcon,
   Save as SaveIcon,
+  Build as BuildIcon,
 } from "@mui/icons-material";
 import { toast } from "react-toastify";
 import {
@@ -332,174 +339,249 @@ const CapacityPlanForm = () => {
 
   return (
     <LocalizationProvider dateAdapter={AdapterDateFns}>
-      <Box component="form" onSubmit={handleSubmit}>
-        <Paper sx={{ p: 3, mb: 3 }}>
-          <Box
+      <Box
+        sx={{
+          width: "100%",
+          maxWidth: 1200,
+          mx: "auto",
+          p: { xs: 2, sm: 3 },
+          overflow: "hidden",
+        }}
+      >
+        {/* Header Section */}
+        <Fade in timeout={600}>
+          <Card
+            elevation={0}
             sx={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-              mb: 3,
+              mb: 4,
+              background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+              color: "white",
+              borderRadius: 3,
+              width: "100%",
             }}
           >
-            <Box sx={{ display: "flex", alignItems: "center" }}>
-              <IconButton onClick={handleCancel} sx={{ mr: 1 }}>
-                <ArrowBackIcon />
-              </IconButton>
-              <Typography variant="h5">
-                {isEditMode ? "Edit Capacity Plan" : "Add Capacity Plan"}
-              </Typography>
-            </Box>
-            <Button
-              variant="contained"
-              color="primary"
-              startIcon={<SaveIcon />}
-              type="submit"
-              disabled={submitting || addLoading || updateLoading}
-            >
-              {submitting || addLoading || updateLoading ? (
-                <CircularProgress size={24} color="inherit" />
-              ) : (
-                "Save"
-              )}
-            </Button>
-          </Box>
-
-          <Divider sx={{ mb: 3 }} />
-
-          <Typography variant="subtitle1" gutterBottom>
-            Production Plan: {productionPlan.productName}
-          </Typography>
-          <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-            Plan Period:{" "}
-            {productionPlan.plannedStartDate
-              ? new Date(productionPlan.plannedStartDate).toLocaleDateString()
-              : "N/A"}{" "}
-            -{" "}
-            {productionPlan.plannedEndDate
-              ? new Date(productionPlan.plannedEndDate).toLocaleDateString()
-              : "N/A"}
-          </Typography>
-
-          <Grid container spacing={3}>
-            <Grid item xs={12} sm={6}>
-              <FormControl fullWidth error={Boolean(errors.machineType)}>
-                <InputLabel>Machine Type</InputLabel>
-                <Select
-                  name="machineType"
-                  value={formData.machineType}
-                  onChange={handleInputChange}
-                  label="Machine Type"
-                  required
-                  disabled={isEditMode}
+            <CardContent sx={{ p: { xs: 3, sm: 4 } }}>
+              <Box sx={{ display: "flex", alignItems: "center" }}>
+                <Avatar
+                  sx={{
+                    bgcolor: "rgba(255,255,255,0.2)",
+                    width: { xs: 56, sm: 64 },
+                    height: { xs: 56, sm: 64 },
+                    mr: { xs: 2, sm: 3 },
+                  }}
                 >
-                  {machineTypesLoading ? (
-                    <MenuItem disabled>Loading machine types...</MenuItem>
-                  ) : machineTypesError ? (
-                    <MenuItem disabled>Error loading machine types</MenuItem>
-                  ) : (
-                    machineTypes.map((type) => (
-                      <MenuItem key={type} value={type}>
-                        {type}
-                      </MenuItem>
-                    ))
-                  )}
-                </Select>
-                {errors.machineType && (
-                  <Typography variant="caption" color="error">
-                    {errors.machineType}
+                  <BuildIcon sx={{ fontSize: { xs: 28, sm: 32 } }} />
+                </Avatar>
+                <Box>
+                  <Typography
+                    variant="h4"
+                    sx={{
+                      fontWeight: 700,
+                      mb: 1,
+                      fontSize: { xs: "1.75rem", sm: "2.125rem" },
+                    }}
+                  >
+                    {isEditMode ? "Edit Capacity Plan" : "Add Capacity Plan"}
                   </Typography>
-                )}
-              </FormControl>
-            </Grid>
+                  <Typography variant="h6" sx={{ opacity: 0.9 }}>
+                    Production Plan: {productionPlan?.productName}
+                  </Typography>
+                </Box>
+              </Box>
+            </CardContent>
+          </Card>
+        </Fade>
 
-            <Grid item xs={12} sm={6}>
-              <TextField
-                fullWidth
-                label="Hours Required"
-                name="hoursRequired"
-                type="number"
-                value={formData.hoursRequired}
-                onChange={handleInputChange}
-                error={Boolean(errors.hoursRequired)}
-                helperText={errors.hoursRequired}
-                InputProps={{
-                  inputProps: { min: 0.1, step: 0.1 },
-                  endAdornment: (
-                    <InputAdornment position="end">hours</InputAdornment>
-                  ),
+        {/* Navigation */}
+        <Box sx={{ mb: 3 }}>
+          <Button
+            startIcon={<ArrowBackIcon />}
+            onClick={handleCancel}
+            sx={{
+              color: "text.secondary",
+              "&:hover": {
+                bgcolor: "grey.100",
+              },
+            }}
+          >
+            Back to Production Plan
+          </Button>
+        </Box>
+
+        {/* Form Section */}
+        <Grow in timeout={800}>
+          <Paper
+            component="form"
+            onSubmit={handleSubmit}
+            sx={{
+              borderRadius: 3,
+              overflow: "hidden",
+              border: "1px solid",
+              borderColor: "grey.200",
+              width: "100%",
+            }}
+          >
+            <Box sx={{ p: 4 }}>
+              <Typography
+                variant="h6"
+                sx={{
+                  mb: 3,
+                  fontWeight: 600,
+                  color: "text.primary",
                 }}
-                required
-              />
-            </Grid>
+              >
+                Capacity Plan Information
+              </Typography>
 
-            <Grid item xs={12} sm={6}>
-              <DatePicker
-                label="Start Date"
-                value={formData.startDate}
-                onChange={(date) => handleDateChange("startDate", date)}
-                minDate={
-                  productionPlan.plannedStartDate
-                    ? new Date(productionPlan.plannedStartDate)
-                    : null
-                }
-                maxDate={
-                  productionPlan.plannedEndDate
-                    ? new Date(productionPlan.plannedEndDate)
-                    : null
-                }
-                slotProps={{
-                  textField: {
-                    fullWidth: true,
-                    error: Boolean(errors.startDate),
-                    helperText: errors.startDate,
-                    required: true,
-                  },
-                }}
-              />
-            </Grid>
+              <Grid container spacing={3}>
+                <Grid item xs={12} sm={6}>
+                  <FormControl fullWidth error={Boolean(errors.machineType)}>
+                    <InputLabel>Machine Type</InputLabel>
+                    <Select
+                      name="machineType"
+                      value={formData.machineType}
+                      onChange={handleInputChange}
+                      label="Machine Type"
+                      required
+                      disabled={isEditMode}
+                    >
+                      {machineTypesLoading ? (
+                        <MenuItem disabled>Loading machine types...</MenuItem>
+                      ) : machineTypesError ? (
+                        <MenuItem disabled>Error loading machine types</MenuItem>
+                      ) : (
+                        machineTypes.map((type) => (
+                          <MenuItem key={type} value={type}>
+                            {type}
+                          </MenuItem>
+                        ))
+                      )}
+                    </Select>
+                    {errors.machineType && (
+                      <Typography variant="caption" color="error">
+                        {errors.machineType}
+                      </Typography>
+                    )}
+                  </FormControl>
+                </Grid>
 
-            <Grid item xs={12} sm={6}>
-              <DatePicker
-                label="End Date"
-                value={formData.endDate}
-                onChange={(date) => handleDateChange("endDate", date)}
-                minDate={
-                  productionPlan.plannedStartDate
-                    ? new Date(productionPlan.plannedStartDate)
-                    : null
-                }
-                maxDate={
-                  productionPlan.plannedEndDate
-                    ? new Date(productionPlan.plannedEndDate)
-                    : null
-                }
-                slotProps={{
-                  textField: {
-                    fullWidth: true,
-                    error: Boolean(errors.endDate),
-                    helperText: errors.endDate,
-                    required: true,
-                  },
-                }}
-              />
-            </Grid>
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    fullWidth
+                    label="Hours Required"
+                    name="hoursRequired"
+                    type="number"
+                    value={formData.hoursRequired}
+                    onChange={handleInputChange}
+                    error={Boolean(errors.hoursRequired)}
+                    helperText={errors.hoursRequired}
+                    InputProps={{
+                      inputProps: { min: 0.1, step: 0.1 },
+                      endAdornment: (
+                        <InputAdornment position="end">hours</InputAdornment>
+                      ),
+                    }}
+                    required
+                  />
+                </Grid>
 
-            <Grid item xs={12}>
-              <TextField
-                fullWidth
-                label="Notes"
-                name="notes"
-                value={formData.notes}
-                onChange={handleInputChange}
-                multiline
-                rows={3}
-                error={Boolean(errors.notes)}
-                helperText={errors.notes}
-              />
-            </Grid>
-          </Grid>
-        </Paper>
+                <Grid item xs={12} sm={6}>
+                  <DatePicker
+                    label="Start Date"
+                    value={formData.startDate}
+                    onChange={(date) => handleDateChange("startDate", date)}
+                    minDate={
+                      productionPlan.plannedStartDate
+                        ? new Date(productionPlan.plannedStartDate)
+                        : null
+                    }
+                    maxDate={
+                      productionPlan.plannedEndDate
+                        ? new Date(productionPlan.plannedEndDate)
+                        : null
+                    }
+                    slotProps={{
+                      textField: {
+                        fullWidth: true,
+                        error: Boolean(errors.startDate),
+                        helperText: errors.startDate,
+                        required: true,
+                      },
+                    }}
+                  />
+                </Grid>
+
+                <Grid item xs={12} sm={6}>
+                  <DatePicker
+                    label="End Date"
+                    value={formData.endDate}
+                    onChange={(date) => handleDateChange("endDate", date)}
+                    minDate={
+                      productionPlan.plannedStartDate
+                        ? new Date(productionPlan.plannedStartDate)
+                        : null
+                    }
+                    maxDate={
+                      productionPlan.plannedEndDate
+                        ? new Date(productionPlan.plannedEndDate)
+                        : null
+                    }
+                    slotProps={{
+                      textField: {
+                        fullWidth: true,
+                        error: Boolean(errors.endDate),
+                        helperText: errors.endDate,
+                        required: true,
+                      },
+                    }}
+                  />
+                </Grid>
+
+                <Grid item xs={12}>
+                  <TextField
+                    fullWidth
+                    label="Notes"
+                    name="notes"
+                    value={formData.notes}
+                    onChange={handleInputChange}
+                    multiline
+                    rows={3}
+                    error={Boolean(errors.notes)}
+                    helperText={errors.notes}
+                  />
+                </Grid>
+
+                <Grid item xs={12}>
+                  <Stack direction="row" spacing={2} sx={{ mt: 2 }}>
+                    <Button
+                      variant="contained"
+                      color="primary"
+                      size="large"
+                      startIcon={<SaveIcon />}
+                      type="submit"
+                      disabled={submitting || addLoading || updateLoading}
+                      sx={{ px: 4 }}
+                    >
+                      {submitting || addLoading || updateLoading ? (
+                        <CircularProgress size={24} color="inherit" />
+                      ) : (
+                        "Save"
+                      )}
+                    </Button>
+                    <Button
+                      variant="outlined"
+                      size="large"
+                      onClick={handleCancel}
+                      sx={{ px: 4 }}
+                    >
+                      Cancel
+                    </Button>
+                  </Stack>
+                </Grid>
+              </Grid>
+            </Box>
+          </Paper>
+        </Grow>
       </Box>
     </LocalizationProvider>
   );

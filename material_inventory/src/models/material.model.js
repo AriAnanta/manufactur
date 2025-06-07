@@ -27,7 +27,16 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: true,
       },
       category: {
-        type: DataTypes.STRING(50),
+        type: DataTypes.ENUM(
+          "Raw Material",
+          "Component",
+          "Work-in-Progress (WIP)",
+          "Finished Goods",
+          "Packaging Material",
+          "Consumable",
+          "Spare Part",
+          "Tool"
+        ),
         allowNull: false,
       },
       type: {
@@ -35,7 +44,17 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: false,
       },
       unit: {
-        type: DataTypes.STRING(20),
+        type: DataTypes.ENUM(
+          "Kilogram (kg)",
+          "Gram (g)",
+          "Liter (L)",
+          "Milliliter (mL)",
+          "Pieces (pcs)",
+          "Meter (m)",
+          "Square Meter (m²)",
+          "Cubic Meter (m³)",
+          "Ton"
+        ),
         allowNull: false,
         comment: "Satuan pengukuran (kg, liter, meter, dll)",
       },

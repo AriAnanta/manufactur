@@ -9,7 +9,7 @@ const schema = buildSchema(`
     id: ID!
     username: String!
     email: String!
-    fullName: String
+    fullName: String!
     role: String!
     status: String!
     lastLogin: String
@@ -36,7 +36,7 @@ const schema = buildSchema(`
 
   type Mutation {
     login(username: String!, password: String!): AuthResponse
-    register(username: String!, email: String!, password: String!, fullName: String, role: String): AuthResponse
+    register(username: String!, email: String!, password: String!, fullName: String!, role: String): AuthResponse
     updateUser(id: ID!, username: String, email: String, password: String, fullName: String, role: String, status: String): User
     deleteUser(id: ID!): Boolean
     verifyToken(token: String!): VerifyResponse

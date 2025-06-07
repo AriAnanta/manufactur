@@ -11,14 +11,25 @@ export const AuthProvider = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [loading, setLoading] = useState(true);
 
+  console.log("AuthContext: Initial loading state from useState:", loading);
+
   // Check if user is authenticated on component mount
   useEffect(() => {
+    console.log(
+      "AuthContext: useEffect triggered. Current loading state:",
+      loading
+    );
     const token = localStorage.getItem("token");
     if (token) {
+      console.log(
+        "AuthContext: Token found, setting isAuthenticated to true and fetching profile."
+      );
       setIsAuthenticated(true);
       fetchUserProfile(token);
+    } else {
+      console.log("AuthContext: No token found, setting loading to false.");
+      setLoading(false); // Set loading to false immediately if no token is found
     }
-    setLoading(false);
   }, []);
 
   // Fetch user profile with token
@@ -47,11 +58,16 @@ export const AuthProvider = ({ children }) => {
     } catch (error) {
       console.error("Error fetching user profile:", error);
       logout();
+    } finally {
+      setLoading(false);
+      console.log(
+        "AuthContext: fetchUserProfile finished, setting loading to false."
+      );
     }
   };
 
   // Register function
-  const register = async (username, email, password, fullName, role) => {
+  const register = async ({ username, email, password, fullName, role }) => {
     try {
       // Use GraphQL mutation instead of REST API
       const { apolloClient } = await import("../graphql/client");

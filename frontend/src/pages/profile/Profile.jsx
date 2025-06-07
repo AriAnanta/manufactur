@@ -18,6 +18,9 @@ import {
   InputAdornment,
   IconButton,
   Chip,
+  Stack,
+  Fade,
+  Grow,
 } from "@mui/material";
 import {
   Person as PersonIcon,
@@ -170,9 +173,9 @@ const Profile = () => {
   const handleUpdateProfile = () => {
     updateProfile({
       variables: {
-        input: {
-          fullName: profileData.fullName || null,
-        },
+        id: userData.currentUser.id,
+        fullName: profileData.fullName || null,
+        email: profileData.email || null,
       },
     });
   };
@@ -221,250 +224,457 @@ const Profile = () => {
   };
 
   return (
-    <Box>
+    <Box
+      sx={{
+        width: "100%",
+        maxWidth: 1200,
+        mx: "auto",
+        p: { xs: 2, sm: 3 },
+        overflow: "hidden",
+      }}
+    >
       {/* Loading indicator */}
       {userLoading && !userData && (
         <Box sx={{ display: "flex", justifyContent: "center", my: 4 }}>
-          <CircularProgress />
+          <CircularProgress size={60} thickness={4} />
         </Box>
       )}
 
       {/* Error message */}
       {userError && (
-        <Alert severity="error" sx={{ mb: 3 }}>
-          Error loading user profile: {userError.message}
-        </Alert>
+        <Fade in={!!userError}>
+          <Alert severity="error" sx={{ mb: 3, borderRadius: 2 }}>
+            Error loading user profile: {userError.message}
+          </Alert>
+        </Fade>
       )}
 
       {userData && userData.currentUser && (
-        <>
+        <Stack spacing={4}>
           {/* Profile header */}
-          <Paper sx={{ p: 3, mb: 3 }}>
-            <Grid container spacing={2} alignItems="center">
-              <Grid item>
-                <Avatar
-                  sx={{
-                    width: 80,
-                    height: 80,
-                    bgcolor: "primary.main",
-                    fontSize: "2rem",
-                  }}
-                >
-                  {getUserInitials()}
-                </Avatar>
-              </Grid>
-              <Grid item xs>
-                <Typography variant="h5" component="h1">
-                  {getUserFullName()}
-                </Typography>
-                <Typography variant="body1" color="text.secondary">
-                  {userData.currentUser.email}
-                </Typography>
-                <Chip
-                  label={userData.currentUser.role.toUpperCase()}
-                  color="primary"
-                  size="small"
-                  sx={{ mt: 1 }}
-                />
-              </Grid>
-              <Grid item>
-                <Button
-                  variant="outlined"
-                  startIcon={editMode ? <CancelIcon /> : <EditIcon />}
-                  onClick={handleToggleEditMode}
-                >
-                  {editMode ? "Cancel" : "Edit Profile"}
-                </Button>
-              </Grid>
-            </Grid>
-          </Paper>
-
-          {/* Profile tabs */}
-          <Paper sx={{ p: 3 }}>
-            <Tabs
-              value={tabValue}
-              onChange={handleTabChange}
-              aria-label="profile tabs"
-              sx={{ mb: 3 }}
+          <Grow in timeout={600}>
+            <Paper
+              sx={{
+                p: { xs: 3, sm: 4 },
+                background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                color: "white",
+                position: "relative",
+                overflow: "hidden",
+                width: "100%",
+                "&::before": {
+                  content: '""',
+                  position: "absolute",
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  background: "rgba(255,255,255,0.1)",
+                  backdropFilter: "blur(10px)",
+                },
+              }}
             >
-              <Tab
-                label="Profile Info"
-                icon={<PersonIcon />}
-                iconPosition="start"
-              />
-              <Tab
-                label="Change Password"
-                icon={<VpnKeyIcon />}
-                iconPosition="start"
-              />
-            </Tabs>
-
-            <TabPanel value={tabValue} index={0}>
-              <Grid container spacing={3}>
-                <Grid item xs={12} md={6}>
-                  <TextField
-                    fullWidth
-                    label="Full Name"
-                    name="fullName"
-                    value={profileData.fullName}
-                    onChange={handleProfileInputChange}
-                    disabled={!editMode}
-                  />
-                </Grid>
-                <Grid item xs={12} md={6}>
-                  <TextField
-                    fullWidth
-                    label="Email Address"
-                    name="email"
-                    type="email"
-                    value={profileData.email}
-                    onChange={handleProfileInputChange}
-                    disabled
-                  />
-                </Grid>
-                <Grid item xs={12}>
-                  <TextField
-                    fullWidth
-                    label="Role"
-                    name="role"
-                    value={userData.currentUser.role.toUpperCase()}
-                    disabled
-                  />
-                </Grid>
-                <Grid item xs={12}>
-                  <TextField
-                    fullWidth
-                    label="Status"
-                    name="status"
-                    value={
-                      userData.currentUser.status === "ACTIVE"
-                        ? "Active"
-                        : "Inactive"
-                    }
-                    disabled
-                  />
-                </Grid>
-                {editMode && (
-                  <Grid item xs={12}>
-                    <Button
-                      variant="contained"
-                      startIcon={<SaveIcon />}
-                      onClick={handleUpdateProfile}
-                      disabled={updateProfileLoading}
-                    >
-                      {updateProfileLoading ? (
-                        <CircularProgress size={24} />
-                      ) : (
-                        "Save Changes"
-                      )}
-                    </Button>
-                  </Grid>
-                )}
-              </Grid>
-            </TabPanel>
-
-            <TabPanel value={tabValue} index={1}>
-              <Grid container spacing={3}>
-                <Grid item xs={12} md={6}>
-                  <TextField
-                    fullWidth
-                    label="Current Password"
-                    name="currentPassword"
-                    type={showCurrentPassword ? "text" : "password"}
-                    value={passwordData.currentPassword}
-                    onChange={handlePasswordInputChange}
-                    InputProps={{
-                      endAdornment: (
-                        <InputAdornment position="end">
-                          <IconButton
-                            onClick={() =>
-                              setShowCurrentPassword(!showCurrentPassword)
-                            }
-                            edge="end"
-                          >
-                            {showCurrentPassword ? (
-                              <VisibilityOffIcon />
-                            ) : (
-                              <VisibilityIcon />
-                            )}
-                          </IconButton>
-                        </InputAdornment>
-                      ),
+              <Grid
+                container
+                spacing={3}
+                alignItems="center"
+                sx={{ position: "relative", zIndex: 1 }}
+              >
+                <Grid item>
+                  <Avatar
+                    sx={{
+                      width: { xs: 80, sm: 100 },
+                      height: { xs: 80, sm: 100 },
+                      bgcolor: "rgba(255,255,255,0.2)",
+                      fontSize: { xs: "2rem", sm: "2.5rem" },
+                      fontWeight: 600,
+                      border: "4px solid rgba(255,255,255,0.3)",
+                      boxShadow: "0 8px 32px rgba(0,0,0,0.1)",
                     }}
-                  />
-                </Grid>
-                <Grid item xs={12} md={6}>
-                  <TextField
-                    fullWidth
-                    label="New Password"
-                    name="newPassword"
-                    type={showNewPassword ? "text" : "password"}
-                    value={passwordData.newPassword}
-                    onChange={handlePasswordInputChange}
-                    InputProps={{
-                      endAdornment: (
-                        <InputAdornment position="end">
-                          <IconButton
-                            onClick={() => setShowNewPassword(!showNewPassword)}
-                            edge="end"
-                          >
-                            {showNewPassword ? (
-                              <VisibilityOffIcon />
-                            ) : (
-                              <VisibilityIcon />
-                            )}
-                          </IconButton>
-                        </InputAdornment>
-                      ),
-                    }}
-                  />
-                </Grid>
-                <Grid item xs={12} md={6}>
-                  <TextField
-                    fullWidth
-                    label="Confirm New Password"
-                    name="confirmPassword"
-                    type={showConfirmPassword ? "text" : "password"}
-                    value={passwordData.confirmPassword}
-                    onChange={handlePasswordInputChange}
-                    InputProps={{
-                      endAdornment: (
-                        <InputAdornment position="end">
-                          <IconButton
-                            onClick={() =>
-                              setShowConfirmPassword(!showConfirmPassword)
-                            }
-                            edge="end"
-                          >
-                            {showConfirmPassword ? (
-                              <VisibilityOffIcon />
-                            ) : (
-                              <VisibilityIcon />
-                            )}
-                          </IconButton>
-                        </InputAdornment>
-                      ),
-                    }}
-                  />
-                </Grid>
-                <Grid item xs={12}>
-                  <Button
-                    variant="contained"
-                    startIcon={<SaveIcon />}
-                    onClick={handleChangePassword}
-                    disabled={changePasswordLoading}
                   >
-                    {changePasswordLoading ? (
-                      <CircularProgress size={24} />
-                    ) : (
-                      "Change Password"
-                    )}
+                    {getUserInitials()}
+                  </Avatar>
+                </Grid>
+                <Grid item xs>
+                  <Typography
+                    variant="h4"
+                    component="h1"
+                    sx={{
+                      fontWeight: 700,
+                      mb: 1,
+                      fontSize: { xs: "1.75rem", sm: "2.125rem" },
+                    }}
+                  >
+                    {getUserFullName()}
+                  </Typography>
+                  <Typography variant="h6" sx={{ opacity: 0.9, mb: 2 }}>
+                    {userData.currentUser.email}
+                  </Typography>
+                  <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
+                    <Chip
+                      label={userData.currentUser.role.toUpperCase()}
+                      sx={{
+                        bgcolor: "rgba(255,255,255,0.2)",
+                        color: "white",
+                        fontWeight: 600,
+                        "& .MuiChip-label": { px: 2 },
+                      }}
+                    />
+                    <Chip
+                      label={
+                        userData.currentUser.status === "ACTIVE"
+                          ? "ACTIVE"
+                          : "INACTIVE"
+                      }
+                      sx={{
+                        bgcolor:
+                          userData.currentUser.status === "ACTIVE"
+                            ? "rgba(34, 197, 94, 0.8)"
+                            : "rgba(239, 68, 68, 0.8)",
+                        color: "white",
+                        fontWeight: 600,
+                        "& .MuiChip-label": { px: 2 },
+                      }}
+                    />
+                  </Stack>
+                </Grid>
+                <Grid item xs={12} sm="auto">
+                  <Button
+                    variant={editMode ? "outlined" : "contained"}
+                    size="large"
+                    startIcon={editMode ? <CancelIcon /> : <EditIcon />}
+                    onClick={handleToggleEditMode}
+                    sx={{
+                      bgcolor: editMode
+                        ? "transparent"
+                        : "rgba(255,255,255,0.2)",
+                      color: "white",
+                      borderColor: "rgba(255,255,255,0.5)",
+                      "&:hover": {
+                        bgcolor: editMode
+                          ? "rgba(255,255,255,0.1)"
+                          : "rgba(255,255,255,0.3)",
+                      },
+                      px: 3,
+                      py: 1.5,
+                      width: { xs: "100%", sm: "auto" },
+                    }}
+                  >
+                    {editMode ? "Cancel" : "Edit Profile"}
                   </Button>
                 </Grid>
               </Grid>
-            </TabPanel>
-          </Paper>
-        </>
+            </Paper>
+          </Grow>
+
+          {/* Profile tabs */}
+          <Grow in timeout={800}>
+            <Card sx={{ overflow: "visible", width: "100%" }}>
+              <Box
+                sx={{
+                  borderBottom: 1,
+                  borderColor: "divider",
+                  px: 3,
+                  pt: 2,
+                }}
+              >
+                <Tabs
+                  value={tabValue}
+                  onChange={handleTabChange}
+                  aria-label="profile tabs"
+                  sx={{
+                    "& .MuiTab-root": {
+                      minHeight: 64,
+                      fontWeight: 500,
+                      fontSize: "1rem",
+                    },
+                    "& .MuiTabs-indicator": {
+                      height: 3,
+                      borderRadius: 2,
+                    },
+                  }}
+                >
+                  <Tab
+                    label="Profile Information"
+                    icon={<PersonIcon />}
+                    iconPosition="start"
+                    sx={{ mr: 2 }}
+                  />
+                  <Tab
+                    label="Security Settings"
+                    icon={<VpnKeyIcon />}
+                    iconPosition="start"
+                  />
+                </Tabs>
+              </Box>
+
+              <TabPanel value={tabValue} index={0}>
+                <CardContent sx={{ p: 4 }}>
+                  <Typography
+                    variant="h6"
+                    sx={{
+                      mb: 3,
+                      color: "text.primary",
+                      fontWeight: 600,
+                    }}
+                  >
+                    Personal Information
+                  </Typography>
+                  <Grid container spacing={3}>
+                    <Grid item xs={12} md={6}>
+                      <TextField
+                        fullWidth
+                        label="Full Name"
+                        name="fullName"
+                        value={profileData.fullName}
+                        onChange={handleProfileInputChange}
+                        disabled={!editMode}
+                        variant="outlined"
+                        InputProps={{
+                          startAdornment: (
+                            <InputAdornment position="start">
+                              <PersonIcon color="action" />
+                            </InputAdornment>
+                          ),
+                        }}
+                        sx={{
+                          "& .MuiOutlinedInput-root": {
+                            "&.Mui-disabled": {
+                              backgroundColor: "grey.50",
+                            },
+                          },
+                        }}
+                      />
+                    </Grid>
+                    <Grid item xs={12} md={6}>
+                      <TextField
+                        fullWidth
+                        label="Email Address"
+                        name="email"
+                        type="email"
+                        value={profileData.email}
+                        onChange={handleProfileInputChange}
+                        disabled={!editMode}
+                        variant="outlined"
+                        InputProps={{
+                          startAdornment: (
+                            <InputAdornment position="start">
+                              <EmailIcon color="action" />
+                            </InputAdornment>
+                          ),
+                        }}
+                        sx={{
+                          "& .MuiOutlinedInput-root": {
+                            backgroundColor: "grey.50",
+                          },
+                        }}
+                      />
+                    </Grid>
+                    <Grid item xs={12} md={6}>
+                      <TextField
+                        fullWidth
+                        label="Role"
+                        name="role"
+                        value={userData.currentUser.role.toUpperCase()}
+                        disabled
+                        variant="outlined"
+                        InputProps={{
+                          startAdornment: (
+                            <InputAdornment position="start">
+                              <BadgeIcon color="action" />
+                            </InputAdornment>
+                          ),
+                        }}
+                        sx={{
+                          "& .MuiOutlinedInput-root": {
+                            backgroundColor: "grey.50",
+                          },
+                        }}
+                      />
+                    </Grid>
+                    <Grid item xs={12} md={6}>
+                      <TextField
+                        fullWidth
+                        label="Account Status"
+                        name="status"
+                        value={
+                          userData.currentUser.status === "ACTIVE"
+                            ? "Active"
+                            : "Inactive"
+                        }
+                        disabled
+                        variant="outlined"
+                        InputProps={{
+                          startAdornment: (
+                            <InputAdornment position="start">
+                              <SecurityIcon color="action" />
+                            </InputAdornment>
+                          ),
+                        }}
+                        sx={{
+                          "& .MuiOutlinedInput-root": {
+                            backgroundColor: "grey.50",
+                          },
+                        }}
+                      />
+                    </Grid>
+                    {editMode && (
+                      <Grid item xs={12}>
+                        <Box sx={{ display: "flex", gap: 2, mt: 2 }}>
+                          <Button
+                            variant="contained"
+                            size="large"
+                            startIcon={<SaveIcon />}
+                            onClick={handleUpdateProfile}
+                            disabled={updateProfileLoading}
+                            sx={{ px: 4 }}
+                          >
+                            {updateProfileLoading ? (
+                              <CircularProgress size={20} color="inherit" />
+                            ) : (
+                              "Save Changes"
+                            )}
+                          </Button>
+                        </Box>
+                      </Grid>
+                    )}
+                  </Grid>
+                </CardContent>
+              </TabPanel>
+
+              <TabPanel value={tabValue} index={1}>
+                <CardContent sx={{ p: 4 }}>
+                  <Typography
+                    variant="h6"
+                    sx={{
+                      mb: 3,
+                      color: "text.primary",
+                      fontWeight: 600,
+                    }}
+                  >
+                    Change Password
+                  </Typography>
+                  <Grid container spacing={3}>
+                    <Grid item xs={12}>
+                      <TextField
+                        fullWidth
+                        label="Current Password"
+                        name="currentPassword"
+                        type={showCurrentPassword ? "text" : "password"}
+                        value={passwordData.currentPassword}
+                        onChange={handlePasswordInputChange}
+                        InputProps={{
+                          startAdornment: (
+                            <InputAdornment position="start">
+                              <VpnKeyIcon color="action" />
+                            </InputAdornment>
+                          ),
+                          endAdornment: (
+                            <InputAdornment position="end">
+                              <IconButton
+                                onClick={() =>
+                                  setShowCurrentPassword(!showCurrentPassword)
+                                }
+                                edge="end"
+                              >
+                                {showCurrentPassword ? (
+                                  <VisibilityOffIcon />
+                                ) : (
+                                  <VisibilityIcon />
+                                )}
+                              </IconButton>
+                            </InputAdornment>
+                          ),
+                        }}
+                      />
+                    </Grid>
+                    <Grid item xs={12} md={6}>
+                      <TextField
+                        fullWidth
+                        label="New Password"
+                        name="newPassword"
+                        type={showNewPassword ? "text" : "password"}
+                        value={passwordData.newPassword}
+                        onChange={handlePasswordInputChange}
+                        InputProps={{
+                          startAdornment: (
+                            <InputAdornment position="start">
+                              <VpnKeyIcon color="action" />
+                            </InputAdornment>
+                          ),
+                          endAdornment: (
+                            <InputAdornment position="end">
+                              <IconButton
+                                onClick={() =>
+                                  setShowNewPassword(!showNewPassword)
+                                }
+                                edge="end"
+                              >
+                                {showNewPassword ? (
+                                  <VisibilityOffIcon />
+                                ) : (
+                                  <VisibilityIcon />
+                                )}
+                              </IconButton>
+                            </InputAdornment>
+                          ),
+                        }}
+                      />
+                    </Grid>
+                    <Grid item xs={12} md={6}>
+                      <TextField
+                        fullWidth
+                        label="Confirm New Password"
+                        name="confirmPassword"
+                        type={showConfirmPassword ? "text" : "password"}
+                        value={passwordData.confirmPassword}
+                        onChange={handlePasswordInputChange}
+                        InputProps={{
+                          startAdornment: (
+                            <InputAdornment position="start">
+                              <VpnKeyIcon color="action" />
+                            </InputAdornment>
+                          ),
+                          endAdornment: (
+                            <InputAdornment position="end">
+                              <IconButton
+                                onClick={() =>
+                                  setShowConfirmPassword(!showConfirmPassword)
+                                }
+                                edge="end"
+                              >
+                                {showConfirmPassword ? (
+                                  <VisibilityOffIcon />
+                                ) : (
+                                  <VisibilityIcon />
+                                )}
+                              </IconButton>
+                            </InputAdornment>
+                          ),
+                        }}
+                      />
+                    </Grid>
+                    <Grid item xs={12}>
+                      <Button
+                        variant="contained"
+                        size="large"
+                        startIcon={<SaveIcon />}
+                        onClick={handleChangePassword}
+                        disabled={changePasswordLoading}
+                        sx={{ px: 4 }}
+                      >
+                        {changePasswordLoading ? (
+                          <CircularProgress size={20} color="inherit" />
+                        ) : (
+                          "Change Password"
+                        )}
+                      </Button>
+                    </Grid>
+                  </Grid>
+                </CardContent>
+              </TabPanel>
+            </Card>
+          </Grow>
+        </Stack>
       )}
     </Box>
   );

@@ -3,7 +3,7 @@ require('dotenv').config();
 
 // Create Sequelize instance
 const sequelize = new Sequelize(
-  process.env.DB_NAME || 'user_management_db',
+  process.env.DB_NAME || 'user_service_db',
   process.env.DB_USER || 'root',
   process.env.DB_PASSWORD || '',
   {

@@ -1,16 +1,16 @@
 /**
  * GraphQL Schema for Production Management Service
- * 
+ *
  * Defines types, queries, and mutations for production management functionality
  */
-const { buildSchema } = require('graphql');
-const { 
-  ProductionRequest, 
-  ProductionBatch, 
+const { buildSchema } = require("graphql");
+const {
+  ProductionRequest,
+  ProductionBatch,
   ProductionStep,
-  MaterialAllocation
-} = require('../models');
-const axios = require('axios');
+  MaterialAllocation,
+} = require("../models");
+const axios = require("axios");
 
 // Define GraphQL schema
 const schema = buildSchema(`
@@ -229,184 +229,226 @@ const root = {
   productionRequests: async () => {
     try {
       const requests = await ProductionRequest.findAll({
-        order: [['createdAt', 'DESC']]
+        order: [["createdAt", "DESC"]],
       });
       return requests;
     } catch (error) {
-      console.error('GraphQL Error - productionRequests:', error);
-      throw new Error('Failed to fetch production requests');
+      console.error("GraphQL Error - productionRequests:", error);
+      throw new Error("Failed to fetch production requests");
     }
   },
-  
+
   productionRequest: async ({ id }) => {
     try {
       const request = await ProductionRequest.findByPk(id, {
-        include: [{
-          model: ProductionBatch,
-          as: 'batches'
-        }]
+        include: [
+          {
+            model: ProductionBatch,
+            as: "batches",
+          },
+        ],
       });
-      
+
       if (!request) {
-        throw new Error('Production request not found');
+        throw new Error("Production request not found");
       }
-      
+
       return request;
     } catch (error) {
       console.error(`GraphQL Error - productionRequest(${id}):`, error);
       throw error;
     }
   },
-  
+
   productionRequestsByStatus: async ({ status }) => {
     try {
       const requests = await ProductionRequest.findAll({
         where: { status },
-        order: [['createdAt', 'DESC']]
+        order: [["createdAt", "DESC"]],
       });
       return requests;
     } catch (error) {
-      console.error(`GraphQL Error - productionRequestsByStatus(${status}):`, error);
-      throw new Error(`Failed to fetch production requests by status: ${status}`);
+      console.error(
+        `GraphQL Error - productionRequestsByStatus(${status}):`,
+        error
+      );
+      throw new Error(
+        `Failed to fetch production requests by status: ${status}`
+      );
     }
   },
-  
+
   // Production Batch Queries
   productionBatches: async () => {
     try {
       const batches = await ProductionBatch.findAll({
-        order: [['createdAt', 'DESC']],
-        include: [{
-          model: ProductionRequest,
-          as: 'request'
-        }]
+        order: [["createdAt", "DESC"]],
+        include: [
+          {
+            model: ProductionRequest,
+            as: "request",
+          },
+        ],
       });
       return batches;
     } catch (error) {
-      console.error('GraphQL Error - productionBatches:', error);
-      throw new Error('Failed to fetch production batches');
+      console.error("GraphQL Error - productionBatches:", error);
+      throw new Error("Failed to fetch production batches");
     }
   },
-  
+
   productionBatch: async ({ id }) => {
     try {
       const batch = await ProductionBatch.findByPk(id, {
         include: [
           {
             model: ProductionRequest,
-            as: 'request'
+            as: "request",
           },
           {
             model: ProductionStep,
-            as: 'steps',
-            order: [['stepOrder', 'ASC']]
+            as: "steps",
+            order: [["stepOrder", "ASC"]],
           },
           {
             model: MaterialAllocation,
-            as: 'materialAllocations'
-          }
-        ]
+            as: "materialAllocations",
+            attributes: [
+              "id",
+              "batchId",
+              "materialId",
+              "quantityRequired",
+              "quantityAllocated",
+              "unitOfMeasure",
+              "status",
+              "allocationDate",
+              "notes",
+              "createdAt",
+              "updatedAt",
+            ],
+          },
+        ],
       });
-      
+
       if (!batch) {
-        throw new Error('Production batch not found');
+        throw new Error("Production batch not found");
       }
-      
+
       return batch;
     } catch (error) {
       console.error(`GraphQL Error - productionBatch(${id}):`, error);
       throw error;
     }
   },
-  
+
   productionBatchesByRequest: async ({ requestId }) => {
     try {
       const batches = await ProductionBatch.findAll({
         where: { requestId },
-        order: [['createdAt', 'ASC']],
+        order: [["createdAt", "ASC"]],
         include: [
           {
             model: ProductionStep,
-            as: 'steps',
-            order: [['stepOrder', 'ASC']]
-          }
-        ]
+            as: "steps",
+            order: [["stepOrder", "ASC"]],
+          },
+        ],
       });
       return batches;
     } catch (error) {
-      console.error(`GraphQL Error - productionBatchesByRequest(${requestId}):`, error);
-      throw new Error(`Failed to fetch production batches for request: ${requestId}`);
+      console.error(
+        `GraphQL Error - productionBatchesByRequest(${requestId}):`,
+        error
+      );
+      throw new Error(
+        `Failed to fetch production batches for request: ${requestId}`
+      );
     }
   },
-  
+
   productionBatchesByStatus: async ({ status }) => {
     try {
       const batches = await ProductionBatch.findAll({
         where: { status },
-        order: [['createdAt', 'DESC']],
-        include: [{
-          model: ProductionRequest,
-          as: 'request'
-        }]
+        order: [["createdAt", "DESC"]],
+        include: [
+          {
+            model: ProductionRequest,
+            as: "request",
+          },
+        ],
       });
       return batches;
     } catch (error) {
-      console.error(`GraphQL Error - productionBatchesByStatus(${status}):`, error);
-      throw new Error(`Failed to fetch production batches by status: ${status}`);
+      console.error(
+        `GraphQL Error - productionBatchesByStatus(${status}):`,
+        error
+      );
+      throw new Error(
+        `Failed to fetch production batches by status: ${status}`
+      );
     }
   },
-  
+
   // Production Step Queries
   productionStepsByBatch: async ({ batchId }) => {
     try {
       const steps = await ProductionStep.findAll({
         where: { batchId },
-        order: [['stepOrder', 'ASC']]
+        order: [["stepOrder", "ASC"]],
       });
       return steps;
     } catch (error) {
-      console.error(`GraphQL Error - productionStepsByBatch(${batchId}):`, error);
+      console.error(
+        `GraphQL Error - productionStepsByBatch(${batchId}):`,
+        error
+      );
       throw new Error(`Failed to fetch production steps for batch: ${batchId}`);
     }
   },
-  
+
   productionStep: async ({ id }) => {
     try {
       const step = await ProductionStep.findByPk(id);
-      
+
       if (!step) {
-        throw new Error('Production step not found');
+        throw new Error("Production step not found");
       }
-      
+
       return step;
     } catch (error) {
       console.error(`GraphQL Error - productionStep(${id}):`, error);
       throw error;
     }
   },
-  
+
   // Material Allocation Queries
   materialAllocationsByBatch: async ({ batchId }) => {
     try {
       const allocations = await MaterialAllocation.findAll({
         where: { batchId },
-        order: [['createdAt', 'ASC']]
+        order: [["createdAt", "ASC"]],
       });
       return allocations;
     } catch (error) {
-      console.error(`GraphQL Error - materialAllocationsByBatch(${batchId}):`, error);
-      throw new Error(`Failed to fetch material allocations for batch: ${batchId}`);
+      console.error(
+        `GraphQL Error - materialAllocationsByBatch(${batchId}):`,
+        error
+      );
+      throw new Error(
+        `Failed to fetch material allocations for batch: ${batchId}`
+      );
     }
   },
-  
+
   // Production Request Mutations
   createProductionRequest: async ({ input }, context) => {
     try {
       // Check if user is authenticated
       if (!context.user) {
-        throw new Error('Unauthorized');
+        throw new Error("Unauthorized");
       }
-      
+
       const newRequest = await ProductionRequest.create({
         requestId: input.requestId,
         customerId: input.customerId,
@@ -415,42 +457,47 @@ const root = {
         priority: input.priority,
         dueDate: input.dueDate,
         specifications: input.specifications,
-        marketplaceData: input.marketplaceData ? JSON.parse(input.marketplaceData) : null,
-        status: 'received'
+        marketplaceData: input.marketplaceData
+          ? JSON.parse(input.marketplaceData)
+          : null,
+        status: "received",
       });
-      
+
       // Notify the Production Planning Service about the new request
       try {
-        await axios.post(`${process.env.PLANNING_SERVICE_URL}/api/planning/notify`, {
-          requestId: newRequest.id,
-          priority: newRequest.priority,
-          dueDate: newRequest.dueDate
-        });
+        await axios.post(
+          `${process.env.PLANNING_SERVICE_URL}/api/planning/notify`,
+          {
+            requestId: newRequest.id,
+            priority: newRequest.priority,
+            dueDate: newRequest.dueDate,
+          }
+        );
       } catch (error) {
-        console.error('Failed to notify Planning Service:', error.message);
+        console.error("Failed to notify Planning Service:", error.message);
         // Continue execution even if notification fails
       }
-      
+
       return newRequest;
     } catch (error) {
-      console.error('GraphQL Error - createProductionRequest:', error);
+      console.error("GraphQL Error - createProductionRequest:", error);
       throw error;
     }
   },
-  
+
   updateProductionRequest: async ({ id, input }, context) => {
     try {
       // Check if user is authenticated
       if (!context.user) {
-        throw new Error('Unauthorized');
+        throw new Error("Unauthorized");
       }
-      
+
       const request = await ProductionRequest.findByPk(id);
-      
+
       if (!request) {
-        throw new Error('Production request not found');
+        throw new Error("Production request not found");
       }
-      
+
       // Update request
       await request.update({
         ...(input.customerId && { customerId: input.customerId }),
@@ -458,107 +505,128 @@ const root = {
         ...(input.quantity && { quantity: input.quantity }),
         ...(input.priority && { priority: input.priority }),
         ...(input.dueDate && { dueDate: input.dueDate }),
-        ...(input.specifications !== undefined && { specifications: input.specifications }),
+        ...(input.specifications !== undefined && {
+          specifications: input.specifications,
+        }),
         ...(input.status && { status: input.status }),
-        ...(input.marketplaceData && { marketplaceData: JSON.parse(input.marketplaceData) })
+        ...(input.marketplaceData && {
+          marketplaceData: JSON.parse(input.marketplaceData),
+        }),
       });
-      
+
       // If status or priority changed, notify the Planning Service
       if (input.priority || input.status) {
         try {
-          await axios.post(`${process.env.PLANNING_SERVICE_URL}/api/planning/update`, {
-            requestId: request.id,
-            priority: request.priority,
-            status: request.status
-          });
+          await axios.post(
+            `${process.env.PLANNING_SERVICE_URL}/api/planning/update`,
+            {
+              requestId: request.id,
+              priority: request.priority,
+              status: request.status,
+            }
+          );
         } catch (error) {
-          console.error('Failed to notify Planning Service of update:', error.message);
+          console.error(
+            "Failed to notify Planning Service of update:",
+            error.message
+          );
           // Continue execution even if notification fails
         }
       }
-      
+
       return request;
     } catch (error) {
       console.error(`GraphQL Error - updateProductionRequest(${id}):`, error);
       throw error;
     }
   },
-  
+
   cancelProductionRequest: async ({ id }, context) => {
     try {
       // Check if user is authenticated
       if (!context.user) {
-        throw new Error('Unauthorized');
+        throw new Error("Unauthorized");
       }
-      
+
       const request = await ProductionRequest.findByPk(id, {
-        include: [{
-          model: ProductionBatch,
-          as: 'batches'
-        }]
+        include: [
+          {
+            model: ProductionBatch,
+            as: "batches",
+          },
+        ],
       });
-      
+
       if (!request) {
-        throw new Error('Production request not found');
+        throw new Error("Production request not found");
       }
-      
+
       // Update request status
-      await request.update({ status: 'cancelled' });
-      
+      await request.update({ status: "cancelled" });
+
       // Update associated batches
       if (request.batches && request.batches.length > 0) {
         for (const batch of request.batches) {
-          await batch.update({ status: 'cancelled' });
-          
+          await batch.update({ status: "cancelled" });
+
           // Notify the Machine Queue Service
           try {
-            await axios.post(`${process.env.MACHINE_QUEUE_URL}/api/queue/cancel`, {
-              batchId: batch.id
-            });
+            await axios.post(
+              `${process.env.MACHINE_QUEUE_URL}/api/queue/cancel`,
+              {
+                batchId: batch.id,
+              }
+            );
           } catch (error) {
-            console.error('Failed to notify Machine Queue Service:', error.message);
+            console.error(
+              "Failed to notify Machine Queue Service:",
+              error.message
+            );
             // Continue execution even if notification fails
           }
         }
       }
-      
+
       // Notify the Production Feedback Service
       try {
-        await axios.post(`${process.env.FEEDBACK_SERVICE_URL}/api/feedback/status-update`, {
-          requestId: request.requestId,
-          status: 'cancelled',
-          notes: 'Request cancelled by user'
-        });
+        await axios.post(
+          `${process.env.FEEDBACK_SERVICE_URL}/api/feedback/status-update`,
+          {
+            requestId: request.requestId,
+            status: "cancelled",
+            notes: "Request cancelled by user",
+          }
+        );
       } catch (error) {
-        console.error('Failed to notify Feedback Service:', error.message);
+        console.error("Failed to notify Feedback Service:", error.message);
         // Continue execution even if notification fails
       }
-      
+
       return request;
     } catch (error) {
       console.error(`GraphQL Error - cancelProductionRequest(${id}):`, error);
       throw error;
     }
   },
-  
+
   // Production Batch Mutations
   createProductionBatch: async ({ input }, context) => {
     try {
       // Check if user is authenticated
       if (!context.user) {
-        throw new Error('Unauthorized');
+        throw new Error("Unauthorized");
       }
-      
+
       // Find the production request
       const request = await ProductionRequest.findByPk(input.requestId);
-      
+
       if (!request) {
-        throw new Error('Production request not found');
+        throw new Error("Production request not found");
       }
-      
+
       // Generate batch number
       const batchNumber = `B${Date.now()}-${Math.floor(Math.random() * 1000)}`;
-      
+
       // Create the production batch
       const newBatch = await ProductionBatch.create({
         batchNumber,
@@ -567,9 +635,9 @@ const root = {
         scheduledStartDate: input.scheduledStartDate,
         scheduledEndDate: input.scheduledEndDate,
         notes: input.notes,
-        status: 'pending'
+        status: "pending",
       });
-      
+
       // Create production steps if provided
       if (input.steps && input.steps.length > 0) {
         for (let i = 0; i < input.steps.length; i++) {
@@ -581,11 +649,11 @@ const root = {
             machineType: step.machineType,
             scheduledStartTime: step.scheduledStartTime,
             scheduledEndTime: step.scheduledEndTime,
-            status: 'pending'
+            status: "pending",
           });
         }
       }
-      
+
       // Create material allocations if provided
       if (input.materials && input.materials.length > 0) {
         for (const material of input.materials) {
@@ -594,27 +662,33 @@ const root = {
             materialId: material.materialId,
             quantityRequired: material.quantityRequired,
             unitOfMeasure: material.unitOfMeasure,
-            status: 'pending'
+            status: "pending",
           });
         }
       }
-      
+
       // Update the request status to 'planned'
-      await request.update({ status: 'planned' });
-      
+      await request.update({ status: "planned" });
+
       // Notify the Material Inventory Service
       try {
         if (input.materials && input.materials.length > 0) {
-          await axios.post(`${process.env.MATERIAL_INVENTORY_URL}/api/inventory/reserve`, {
-            batchId: newBatch.id,
-            materials: input.materials
-          });
+          await axios.post(
+            `${process.env.MATERIAL_INVENTORY_URL}/api/inventory/reserve`,
+            {
+              batchId: newBatch.id,
+              materials: input.materials,
+            }
+          );
         }
       } catch (error) {
-        console.error('Failed to notify Material Inventory Service:', error.message);
+        console.error(
+          "Failed to notify Material Inventory Service:",
+          error.message
+        );
         // Continue execution even if notification fails
       }
-      
+
       // Notify the Machine Queue Service
       try {
         if (input.steps && input.steps.length > 0) {
@@ -629,205 +703,247 @@ const root = {
               stepName: s.stepName,
               machineType: s.machineType,
               scheduledStartTime: s.scheduledStartTime,
-              scheduledEndTime: s.scheduledEndTime
-            }))
+              scheduledEndTime: s.scheduledEndTime,
+            })),
           });
         }
       } catch (error) {
-        console.error('Failed to notify Machine Queue Service:', error.message);
+        console.error("Failed to notify Machine Queue Service:", error.message);
         // Continue execution even if notification fails
       }
-      
+
       // Return the created batch with associations
       return await ProductionBatch.findByPk(newBatch.id, {
         include: [
           {
             model: ProductionRequest,
-            as: 'request'
+            as: "request",
           },
           {
             model: ProductionStep,
-            as: 'steps',
-            order: [['stepOrder', 'ASC']]
+            as: "steps",
+            order: [["stepOrder", "ASC"]],
           },
           {
             model: MaterialAllocation,
-            as: 'materialAllocations'
-          }
-        ]
+            as: "materialAllocations",
+            attributes: [
+              "id",
+              "batchId",
+              "materialId",
+              "quantityRequired",
+              "quantityAllocated",
+              "unitOfMeasure",
+              "status",
+              "allocationDate",
+              "notes",
+              "createdAt",
+              "updatedAt",
+            ],
+          },
+        ],
       });
     } catch (error) {
-      console.error('GraphQL Error - createProductionBatch:', error);
+      console.error("GraphQL Error - createProductionBatch:", error);
       throw error;
     }
   },
-  
+
   updateProductionBatch: async ({ id, input }, context) => {
     try {
       // Check if user is authenticated
       if (!context.user) {
-        throw new Error('Unauthorized');
+        throw new Error("Unauthorized");
       }
-      
+
       // Find the batch
       const batch = await ProductionBatch.findByPk(id);
-      
+
       if (!batch) {
-        throw new Error('Production batch not found');
+        throw new Error("Production batch not found");
       }
-      
+
       // Update batch
       await batch.update({
-        ...(input.scheduledStartDate && { scheduledStartDate: input.scheduledStartDate }),
-        ...(input.scheduledEndDate && { scheduledEndDate: input.scheduledEndDate }),
-        ...(input.actualStartDate && { actualStartDate: input.actualStartDate }),
+        ...(input.scheduledStartDate && {
+          scheduledStartDate: input.scheduledStartDate,
+        }),
+        ...(input.scheduledEndDate && {
+          scheduledEndDate: input.scheduledEndDate,
+        }),
+        ...(input.actualStartDate && {
+          actualStartDate: input.actualStartDate,
+        }),
         ...(input.actualEndDate && { actualEndDate: input.actualEndDate }),
         ...(input.status && { status: input.status }),
-        ...(input.notes !== undefined && { notes: input.notes })
+        ...(input.notes !== undefined && { notes: input.notes }),
       });
-      
+
       // If status changed to 'in_progress', update request status and notify Feedback Service
-      if (input.status === 'in_progress') {
+      if (input.status === "in_progress") {
         const request = await ProductionRequest.findByPk(batch.requestId);
         if (request) {
-          await request.update({ status: 'in_production' });
-          
+          await request.update({ status: "in_production" });
+
           // Notify the Production Feedback Service
           try {
-            await axios.post(`${process.env.FEEDBACK_SERVICE_URL}/api/feedback/status-update`, {
-              requestId: request.requestId,
-              status: 'in_production',
-              notes: `Batch ${batch.batchNumber} started production`
-            });
+            await axios.post(
+              `${process.env.FEEDBACK_SERVICE_URL}/api/feedback/status-update`,
+              {
+                requestId: request.requestId,
+                status: "in_production",
+                notes: `Batch ${batch.batchNumber} started production`,
+              }
+            );
           } catch (error) {
-            console.error('Failed to notify Feedback Service:', error.message);
+            console.error("Failed to notify Feedback Service:", error.message);
             // Continue execution even if notification fails
           }
         }
       }
-      
+
       // If status changed to 'completed', check if all batches are completed to update request status
-      if (input.status === 'completed') {
+      if (input.status === "completed") {
         const request = await ProductionRequest.findByPk(batch.requestId);
         if (request) {
           const allBatches = await ProductionBatch.findAll({
-            where: { requestId: batch.requestId }
+            where: { requestId: batch.requestId },
           });
-          
-          const allCompleted = allBatches.every(b => b.status === 'completed' || b.status === 'cancelled');
-          
+
+          const allCompleted = allBatches.every(
+            (b) => b.status === "completed" || b.status === "cancelled"
+          );
+
           if (allCompleted) {
-            await request.update({ status: 'completed' });
-            
+            await request.update({ status: "completed" });
+
             // Notify the Production Feedback Service
             try {
-              await axios.post(`${process.env.FEEDBACK_SERVICE_URL}/api/feedback/status-update`, {
-                requestId: request.requestId,
-                status: 'completed',
-                notes: 'All batches completed'
-              });
+              await axios.post(
+                `${process.env.FEEDBACK_SERVICE_URL}/api/feedback/status-update`,
+                {
+                  requestId: request.requestId,
+                  status: "completed",
+                  notes: "All batches completed",
+                }
+              );
             } catch (error) {
-              console.error('Failed to notify Feedback Service:', error.message);
+              console.error(
+                "Failed to notify Feedback Service:",
+                error.message
+              );
               // Continue execution even if notification fails
             }
           }
         }
       }
-      
+
       return batch;
     } catch (error) {
       console.error(`GraphQL Error - updateProductionBatch(${id}):`, error);
       throw error;
     }
   },
-  
+
   // Production Step Mutations
   updateProductionStep: async ({ id, input }, context) => {
     try {
       // Check if user is authenticated
       if (!context.user) {
-        throw new Error('Unauthorized');
+        throw new Error("Unauthorized");
       }
-      
+
       // Find the step
       const step = await ProductionStep.findByPk(id);
-      
+
       if (!step) {
-        throw new Error('Production step not found');
+        throw new Error("Production step not found");
       }
-      
+
       // Update step
       await step.update({
         ...(input.machineId && { machineId: input.machineId }),
         ...(input.operatorId && { operatorId: input.operatorId }),
-        ...(input.actualStartTime && { actualStartTime: input.actualStartTime }),
+        ...(input.actualStartTime && {
+          actualStartTime: input.actualStartTime,
+        }),
         ...(input.actualEndTime && { actualEndTime: input.actualEndTime }),
         ...(input.status && { status: input.status }),
-        ...(input.notes !== undefined && { notes: input.notes })
+        ...(input.notes !== undefined && { notes: input.notes }),
       });
-      
+
       // If step status changed to 'in_progress', update batch status if it's the first step
-      if (input.status === 'in_progress') {
+      if (input.status === "in_progress") {
         const batch = await ProductionBatch.findByPk(step.batchId);
-        if (batch && batch.status !== 'in_progress') {
+        if (batch && batch.status !== "in_progress") {
           // Check if this is the first step
           const steps = await ProductionStep.findAll({
             where: { batchId: step.batchId },
-            order: [['stepOrder', 'ASC']]
+            order: [["stepOrder", "ASC"]],
           });
-          
+
           if (steps[0].id === step.id) {
-            await batch.update({ 
-              status: 'in_progress',
-              actualStartDate: new Date()
+            await batch.update({
+              status: "in_progress",
+              actualStartDate: new Date(),
             });
-            
+
             // Update the request status
             const request = await ProductionRequest.findByPk(batch.requestId);
             if (request) {
-              await request.update({ status: 'in_production' });
+              await request.update({ status: "in_production" });
             }
           }
         }
       }
-      
+
       // If step status changed to 'completed', check if all steps are completed to update batch status
-      if (input.status === 'completed') {
+      if (input.status === "completed") {
         const batch = await ProductionBatch.findByPk(step.batchId);
         if (batch) {
           const steps = await ProductionStep.findAll({
-            where: { batchId: step.batchId }
+            where: { batchId: step.batchId },
           });
-          
-          const allCompleted = steps.every(s => s.status === 'completed' || s.status === 'cancelled');
-          
+
+          const allCompleted = steps.every(
+            (s) => s.status === "completed" || s.status === "cancelled"
+          );
+
           if (allCompleted) {
-            await batch.update({ 
-              status: 'completed',
-              actualEndDate: new Date()
+            await batch.update({
+              status: "completed",
+              actualEndDate: new Date(),
             });
-            
+
             // Check if all batches for this request are completed
             const allBatches = await ProductionBatch.findAll({
-              where: { requestId: batch.requestId }
+              where: { requestId: batch.requestId },
             });
-            
-            const allBatchesCompleted = allBatches.every(b => b.status === 'completed' || b.status === 'cancelled');
-            
+
+            const allBatchesCompleted = allBatches.every(
+              (b) => b.status === "completed" || b.status === "cancelled"
+            );
+
             if (allBatchesCompleted) {
               const request = await ProductionRequest.findByPk(batch.requestId);
               if (request) {
-                await request.update({ status: 'completed' });
-                
+                await request.update({ status: "completed" });
+
                 // Notify the Production Feedback Service
                 try {
-                  await axios.post(`${process.env.FEEDBACK_SERVICE_URL}/api/feedback/status-update`, {
-                    requestId: request.requestId,
-                    status: 'completed',
-                    notes: 'All production completed'
-                  });
+                  await axios.post(
+                    `${process.env.FEEDBACK_SERVICE_URL}/api/feedback/status-update`,
+                    {
+                      requestId: request.requestId,
+                      status: "completed",
+                      notes: "All production completed",
+                    }
+                  );
                 } catch (error) {
-                  console.error('Failed to notify Feedback Service:', error.message);
+                  console.error(
+                    "Failed to notify Feedback Service:",
+                    error.message
+                  );
                   // Continue execution even if notification fails
                 }
               }
@@ -835,16 +951,16 @@ const root = {
           }
         }
       }
-      
+
       return step;
     } catch (error) {
       console.error(`GraphQL Error - updateProductionStep(${id}):`, error);
       throw error;
     }
-  }
+  },
 };
 
 module.exports = {
   schema,
-  rootValue: root
+  rootValue: root,
 };

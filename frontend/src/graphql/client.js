@@ -130,6 +130,7 @@ const routerLink = new ApolloLink((operation, forward) => {
       "CreateUser",
       "UpdateUser",
       "UpdateUserStatus",
+      "UpdateProfile",
     ].includes(operationName)
   ) {
     targetLink = userServiceLink;

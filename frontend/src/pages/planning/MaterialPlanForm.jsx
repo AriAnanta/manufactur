@@ -17,6 +17,12 @@ import {
   IconButton,
   Divider,
   InputAdornment,
+  Avatar,
+  Card,
+  CardContent,
+  Stack,
+  Fade,
+  Grow,
 } from "@mui/material";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFnsV3";
@@ -33,6 +39,7 @@ import {
   UPDATE_MATERIAL_PLAN,
 } from "../../graphql/productionPlanning";
 import { GET_MATERIALS } from "../../graphql/materialInventory";
+import InventoryIcon from "@mui/icons-material/Inventory";
 
 const MaterialPlanForm = () => {
   const { id, materialId } = useParams();
@@ -324,152 +331,229 @@ const MaterialPlanForm = () => {
 
   return (
     <LocalizationProvider dateAdapter={AdapterDateFns}>
-      <Box component="form" onSubmit={handleSubmit}>
-        <Paper sx={{ p: 3, mb: 3 }}>
-          <Box
+      <Box
+        sx={{
+          width: "100%",
+          maxWidth: 1200,
+          mx: "auto",
+          p: { xs: 2, sm: 3 },
+          overflow: "hidden",
+        }}
+      >
+        {/* Header Section */}
+        <Fade in timeout={600}>
+          <Card
+            elevation={0}
             sx={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-              mb: 3,
+              mb: 4,
+              background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+              color: "white",
+              borderRadius: 3,
+              width: "100%",
             }}
           >
-            <Box sx={{ display: "flex", alignItems: "center" }}>
-              <IconButton onClick={handleCancel} sx={{ mr: 1 }}>
-                <ArrowBackIcon />
-              </IconButton>
-              <Typography variant="h5">
-                {isEditMode ? "Edit Material Plan" : "Add Material Plan"}
-              </Typography>
-            </Box>
-            <Button
-              variant="contained"
-              color="primary"
-              startIcon={<SaveIcon />}
-              type="submit"
-              disabled={submitting || addLoading || updateLoading}
-            >
-              {submitting || addLoading || updateLoading ? (
-                <CircularProgress size={24} color="inherit" />
-              ) : (
-                "Save"
-              )}
-            </Button>
-          </Box>
-
-          <Divider sx={{ mb: 3 }} />
-
-          <Typography variant="subtitle1" gutterBottom>
-            Production Plan: {planData.plan.productName}
-          </Typography>
-          <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-            Plan Period:{" "}
-            {planData.plan.plannedStartDate
-              ? new Date(planData.plan.plannedStartDate).toLocaleDateString()
-              : "N/A"}{" "}
-            -{" "}
-            {planData.plan.plannedEndDate
-              ? new Date(planData.plan.plannedEndDate).toLocaleDateString()
-              : "N/A"}
-          </Typography>
-
-          <Grid container spacing={3}>
-            <Grid item xs={12} sm={6}>
-              <FormControl fullWidth error={Boolean(errors.materialId)}>
-                <InputLabel>Material</InputLabel>
-                <Select
-                  name="materialId"
-                  value={formData.materialId}
-                  onChange={handleMaterialChange}
-                  label="Material"
-                  required
-                  disabled={isEditMode} // Disable in edit mode to prevent changing material
+            <CardContent sx={{ p: { xs: 3, sm: 4 } }}>
+              <Box sx={{ display: "flex", alignItems: "center" }}>
+                <Avatar
+                  sx={{
+                    bgcolor: "rgba(255,255,255,0.2)",
+                    width: { xs: 56, sm: 64 },
+                    height: { xs: 56, sm: 64 },
+                    mr: { xs: 2, sm: 3 },
+                  }}
                 >
-                  {materialsLoading ? (
-                    <MenuItem disabled>Loading materials...</MenuItem>
-                  ) : materialsError ? (
-                    <MenuItem disabled>Error loading materials</MenuItem>
-                  ) : materialsData && materialsData.materials ? (
-                    materialsData.materials.map((material) => (
-                      <MenuItem key={material.id} value={material.id}>
-                        {material.name} ({material.unit})
-                      </MenuItem>
-                    ))
-                  ) : (
-                    <MenuItem disabled>No materials available</MenuItem>
-                  )}
-                </Select>
-                {errors.materialId && (
-                  <Typography variant="caption" color="error">
-                    {errors.materialId}
+                  <InventoryIcon sx={{ fontSize: { xs: 28, sm: 32 } }} />
+                </Avatar>
+                <Box>
+                  <Typography
+                    variant="h4"
+                    sx={{
+                      fontWeight: 700,
+                      mb: 1,
+                      fontSize: { xs: "1.75rem", sm: "2.125rem" },
+                    }}
+                  >
+                    {isEditMode ? "Edit Material Plan" : "Add Material Plan"}
                   </Typography>
-                )}
-              </FormControl>
-            </Grid>
+                  <Typography variant="h6" sx={{ opacity: 0.9 }}>
+                    Production Plan: {planData?.plan?.productName}
+                  </Typography>
+                </Box>
+              </Box>
+            </CardContent>
+          </Card>
+        </Fade>
 
-            <Grid item xs={12} sm={6}>
-              <TextField
-                fullWidth
-                label="Quantity"
-                name="quantityRequired"
-                type="number"
-                value={formData.quantityRequired}
-                onChange={handleInputChange}
-                error={Boolean(errors.quantityRequired)}
-                helperText={errors.quantityRequired}
-                InputProps={{
-                  inputProps: { min: 1 },
-                  endAdornment: formData.unitOfMeasure ? (
-                    <InputAdornment position="end">
-                      {formData.unitOfMeasure}
-                    </InputAdornment>
-                  ) : null,
+        {/* Navigation */}
+        <Box sx={{ mb: 3 }}>
+          <Button
+            startIcon={<ArrowBackIcon />}
+            onClick={handleCancel}
+            sx={{
+              color: "text.secondary",
+              "&:hover": {
+                bgcolor: "grey.100",
+              },
+            }}
+          >
+            Back to Production Plan
+          </Button>
+        </Box>
+
+        {/* Form Section */}
+        <Grow in timeout={800}>
+          <Paper
+            component="form"
+            onSubmit={handleSubmit}
+            sx={{
+              borderRadius: 3,
+              overflow: "hidden",
+              border: "1px solid",
+              borderColor: "grey.200",
+              width: "100%",
+            }}
+          >
+            <Box sx={{ p: 4 }}>
+              <Typography
+                variant="h6"
+                sx={{
+                  mb: 3,
+                  fontWeight: 600,
+                  color: "text.primary",
                 }}
-                required
-              />
-            </Grid>
+              >
+                Material Plan Information
+              </Typography>
 
-            <Grid item xs={12} sm={6}>
-              <DatePicker
-                label="Availability Date"
-                value={formData.availabilityDate}
-                onChange={(date) => handleDateChange("availabilityDate", date)}
-                minDate={
-                  planData.plan.plannedStartDate
-                    ? new Date(planData.plan.plannedStartDate)
-                    : null
-                }
-                maxDate={
-                  planData.plan.plannedEndDate
-                    ? new Date(planData.plan.plannedEndDate)
-                    : null
-                }
-                slotProps={{
-                  textField: {
-                    fullWidth: true,
-                    error: Boolean(errors.availabilityDate),
-                    helperText: errors.availabilityDate,
-                    required: true,
-                  },
-                }}
-              />
-            </Grid>
+              <Grid container spacing={3}>
+                <Grid item xs={12} sm={6}>
+                  <FormControl fullWidth error={Boolean(errors.materialId)}>
+                    <InputLabel>Material</InputLabel>
+                    <Select
+                      name="materialId"
+                      value={formData.materialId}
+                      onChange={handleMaterialChange}
+                      label="Material"
+                      required
+                      disabled={isEditMode} // Disable in edit mode to prevent changing material
+                    >
+                      {materialsLoading ? (
+                        <MenuItem disabled>Loading materials...</MenuItem>
+                      ) : materialsError ? (
+                        <MenuItem disabled>Error loading materials</MenuItem>
+                      ) : materialsData && materialsData.materials ? (
+                        materialsData.materials.map((material) => (
+                          <MenuItem key={material.id} value={material.id}>
+                            {material.name} ({material.unit})
+                          </MenuItem>
+                        ))
+                      ) : (
+                        <MenuItem disabled>No materials available</MenuItem>
+                      )}
+                    </Select>
+                    {errors.materialId && (
+                      <Typography variant="caption" color="error">
+                        {errors.materialId}
+                      </Typography>
+                    )}
+                  </FormControl>
+                </Grid>
 
-            <Grid item xs={12}>
-              <TextField
-                fullWidth
-                label="Notes"
-                name="notes"
-                value={formData.notes}
-                onChange={handleInputChange}
-                multiline
-                rows={3}
-                error={Boolean(errors.notes)}
-                helperText={errors.notes}
-              />
-            </Grid>
-          </Grid>
-        </Paper>
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    fullWidth
+                    label="Quantity"
+                    name="quantityRequired"
+                    type="number"
+                    value={formData.quantityRequired}
+                    onChange={handleInputChange}
+                    error={Boolean(errors.quantityRequired)}
+                    helperText={errors.quantityRequired}
+                    InputProps={{
+                      inputProps: { min: 1 },
+                      endAdornment: formData.unitOfMeasure ? (
+                        <InputAdornment position="end">
+                          {formData.unitOfMeasure}
+                        </InputAdornment>
+                      ) : null,
+                    }}
+                    required
+                  />
+                </Grid>
+
+                <Grid item xs={12} sm={6}>
+                  <DatePicker
+                    label="Availability Date"
+                    value={formData.availabilityDate}
+                    onChange={(date) =>
+                      handleDateChange("availabilityDate", date)
+                    }
+                    minDate={
+                      planData.plan.plannedStartDate
+                        ? new Date(planData.plan.plannedStartDate)
+                        : null
+                    }
+                    maxDate={
+                      planData.plan.plannedEndDate
+                        ? new Date(planData.plan.plannedEndDate)
+                        : null
+                    }
+                    slotProps={{
+                      textField: {
+                        fullWidth: true,
+                        error: Boolean(errors.availabilityDate),
+                        helperText: errors.availabilityDate,
+                        required: true,
+                      },
+                    }}
+                  />
+                </Grid>
+
+                <Grid item xs={12}>
+                  <TextField
+                    fullWidth
+                    label="Notes"
+                    name="notes"
+                    value={formData.notes}
+                    onChange={handleInputChange}
+                    multiline
+                    rows={3}
+                    error={Boolean(errors.notes)}
+                    helperText={errors.notes}
+                  />
+                </Grid>
+
+                <Grid item xs={12}>
+                  <Stack direction="row" spacing={2} sx={{ mt: 2 }}>
+                    <Button
+                      variant="contained"
+                      color="primary"
+                      size="large"
+                      startIcon={<SaveIcon />}
+                      type="submit"
+                      disabled={submitting || addLoading || updateLoading}
+                      sx={{ px: 4 }}
+                    >
+                      {submitting || addLoading || updateLoading ? (
+                        <CircularProgress size={24} color="inherit" />
+                      ) : (
+                        "Save"
+                      )}
+                    </Button>
+                    <Button
+                      variant="outlined"
+                      size="large"
+                      onClick={handleCancel}
+                      sx={{ px: 4 }}
+                    >
+                      Cancel
+                    </Button>
+                  </Stack>
+                </Grid>
+              </Grid>
+            </Box>
+          </Paper>
+        </Grow>
       </Box>
     </LocalizationProvider>
   );

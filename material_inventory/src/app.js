@@ -17,7 +17,6 @@ require("dotenv").config();
 
 const app = express();
 const PORT = process.env.PORT || 5004;
-
 // Middleware
 app.use(helmet());
 app.use(cors());
