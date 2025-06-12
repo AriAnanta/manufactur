@@ -96,6 +96,36 @@ export const GET_BATCH_QUEUES = gql`
   ${QUEUE_FIELDS}
 `;
 
+// Query untuk mendapatkan machine queue dengan status completed
+export const GET_COMPLETED_MACHINE_QUEUES = gql`
+  query GetCompletedMachineQueues {
+    queues(filter: { status: completed }) {
+      id
+      queueId
+      machineId
+      batchId
+      batchNumber
+      productName
+      stepId
+      stepName
+      scheduledStartTime
+      scheduledEndTime
+      actualStartTime
+      actualEndTime
+      hoursRequired
+      priority
+      status
+      operatorId
+      operatorName
+      setupTime
+      position
+      notes
+      createdAt
+      updatedAt
+    }
+  }
+`;
+
 export const CHECK_CAPACITY = gql`
   query CheckCapacity($machineType: String!, $startTime: Date!, $endTime: Date!) {
     checkCapacity(machineType: $machineType, startTime: $startTime, endTime: $endTime) {

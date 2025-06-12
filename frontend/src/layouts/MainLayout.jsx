@@ -186,9 +186,14 @@ const MainLayout = () => {
               path: "/feedback",
             },
             {
-              text: "Quality Checks",
-              icon: <AssignmentIcon />,
-              path: "/quality-checks",
+              text: "Quantity Stock",
+              icon: <InventoryIcon />,
+              path: "/feedback/quantity-stock",
+            },
+            {
+              text: "Consumer Status",
+              icon: <SettingsIcon />,
+              path: "/feedback/consumer-status",
             },
           ],
         },

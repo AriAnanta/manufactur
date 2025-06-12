@@ -57,28 +57,31 @@ function MaterialDetail() {
   }, [id]);
 
   const getStatusChip = (material) => {
-    if (material.stockQuantity <= material.reorderLevel) {
-      return (
-        <Chip
-          label="Low Stock"
-          color="error"
-          icon={<WarningIcon />}
-          sx={{ fontWeight: 500 }}
-        />
-      );
-    }
-    
     const statusConfig = {
       active: { color: "success", label: "Active" },
-      discontinued: { color: "error", label: "Discontinued" },
-      out_of_stock: { color: "warning", label: "Out of Stock" },
+      low_stock: {
+        color: "warning",
+        label: "Low Stock",
+        icon: <WarningIcon fontSize="small" />,
+      },
+      out_of_stock: {
+        color: "error",
+        label: "Out of Stock",
+        icon: <WarningIcon fontSize="small" />,
+      },
+      discontinued: { color: "default", label: "Discontinued" },
     };
 
-    const config = statusConfig[material.status] || { color: "default", label: material.status };
+    const config = statusConfig[material.status] || {
+      color: "default",
+      label: material.status,
+      icon: null,
+    };
     return (
       <Chip
         label={config.label}
         color={config.color}
+        icon={config.icon}
         sx={{ fontWeight: 500 }}
       />
     );
@@ -181,7 +184,6 @@ function MaterialDetail() {
                   variant="outlined"
                   startIcon={<ArrowBackIcon />}
                   onClick={() => navigate("/materials")}
-                  fullWidth={{ xs: true, sm: false }}
                   sx={{
                     bgcolor: "rgba(255,255,255,0.1)",
                     color: "white",
@@ -189,6 +191,7 @@ function MaterialDetail() {
                     "&:hover": {
                       bgcolor: "rgba(255,255,255,0.2)",
                     },
+                    width: { xs: "100%", sm: "auto" },
                   }}
                 >
                   Back
@@ -197,13 +200,13 @@ function MaterialDetail() {
                   variant="contained"
                   startIcon={<EditIcon />}
                   onClick={() => navigate(`/materials/${id}/edit`)}
-                  fullWidth={{ xs: true, sm: false }}
                   sx={{
                     bgcolor: "rgba(255,255,255,0.2)",
                     color: "white",
                     "&:hover": {
                       bgcolor: "rgba(255,255,255,0.3)",
                     },
+                    width: { xs: "100%", sm: "auto" },
                   }}
                 >
                   Edit Material
@@ -283,8 +286,8 @@ function MaterialDetail() {
                     >
                       Category
                     </Typography>
-                    <Chip 
-                      label={material.category} 
+                    <Chip
+                      label={material.category}
                       color="primary"
                       sx={{ mt: 1, fontWeight: 500 }}
                     />
@@ -348,11 +351,17 @@ function MaterialDetail() {
                     >
                       Stock Quantity
                     </Typography>
-                    <Typography 
-                      variant="h5" 
-                      sx={{ 
+                    <Typography
+                      variant="h5"
+                      sx={{
                         fontWeight: 700,
-                        color: material.stockQuantity <= material.reorderLevel ? 'error.main' : 'success.main'
+                        color:
+                          material.status === "out_of_stock" ||
+                          material.status === "low_stock"
+                            ? "error.main"
+                            : material.status === "active"
+                            ? "success.main"
+                            : "text.secondary",
                       }}
                     >
                       {material.stockQuantity.toLocaleString()} {material.unit}
@@ -450,10 +459,10 @@ function MaterialDetail() {
                       color="text.secondary"
                       sx={{ fontWeight: 600 }}
                     >
-                      Supplier ID
+                      Supplier Name
                     </Typography>
                     <Typography variant="body1" sx={{ fontWeight: 500 }}>
-                      {material.supplierId || "Not assigned"}
+                      {material.supplierInfo?.name || "Not assigned"}
                     </Typography>
                   </Grid>
 

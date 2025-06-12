@@ -38,11 +38,8 @@ const ProductionRequestForm = () => {
     requestId: "", // Keep it for edit mode loading, but not for new creation
     productName: "",
     quantity: "",
-    customerId: "",
     priority: "normal", // Default priority changed from medium to normal
-    dueDate: new Date().toISOString().split("T")[0], // Set default to today, renamed from requiredDate
-    notes: "",
-    status: "pending", // Default status for new requests
+    status: "received", // Default status for new requests, changed from pending to received
   });
 
   useEffect(() => {
@@ -70,13 +67,8 @@ const ProductionRequestForm = () => {
         requestId: fetchedRequest.requestId || "",
         productName: fetchedRequest.productName || "",
         quantity: fetchedRequest.quantity || "",
-        customerId: fetchedRequest.customerId || "",
         priority: fetchedRequest.priority || "normal", // Ensure fetched priority defaults to normal if invalid
-        dueDate: fetchedRequest.dueDate
-          ? new Date(fetchedRequest.dueDate).toISOString().split("T")[0]
-          : "",
-        notes: fetchedRequest.notes || "",
-        status: fetchedRequest.status || "pending",
+        status: fetchedRequest.status || "received",
       });
     } catch (err) {
       console.error("Error fetching request data:", err);
@@ -101,10 +93,6 @@ const ProductionRequestForm = () => {
       const payload = {
         ...formData,
         quantity: parseInt(formData.quantity),
-        // Ensure dueDate is always sent, use current date if empty
-        dueDate: formData.dueDate
-          ? new Date(formData.dueDate).toISOString()
-          : new Date().toISOString(), // Fallback to current date if not provided
       };
 
       // No need to generate requestId here, it's handled in useEffect
@@ -248,14 +236,11 @@ const ProductionRequestForm = () => {
                     name="requestId"
                     value={formData.requestId}
                     onChange={handleInputChange}
-                    required
-                    margin="normal"
-                    variant="outlined"
-                    disabled // Always disabled in edit mode as it's read-only
+                    disabled
                   />
                 </Grid>
               )}
-              <Grid item xs={12} md={6}>
+              <Grid item xs={12} md={isEditMode ? 6 : 12}>
                 <TextField
                   fullWidth
                   label="Product Name"
@@ -263,8 +248,6 @@ const ProductionRequestForm = () => {
                   value={formData.productName}
                   onChange={handleInputChange}
                   required
-                  margin="normal"
-                  variant="outlined"
                 />
               </Grid>
               <Grid item xs={12} md={6}>
@@ -276,30 +259,20 @@ const ProductionRequestForm = () => {
                   value={formData.quantity}
                   onChange={handleInputChange}
                   required
-                  margin="normal"
-                  variant="outlined"
+                  inputProps={{ min: 1 }}
                 />
               </Grid>
+
               <Grid item xs={12} md={6}>
-                <TextField
-                  fullWidth
-                  label="Customer ID"
-                  name="customerId"
-                  value={formData.customerId}
-                  onChange={handleInputChange}
-                  required
-                  margin="normal"
-                  variant="outlined"
-                />
-              </Grid>
-              <Grid item xs={12} md={6}>
-                <FormControl fullWidth margin="normal">
-                  <InputLabel>Priority</InputLabel>
+                <FormControl fullWidth required>
+                  <InputLabel id="priority-label">Priority</InputLabel>
                   <Select
+                    labelId="priority-label"
+                    id="priority-select"
                     name="priority"
                     value={formData.priority}
-                    onChange={handleInputChange}
                     label="Priority"
+                    onChange={handleInputChange}
                   >
                     <MenuItem value="low">Low</MenuItem>
                     <MenuItem value="normal">Normal</MenuItem>
@@ -308,46 +281,22 @@ const ProductionRequestForm = () => {
                   </Select>
                 </FormControl>
               </Grid>
-              <Grid item xs={12} md={6}>
-                <TextField
-                  fullWidth
-                  label="Due Date"
-                  name="dueDate"
-                  type="date"
-                  value={formData.dueDate}
-                  onChange={handleInputChange}
-                  InputLabelProps={{ shrink: true }}
-                  required
-                  margin="normal"
-                  variant="outlined"
-                />
-              </Grid>
-              <Grid item xs={12}>
-                <TextField
-                  fullWidth
-                  label="Notes"
-                  name="notes"
-                  value={formData.notes}
-                  onChange={handleInputChange}
-                  multiline
-                  rows={4}
-                  margin="normal"
-                  variant="outlined"
-                />
-              </Grid>
+
               {isEditMode && (
                 <Grid item xs={12} md={6}>
-                  <FormControl fullWidth margin="normal">
-                    <InputLabel>Status</InputLabel>
+                  <FormControl fullWidth>
+                    <InputLabel id="status-label">Status</InputLabel>
                     <Select
+                      labelId="status-label"
+                      id="status-select"
                       name="status"
                       value={formData.status}
-                      onChange={handleInputChange}
                       label="Status"
+                      onChange={handleInputChange}
                     >
-                      <MenuItem value="pending">Pending</MenuItem>
+                      <MenuItem value="received">Received</MenuItem>
                       <MenuItem value="planned">Planned</MenuItem>
-                      <MenuItem value="in_progress">In Progress</MenuItem>
+                      <MenuItem value="in_production">In Production</MenuItem>
                       <MenuItem value="completed">Completed</MenuItem>
                       <MenuItem value="cancelled">Cancelled</MenuItem>
                     </Select>
@@ -355,30 +304,26 @@ const ProductionRequestForm = () => {
                 </Grid>
               )}
             </Grid>
-            <Stack
-              direction="row"
-              spacing={2}
-              sx={{ mt: 4, justifyContent: "flex-end" }}
+          </Box>
+          <Box
+            sx={{
+              p: { xs: 3, sm: 4 },
+              pt: 0,
+              borderTop: "1px solid",
+              borderColor: "grey.200",
+              display: "flex",
+              justifyContent: "flex-end",
+            }}
+          >
+            <Button
+              variant="contained"
+              color="primary"
+              startIcon={<SaveIcon />}
+              onClick={handleSave}
+              disabled={loading}
             >
-              <Button
-                variant="contained"
-                startIcon={<SaveIcon />}
-                onClick={handleSave}
-                disabled={loading}
-                sx={{
-                  bgcolor: "#4CAF50",
-                  "&:hover": {
-                    bgcolor: "#43A047",
-                  },
-                  px: 4,
-                  py: 1.5,
-                  borderRadius: 2,
-                  width: { xs: "100%", sm: "auto" },
-                }}
-              >
-                {isEditMode ? "Update Request" : "Create Request"}
-              </Button>
-            </Stack>
+              {isEditMode ? "Update Request" : "Create Request"}
+            </Button>
           </Box>
         </Paper>
       </Grow>

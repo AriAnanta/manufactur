@@ -251,20 +251,6 @@ const ProductionRequestDetail = () => {
                         color="text.secondary"
                         sx={{ fontWeight: 600, mb: 1 }}
                       >
-                        Customer ID
-                      </Typography>
-                      <Typography variant="body1" sx={{ fontWeight: 500 }}>
-                        {request.customerId}
-                      </Typography>
-                    </Box>
-                  </Grid>
-                  <Grid item xs={12} sm={6}>
-                    <Box sx={{ mb: 3 }}>
-                      <Typography
-                        variant="subtitle2"
-                        color="text.secondary"
-                        sx={{ fontWeight: 600, mb: 1 }}
-                      >
                         Quantity
                       </Typography>
                       <Typography variant="body1" sx={{ fontWeight: 500 }}>
@@ -296,45 +282,6 @@ const ProductionRequestDetail = () => {
                       {getPriorityChip(request.priority)}
                     </Box>
                   </Grid>
-                  <Grid item xs={12}>
-                    <Box sx={{ mb: 3 }}>
-                      <Typography
-                        variant="subtitle2"
-                        color="text.secondary"
-                        sx={{ fontWeight: 600, mb: 1 }}
-                      >
-                        Due Date
-                      </Typography>
-                      <Typography variant="body1" sx={{ fontWeight: 500 }}>
-                        {request.dueDate
-                          ? new Date(request.dueDate).toLocaleDateString(
-                              "id-ID",
-                              {
-                                day: "2-digit",
-                                month: "long",
-                                year: "numeric",
-                              }
-                            )
-                          : "-"}
-                      </Typography>
-                    </Box>
-                  </Grid>
-                  {request.specifications && (
-                    <Grid item xs={12}>
-                      <Box sx={{ mb: 3 }}>
-                        <Typography
-                          variant="subtitle2"
-                          color="text.secondary"
-                          sx={{ fontWeight: 600, mb: 1 }}
-                        >
-                          Specifications
-                        </Typography>
-                        <Typography variant="body1">
-                          {request.specifications}
-                        </Typography>
-                      </Box>
-                    </Grid>
-                  )}
                 </Grid>
               </CardContent>
             </Paper>
@@ -361,12 +308,6 @@ const ProductionRequestDetail = () => {
                       <Typography variant="body2" color="text.secondary">
                         Created:{" "}
                         {new Date(request.createdAt).toLocaleDateString()}
-                      </Typography>
-                    </Box>
-                    <Box sx={{ display: "flex", alignItems: "center" }}>
-                      <PersonIcon sx={{ mr: 1, color: "text.secondary" }} />
-                      <Typography variant="body2" color="text.secondary">
-                        Customer: {request.customerId}
                       </Typography>
                     </Box>
                     <Box sx={{ display: "flex", alignItems: "center" }}>

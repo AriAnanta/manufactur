@@ -9,7 +9,7 @@ const fs = require("fs");
 const services = [
   { name: "user_service", port: 5006, color: "\x1b[36m" }, // Cyan
   { name: "production_management", port: 5001, color: "\x1b[32m" }, // Green
-  { name: "production_planning", port: 5300, color: "\x1b[33m" }, // Yellow
+  { name: "production_planning", port: 5002, color: "\x1b[33m" }, // Yellow
   { name: "machine_queue", port: 5003, color: "\x1b[35m" }, // Magenta
   { name: "material_inventory", port: 5004, color: "\x1b[34m" }, // Blue
   { name: "production_feedback", port: 5005, color: "\x1b[31m" }, // Red
@@ -23,7 +23,7 @@ function checkAndInstallDependencies() {
   console.log("\x1b[1m===== MENGECEK DEPENDENCIES =====\x1b[0m");
 
   for (const service of services) {
-    const serviceDir = path.join(__dirname, service.name);
+    const serviceDir = path.join(__dirname, "backend", service.name);
     const nodeModulesPath = path.join(serviceDir, "node_modules");
 
     if (!fs.existsSync(nodeModulesPath)) {
@@ -54,7 +54,7 @@ function checkAndInstallDependencies() {
 
 // Fungsi untuk menjalankan layanan
 function startService(service) {
-  const serviceDir = path.join(__dirname, service.name);
+  const serviceDir = path.join(__dirname, "backend", service.name);
 
   // Periksa apakah direktori layanan ada
   if (!fs.existsSync(serviceDir)) {

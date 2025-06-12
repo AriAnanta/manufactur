@@ -1,4 +1,4 @@
-import { gql } from '@apollo/client';
+import { gql } from "@apollo/client";
 
 // Fragments
 const PRODUCTION_REQUEST_FIELDS = gql`
@@ -6,10 +6,8 @@ const PRODUCTION_REQUEST_FIELDS = gql`
     id
     productName
     quantity
-    dueDate
     priority
     status
-    notes
     createdAt
     updatedAt
   }
@@ -22,8 +20,8 @@ const PRODUCTION_BATCH_FIELDS = gql`
     batchNumber
     quantity
     status
-    startDate
-    endDate
+    scheduledStartDate
+    scheduledEndDate
     notes
     createdAt
     updatedAt
@@ -37,8 +35,8 @@ const PRODUCTION_STEP_FIELDS = gql`
     stepName
     stepOrder
     status
-    startTime
-    endTime
+    scheduledStartTime
+    scheduledEndTime
     machineType
     notes
     createdAt
@@ -166,6 +164,22 @@ export const GET_PRODUCTION_REQUESTS_SUMMARY = gql`
   }
 `;
 
+export const GET_PENDING_BATCHES = gql`
+  query GetPendingBatches {
+    productionBatchesByStatus(status: pending) {
+      id
+      batchNumber
+      quantity
+      scheduledStartDate
+      scheduledEndDate
+      request {
+        productName
+        requestId
+      }
+    }
+  }
+`;
+
 // Mutations
 export const CREATE_PRODUCTION_REQUEST = gql`
   mutation CreateProductionRequest($input: ProductionRequestInput!) {
@@ -177,7 +191,10 @@ export const CREATE_PRODUCTION_REQUEST = gql`
 `;
 
 export const UPDATE_PRODUCTION_REQUEST = gql`
-  mutation UpdateProductionRequest($id: ID!, $input: ProductionRequestUpdateInput!) {
+  mutation UpdateProductionRequest(
+    $id: ID!
+    $input: ProductionRequestUpdateInput!
+  ) {
     updateProductionRequest(id: $id, input: $input) {
       ...ProductionRequestFields
     }
@@ -204,7 +221,10 @@ export const CREATE_PRODUCTION_BATCH = gql`
 `;
 
 export const UPDATE_PRODUCTION_BATCH = gql`
-  mutation UpdateProductionBatch($id: ID!, $input: ProductionBatchUpdateInput!) {
+  mutation UpdateProductionBatch(
+    $id: ID!
+    $input: ProductionBatchUpdateInput!
+  ) {
     updateProductionBatch(id: $id, input: $input) {
       ...ProductionBatchFields
     }

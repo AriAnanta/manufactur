@@ -40,9 +40,6 @@ const ProductionBatchForm = () => {
   const [formData, setFormData] = useState({
     requestId: "",
     quantity: "",
-    scheduledStartDate: "",
-    scheduledEndDate: "",
-    notes: "",
     status: "pending", // Default status for new batches
   });
 
@@ -71,15 +68,6 @@ const ProductionBatchForm = () => {
       setFormData({
         requestId: fetchedBatch.requestId,
         quantity: fetchedBatch.quantity,
-        scheduledStartDate: fetchedBatch.scheduledStartDate
-          ? new Date(fetchedBatch.scheduledStartDate)
-              .toISOString()
-              .split("T")[0]
-          : "",
-        scheduledEndDate: fetchedBatch.scheduledEndDate
-          ? new Date(fetchedBatch.scheduledEndDate).toISOString().split("T")[0]
-          : "",
-        notes: fetchedBatch.notes || "",
         status: fetchedBatch.status || "pending",
       });
     } catch (err) {
@@ -116,12 +104,6 @@ const ProductionBatchForm = () => {
       const payload = {
         ...formData,
         quantity: parseInt(formData.quantity),
-        scheduledStartDate: formData.scheduledStartDate
-          ? new Date(formData.scheduledStartDate).toISOString()
-          : null,
-        scheduledEndDate: formData.scheduledEndDate
-          ? new Date(formData.scheduledEndDate).toISOString()
-          : null,
       };
 
       console.log("Payload being sent to batchService:", payload);
@@ -334,57 +316,6 @@ const ProductionBatchForm = () => {
                     <MenuItem value="cancelled">Cancelled</MenuItem>
                   </Select>
                 </FormControl>
-              </Grid>
-
-              <Grid item xs={12} sm={6}>
-                <TextField
-                  fullWidth
-                  label="Scheduled Start Date"
-                  name="scheduledStartDate"
-                  type="date"
-                  value={formData.scheduledStartDate}
-                  onChange={handleInputChange}
-                  InputLabelProps={{ shrink: true }}
-                  sx={{
-                    "& .MuiOutlinedInput-root": {
-                      borderRadius: 2,
-                    },
-                  }}
-                />
-              </Grid>
-
-              <Grid item xs={12} sm={6}>
-                <TextField
-                  fullWidth
-                  label="Scheduled End Date"
-                  name="scheduledEndDate"
-                  type="date"
-                  value={formData.scheduledEndDate}
-                  onChange={handleInputChange}
-                  InputLabelProps={{ shrink: true }}
-                  sx={{
-                    "& .MuiOutlinedInput-root": {
-                      borderRadius: 2,
-                    },
-                  }}
-                />
-              </Grid>
-
-              <Grid item xs={12}>
-                <TextField
-                  fullWidth
-                  label="Notes"
-                  name="notes"
-                  value={formData.notes}
-                  onChange={handleInputChange}
-                  multiline
-                  rows={3}
-                  sx={{
-                    "& .MuiOutlinedInput-root": {
-                      borderRadius: 2,
-                    },
-                  }}
-                />
               </Grid>
 
               <Grid item xs={12}>

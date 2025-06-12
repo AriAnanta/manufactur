@@ -442,194 +442,94 @@ const ProductionPlans = () => {
                 <Table sx={{ minWidth: 800 }}>
                   <TableHead>
                     <TableRow>
-                      <TableCell sx={{ fontWeight: 600, py: 2 }}>
-                        Product Name
-                      </TableCell>
-                      <TableCell sx={{ fontWeight: 600, py: 2 }}>
-                        Notes
-                      </TableCell>
-                      <TableCell sx={{ fontWeight: 600, py: 2 }}>
-                        Planned Start Date
-                      </TableCell>
-                      <TableCell sx={{ fontWeight: 600, py: 2 }}>
-                        Planned End Date
-                      </TableCell>
-                      <TableCell sx={{ fontWeight: 600, py: 2 }}>
-                        Priority
-                      </TableCell>
-                      <TableCell sx={{ fontWeight: 600, py: 2 }}>
-                        Status
-                      </TableCell>
-                      <TableCell sx={{ fontWeight: 600, py: 2 }}>
-                        Created At
-                      </TableCell>
-                      <TableCell sx={{ fontWeight: 600, py: 2 }} align="right">
-                        Actions
-                      </TableCell>
+                      <TableCell>Plan ID</TableCell>
+                      <TableCell>Product Name</TableCell>
+                      <TableCell>Planned Start Date</TableCell>
+                      <TableCell>Planned End Date</TableCell>
+                      <TableCell>Priority</TableCell>
+                      <TableCell>Status</TableCell>
+                      <TableCell align="right">Actions</TableCell>
                     </TableRow>
                   </TableHead>
                   <TableBody>
-                    {paginatedPlans &&
-                      paginatedPlans.map((plan, index) => (
-                        <Fade in timeout={300 + index * 100} key={plan.id}>
-                          <TableRow
-                            sx={{
-                              "&:hover": {
-                                bgcolor: "grey.50",
-                                transform: "scale(1.001)",
-                                transition: "all 0.2s ease-in-out",
-                              },
-                              "&:last-child td": { border: 0 },
-                            }}
-                          >
-                            <TableCell sx={{ py: 2 }}>
-                              <Typography
-                                variant="body1"
-                                sx={{ fontWeight: 600, color: "primary.main" }}
-                              >
-                                {plan.productName}
-                              </Typography>
-                            </TableCell>
-                            <TableCell sx={{ py: 2 }}>
-                              <Typography variant="body2">
-                                {plan.planningNotes.length > 50
-                                  ? `${plan.planningNotes.substring(0, 50)}...`
-                                  : plan.planningNotes}
-                              </Typography>
-                            </TableCell>
-                            <TableCell sx={{ py: 2 }}>
-                              <Typography variant="body2">
-                                {plan.plannedStartDate
-                                  ? format(
-                                      parseISO(plan.plannedStartDate),
-                                      "dd MMM yyyy"
-                                    )
-                                  : "N/A"}
-                              </Typography>
-                            </TableCell>
-                            <TableCell sx={{ py: 2 }}>
-                              <Typography variant="body2">
-                                {plan.plannedEndDate
-                                  ? format(
-                                      parseISO(plan.plannedEndDate),
-                                      "dd MMM yyyy"
-                                    )
-                                  : "N/A"}
-                              </Typography>
-                            </TableCell>
-                            <TableCell sx={{ py: 2 }}>
-                              <Chip
-                                label={plan.priority}
-                                size="small"
-                                color={
-                                  plan.priority === "urgent"
-                                    ? "error"
-                                    : plan.priority === "high"
-                                    ? "warning"
-                                    : plan.priority === "normal"
-                                    ? "info"
-                                    : "success"
-                                }
-                                sx={{ fontWeight: 500 }}
-                              />
-                            </TableCell>
-                            <TableCell sx={{ py: 2 }}>
-                              <StatusChip status={plan.status} />
-                            </TableCell>
-                            <TableCell sx={{ py: 2 }}>
-                              <Typography variant="body2">
-                                {format(
-                                  parseISO(plan.createdAt),
+                    {paginatedPlans.map((plan) => {
+                      const isDraft = plan.status.toUpperCase() === "DRAFT";
+                      const isPendingApproval =
+                        plan.status.toUpperCase() === "PENDING_APPROVAL";
+
+                      return (
+                        <TableRow key={plan.id}>
+                          <TableCell>{plan.planId}</TableCell>
+                          <TableCell>{plan.productName}</TableCell>
+                          <TableCell>
+                            {plan.plannedStartDate
+                              ? format(
+                                  parseISO(plan.plannedStartDate),
                                   "dd MMM yyyy"
-                                )}
-                              </Typography>
-                            </TableCell>
-                            <TableCell align="right" sx={{ py: 2 }}>
-                              <Stack
-                                direction="row"
-                                spacing={1}
-                                justifyContent="flex-end"
+                                )
+                              : "N/A"}
+                          </TableCell>
+                          <TableCell>
+                            {plan.plannedEndDate
+                              ? format(
+                                  parseISO(plan.plannedEndDate),
+                                  "dd MMM yyyy"
+                                )
+                              : "N/A"}
+                          </TableCell>
+                          <TableCell>{plan.priority}</TableCell>
+                          <TableCell>
+                            <StatusChip status={plan.status} />
+                          </TableCell>
+                          <TableCell align="right">
+                            <Tooltip title="View Details">
+                              <IconButton
+                                size="small"
+                                onClick={() => handleViewPlan(plan.id)}
                               >
-                                <Tooltip title="View">
-                                  <IconButton
-                                    size="small"
-                                    color="primary"
-                                    onClick={() => handleViewPlan(plan.id)}
-                                    sx={{
-                                      "&:hover": {
-                                        bgcolor: "primary.light",
-                                        color: "white",
-                                      },
-                                    }}
-                                  >
-                                    <VisibilityIcon fontSize="small" />
-                                  </IconButton>
-                                </Tooltip>
-                                {plan.status &&
-                                  plan.status.toUpperCase() === "DRAFT" && (
-                                    <>
-                                      <Tooltip title="Edit">
-                                        <IconButton
-                                          size="small"
-                                          color="info"
-                                          onClick={() =>
-                                            handleEditPlan(plan.id)
-                                          }
-                                          sx={{
-                                            "&:hover": {
-                                              bgcolor: "info.light",
-                                              color: "white",
-                                            },
-                                          }}
-                                        >
-                                          <EditIcon fontSize="small" />
-                                        </IconButton>
-                                      </Tooltip>
-                                      <Tooltip title="Delete">
-                                        <IconButton
-                                          size="small"
-                                          color="error"
-                                          onClick={() =>
-                                            handleOpenDeleteDialog(plan.id)
-                                          }
-                                          sx={{
-                                            "&:hover": {
-                                              bgcolor: "error.light",
-                                              color: "white",
-                                            },
-                                          }}
-                                        >
-                                          <DeleteIcon fontSize="small" />
-                                        </IconButton>
-                                      </Tooltip>
-                                    </>
-                                  )}
-                                {plan.status &&
-                                  plan.status.toUpperCase() ===
-                                    "PENDING_APPROVAL" && (
-                                    <Tooltip title="Approve">
-                                      <IconButton
-                                        size="small"
-                                        color="success"
-                                        onClick={() =>
-                                          handleOpenApproveDialog(plan.id)
-                                        }
-                                        sx={{
-                                          "&:hover": {
-                                            bgcolor: "success.light",
-                                            color: "white",
-                                          },
-                                        }}
-                                      >
-                                        <CheckCircleIcon fontSize="small" />
-                                      </IconButton>
-                                    </Tooltip>
-                                  )}
-                              </Stack>
-                            </TableCell>
-                          </TableRow>
-                        </Fade>
-                      ))}
+                                <VisibilityIcon fontSize="small" />
+                              </IconButton>
+                            </Tooltip>
+                            {(isDraft || isPendingApproval) && (
+                              <Tooltip title="Edit Plan">
+                                <IconButton
+                                  size="small"
+                                  onClick={() => handleEditPlan(plan.id)}
+                                >
+                                  <EditIcon fontSize="small" />
+                                </IconButton>
+                              </Tooltip>
+                            )}
+                            {(isDraft || isPendingApproval) && (
+                              <Tooltip title="Delete Plan">
+                                <IconButton
+                                  size="small"
+                                  color="error"
+                                  onClick={() =>
+                                    handleOpenDeleteDialog(plan.id)
+                                  }
+                                >
+                                  <DeleteIcon fontSize="small" />
+                                </IconButton>
+                              </Tooltip>
+                            )}
+                            {(isDraft || isPendingApproval) && (
+                              <Tooltip title="Approve Plan">
+                                <IconButton
+                                  size="small"
+                                  color="success"
+                                  onClick={() =>
+                                    handleOpenApproveDialog(plan.id)
+                                  }
+                                >
+                                  <CheckCircleIcon fontSize="small" />
+                                </IconButton>
+                              </Tooltip>
+                            )}
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
                   </TableBody>
                 </Table>
               </Box>

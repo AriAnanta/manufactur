@@ -1,3 +1,4 @@
+import React from 'react';
 import { Routes, Route, Navigate } from "react-router-dom";
 import { Box } from "@mui/material";
 import { AuthProvider } from "./contexts/AuthContext";
@@ -38,18 +39,21 @@ import CreateMaterial from "./pages/material-inventory/CreateMaterial";
 import EditMaterial from "./pages/material-inventory/EditMaterial";
 import CreateSupplier from "./pages/material-inventory/CreateSupplier";
 import EditSupplier from "./pages/material-inventory/EditSupplier";
+import PurchaseMaterial from "./pages/material-inventory/PurchaseMaterial";
 
 // Production Planning Pages
 import ProductionPlans from "./pages/planning/ProductionPlans";
 import ProductionPlanDetail from "./pages/planning/ProductionPlanDetail";
 import ProductionPlanForm from "./pages/planning/ProductionPlanForm";
-import MaterialPlanForm from "./pages/planning/MaterialPlanForm";
-import CapacityPlanForm from "./pages/planning/CapacityPlanForm";
 
 // Production Feedback Pages
-import FeedbackList from "./pages/production-feedback/FeedbackList";
-import FeedbackDetail from "./pages/production-feedback/FeedbackDetail";
-import QualityChecks from "./pages/production-feedback/QualityChecks";
+import { 
+  FeedbackList, 
+  ProductionFeedbackForm, 
+  EditProductionFeedbackForm,
+  QuantityStockList,
+  QuantityStockForm 
+} from "./pages/production-feedback";
 
 // User Management Pages
 import UserManagement from "./pages/user/UserManagement";
@@ -81,7 +85,6 @@ function App() {
           >
             {/* Dashboard */}
             <Route path="/" element={<Dashboard />} />
-
             {/* Machine Queue */}
             <Route path="/machines" element={<MachineList />} />
             <Route path="/machines/add" element={<MachineForm />} />
@@ -90,7 +93,6 @@ function App() {
             <Route path="/queue" element={<QueueManagement />} />
             <Route path="/queue/add" element={<QueueForm />} />
             <Route path="/queue/:id/edit" element={<QueueForm />} />
-
             {/* Production Management Routes */}
             <Route
               path="/production-requests/add"
@@ -121,10 +123,10 @@ function App() {
               path="/production-batches/:id/edit"
               element={<ProductionBatchForm />}
             />
-
             {/* Material Inventory Routes */}
             <Route path="/materials" element={<MaterialList />} />
             <Route path="/materials/new" element={<CreateMaterial />} />
+            <Route path="/materials/purchase" element={<PurchaseMaterial />} />
             <Route path="/materials/:id" element={<MaterialDetail />} />
             <Route path="/materials/:id/edit" element={<EditMaterial />} />
             <Route path="/suppliers" element={<SupplierList />} />
@@ -132,7 +134,6 @@ function App() {
             <Route path="/suppliers/:id" element={<SupplierDetail />} />
             <Route path="/suppliers/:id/edit" element={<EditSupplier />} />
             <Route path="/transactions" element={<TransactionHistory />} />
-
             {/* Production Planning Routes */}
             <Route path="/production-plans" element={<ProductionPlans />} />
             <Route
@@ -147,28 +148,17 @@ function App() {
               path="/production-plans/:id/edit"
               element={<ProductionPlanForm />}
             />
-            <Route
-              path="/production-plans/:id/material/add"
-              element={<MaterialPlanForm />}
-            />
-            <Route
-              path="/production-plans/:id/material/:materialId/edit"
-              element={<MaterialPlanForm />}
-            />
-            <Route
-              path="/production-plans/:id/capacity/add"
-              element={<CapacityPlanForm />}
-            />
-            <Route
-              path="/production-plans/:id/capacity/:capacityId/edit"
-              element={<CapacityPlanForm />}
-            />
-
+           
             {/* Production Feedback Routes */}
             <Route path="/feedback" element={<FeedbackList />} />
-            <Route path="/feedback/:id" element={<FeedbackDetail />} />
-            <Route path="/quality-checks" element={<QualityChecks />} />
-
+            <Route path="/feedback/create" element={<ProductionFeedbackForm />} />
+            <Route path="/feedback/edit/:id" element={<EditProductionFeedbackForm />} />
+            
+            {/* Quantity Stock Routes */}
+            <Route path="/feedback/quantity-stock" element={<QuantityStockList />} />
+            <Route path="/feedback/quantity-stock/create" element={<QuantityStockForm />} />
+            <Route path="/feedback/quantity-stock/edit/:id" element={<QuantityStockForm />} />
+           
             {/* User Management Routes */}
             <Route path="/users" element={<UserManagement />} />
             <Route path="/profile" element={<UserProfile />} />

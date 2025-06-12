@@ -1,10 +1,10 @@
-# Use Node.js as base image
-FROM node:18-alpine as build
+# Build stage
+FROM node:18-alpine AS build
 
 # Set working directory
 WORKDIR /app
 
-# Copy package.json and package-lock.json
+# Copy package files
 COPY package*.json ./
 
 # Install dependencies
@@ -13,14 +13,14 @@ RUN npm install
 # Copy all files
 COPY . .
 
-# Build the app
+# Build the application
 RUN npm run build
 
 # Production stage
-FROM nginx:alpine
+FROM nginx:alpine-slim
 
-# Copy built files to nginx
-COPY --from=build /app/dist /usr/share/nginx/html
+# Copy built files from build stage
+COPY --from=build /app/dist/ /usr/share/nginx/html/
 
 # Copy nginx configuration
 COPY nginx.conf /etc/nginx/conf.d/default.conf

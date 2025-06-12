@@ -67,7 +67,7 @@ const ProductionRequests = () => {
     }
   };
 
-  const handleDeleteRequest = async (requestId) => {
+  const handleDelete = async (requestId) => {
     if (
       window.confirm("Are you sure you want to delete this production request?")
     ) {
@@ -77,7 +77,28 @@ const ProductionRequests = () => {
         fetchRequests();
       } catch (err) {
         console.error("Error deleting production request:", err);
-        setError("Failed to delete production request");
+        
+        // Periksa apakah error berisi pesan dari backend
+        if (err.response && err.response.data && err.response.data.message) {
+          // Jika ada batches terkait, tawarkan opsi untuk membatalkan request
+          if (err.response.data.message.includes("associated batches")) {
+            if (window.confirm(
+              `${err.response.data.message}\n\nApakah Anda ingin membatalkan request ini sebagai gantinya?`
+            )) {
+              try {
+                await productionService.cancelRequest(requestId);
+                fetchRequests();
+                return;
+              } catch (cancelErr) {
+                console.error("Error cancelling production request:", cancelErr);
+                setError("Gagal membatalkan production request");
+              }
+            }
+          }
+          setError(err.response.data.message);
+        } else {
+          setError("Gagal menghapus production request");
+        }
       } finally {
         setLoading(false);
       }
@@ -94,6 +115,28 @@ const ProductionRequests = () => {
     };
 
     const config = statusConfig[status] || { color: "default", label: status };
+    return (
+      <Chip
+        label={config.label}
+        color={config.color}
+        size="small"
+        sx={{ fontWeight: 500 }}
+      />
+    );
+  };
+
+  const getPriorityChip = (priority) => {
+    const priorityConfig = {
+      low: { color: "success", label: "Low" },
+      normal: { color: "info", label: "Normal" },
+      high: { color: "warning", label: "High" },
+      urgent: { color: "error", label: "Urgent" },
+    };
+
+    const config = priorityConfig[priority] || {
+      color: "default",
+      label: priority,
+    };
     return (
       <Chip
         label={config.label}
@@ -298,14 +341,11 @@ const ProductionRequests = () => {
                   </TableCell>
                   <TableCell sx={{ fontWeight: 600, py: 2 }}>Product</TableCell>
                   <TableCell sx={{ fontWeight: 600, py: 2 }}>
-                    Customer
-                  </TableCell>
-                  <TableCell sx={{ fontWeight: 600, py: 2 }}>
                     Quantity
                   </TableCell>
                   <TableCell sx={{ fontWeight: 600, py: 2 }}>Status</TableCell>
                   <TableCell sx={{ fontWeight: 600, py: 2 }}>
-                    Due Date
+                    Priority
                   </TableCell>
                   <TableCell sx={{ fontWeight: 600, py: 2 }}>Actions</TableCell>
                 </TableRow>
@@ -335,11 +375,6 @@ const ProductionRequests = () => {
                         </Typography>
                       </TableCell>
                       <TableCell sx={{ py: 2 }}>
-                        <Typography variant="body1">
-                          {request.customerId}
-                        </Typography>
-                      </TableCell>
-                      <TableCell sx={{ py: 2 }}>
                         <Typography variant="body1" sx={{ fontWeight: 500 }}>
                           {request.quantity.toLocaleString()}
                         </Typography>
@@ -348,11 +383,7 @@ const ProductionRequests = () => {
                         {getStatusChip(request.status)}
                       </TableCell>
                       <TableCell sx={{ py: 2 }}>
-                        <Typography variant="body2">
-                          {request.dueDate
-                            ? new Date(request.dueDate).toLocaleDateString()
-                            : "-"}
-                        </Typography>
+                        {getPriorityChip(request.priority)}
                       </TableCell>
                       <TableCell sx={{ py: 2 }}>
                         <Stack direction="row" spacing={1}>
@@ -393,7 +424,7 @@ const ProductionRequests = () => {
                               <IconButton
                                 size="small"
                                 color="error"
-                                onClick={() => handleDeleteRequest(request.id)}
+                                onClick={() => handleDelete(request.id)}
                               >
                                 <DeleteIcon fontSize="small" />
                               </IconButton>
